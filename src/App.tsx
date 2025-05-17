@@ -11,13 +11,13 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import HowItWorks from "./pages/HowItWorks";
-import BenchmarksLibrary from "./pages/BenchmarksLibrary"; // ✅ NEW
-import ToolboxLanding from "./pages/ToolboxLanding";       // ✅ NEW
-import Pricing from "./pages/Pricing";                     // ✅ FUTURE
-import Industries from "./pages/Industries";               // ✅ FUTURE
-import UseCases from "./pages/UseCases";                   // ✅ FUTURE
-import About from "./pages/About";                         // ✅ FUTURE
-import Resources from "./pages/Resources";                 // ✅ FUTURE
+import BenchmarksLibrary from "./pages/BenchmarksLibrary";
+import ToolboxLanding from "./pages/ToolboxLanding";
+import Pricing from "./pages/Pricing";
+import Industries from "./pages/Industries";
+import UseCases from "./pages/UseCases";
+import About from "./pages/About";
+import Resources from "./pages/Resources";
 
 // Protected app pages
 import Dashboard from "./pages/Dashboard/Dashboard";
