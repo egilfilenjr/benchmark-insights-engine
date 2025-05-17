@@ -304,7 +304,8 @@ const Settings = () => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          </Card>
+          </CardContent>
+        </Card>
         
         <Card>
           <CardHeader>
