@@ -399,151 +399,153 @@ export default function TeamAccess() {
           </Dialog>
         </div>
         
-        <Alert>
-          <Users className="h-4 w-4" />
-          <AlertTitle>Team Access</AlertTitle>
-          <AlertDescription className="flex items-center">
-            Your {userPlan} plan includes {getTeamLimitInfo(userPlan)}.
-            {(userPlan === 'free' || userPlan === 'pro') && (
-              <Button variant="link" className="h-auto p-0 ml-1">
-                Upgrade for more team members
-              </Button>
-            )}
-          </AlertDescription>
-        </Alert>
-        
-        <Tabs defaultValue="members">
-          <TabsList>
-            <TabsTrigger value="members">Team Members</TabsTrigger>
-            <TabsTrigger value="activity">Activity Log</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="members" className="mt-4">
-            {loading ? (
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Active</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[1, 2, 3].map(i => (
-                        <TableRow key={i} className="animate-pulse">
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-24"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-40"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-16"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-16"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-24"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-20 ml-auto"></div></TableCell>
+        {userPlan === "free" || userPlan === "pro" ? (
+          <Alert>
+            <Users className="h-4 w-4" />
+            <AlertTitle>Team Access</AlertTitle>
+            <AlertDescription className="flex items-center">
+              Your {userPlan} plan includes {getTeamLimitInfo(userPlan)}.
+              {(userPlan === 'free' || userPlan === 'pro') && (
+                <Button variant="link" className="h-auto p-0 ml-1">
+                  Upgrade for more team members
+                </Button>
+              )}
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Tabs defaultValue="members">
+            <TabsList>
+              <TabsTrigger value="members">Team Members</TabsTrigger>
+              <TabsTrigger value="activity">Activity Log</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="members" className="mt-4">
+              {loading ? (
+                <Card>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Last Active</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Active</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {teamMembers
-                        .filter(member => member.status !== "removed")
-                        .map(member => (
-                          <TeamMemberRow 
-                            key={member.id} 
-                            member={member} 
-                            onRemove={() => handleRemoveMember(member.id)} 
-                            onChangeRole={(role: string) => setEditRole({ userId: member.id, role })}
-                            isCurrentUser={user?.user_metadata?.name === member.name}
-                          />
+                      </TableHeader>
+                      <TableBody>
+                        {[1, 2, 3].map(i => (
+                          <TableRow key={i} className="animate-pulse">
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-24"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-40"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-16"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-16"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-24"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-20 ml-auto"></div></TableCell>
+                          </TableRow>
                         ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="activity" className="mt-4">
-            {loading ? (
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Action</TableHead>
-                        <TableHead>Details</TableHead>
-                        <TableHead>Time</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <TableRow key={i} className="animate-pulse">
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-24"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-32"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-48"></div></TableCell>
-                          <TableCell><div className="h-4 bg-gray-200 rounded w-32"></div></TableCell>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Last Active</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Action</TableHead>
-                        <TableHead>Details</TableHead>
-                        <TableHead>Time</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {activityLogs.map(log => (
-                        <TableRow key={log.id}>
-                          <TableCell className="font-medium">{log.userName}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="capitalize">
-                              {log.action.replace(/_/g, ' ')}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{log.details}</TableCell>
-                          <TableCell className="text-muted-foreground">
-                            <div className="flex items-center">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {format(log.timestamp, "MMM d, h:mm a")}
-                            </div>
-                          </TableCell>
+                      </TableHeader>
+                      <TableBody>
+                        {teamMembers
+                          .filter(member => member.status !== "removed")
+                          .map(member => (
+                            <TeamMemberRow 
+                              key={member.id} 
+                              member={member} 
+                              onRemove={() => handleRemoveMember(member.id)} 
+                              onChangeRole={(role: string) => setEditRole({ userId: member.id, role })}
+                              isCurrentUser={user?.user_metadata?.name === member.name}
+                            />
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="activity" className="mt-4">
+              {loading ? (
+                <Card>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Action</TableHead>
+                          <TableHead>Details</TableHead>
+                          <TableHead>Time</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+                      </TableHeader>
+                      <TableBody>
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <TableRow key={i} className="animate-pulse">
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-24"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-32"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-48"></div></TableCell>
+                            <TableCell><div className="h-4 bg-gray-200 rounded w-32"></div></TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Action</TableHead>
+                          <TableHead>Details</TableHead>
+                          <TableHead>Time</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {activityLogs.map(log => (
+                          <TableRow key={log.id}>
+                            <TableCell className="font-medium">{log.userName}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="capitalize">
+                                {log.action.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{log.details}</TableCell>
+                            <TableCell className="text-muted-foreground">
+                              <div className="flex items-center">
+                                <Clock className="h-3 w-3 mr-1" />
+                                {format(log.timestamp, "MMM d, h:mm a")}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </AppLayout>
   );

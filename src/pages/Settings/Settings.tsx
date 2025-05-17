@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 const Settings = () => {
-  const { user, signOut, updateUserProfile } = useUserProfile();
+  const { user, signOut, updateProfile: updateUserProfile } = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
