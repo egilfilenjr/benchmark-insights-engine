@@ -108,4 +108,75 @@ export default function Experiments() {
                   <div>
                     <Label htmlFor="name">Experiment Name</Label>
                     <Input id="name" />
-                  </div
+                  </div>
+                  <div>
+                    <Label htmlFor="campaign">Associated Campaign</Label>
+                    <Input id="campaign" />
+                  </div>
+                  <div>
+                    <Label htmlFor="hypothesis">Hypothesis</Label>
+                    <Textarea id="hypothesis" />
+                  </div>
+                  <div>
+                    <Label htmlFor="metric">Primary Metric</Label>
+                    <Input id="metric" />
+                  </div>
+                  <div>
+                    <Label htmlFor="expected">Expected Result</Label>
+                    <Input id="expected" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Save</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {experiments.map((exp) => (
+            <Card key={exp.id}>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>{exp.name}</CardTitle>
+                    <CardDescription>{exp.campaign}</CardDescription>
+                  </div>
+                  <Badge
+                    variant={
+                      exp.status === "Completed"
+                        ? "success"
+                        : exp.status === "Canceled"
+                        ? "destructive"
+                        : "default"
+                    }
+                  >
+                    {exp.status}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p><strong>Hypothesis:</strong> {exp.hypothesis}</p>
+                <p><strong>Metric:</strong> {exp.metric}</p>
+                <p><strong>Expected:</strong> {exp.expectedResult}</p>
+                {exp.actualResult && <p><strong>Actual:</strong> {exp.actualResult}</p>}
+                <Progress value={exp.progress} />
+              </CardContent>
+              <CardFooter>
+                {exp.status === "Completed" ? (
+                  <Check className="w-4 h-4 text-green-600 mr-2" />
+                ) : exp.status === "Canceled" ? (
+                  <X className="w-4 h-4 text-red-600 mr-2" />
+                ) : (
+                  <TrendingUp className="w-4 h-4 text-blue-600 mr-2" />
+                )}
+                <span>{exp.status}</span>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
