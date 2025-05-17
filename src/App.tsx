@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProfileProvider } from "@/hooks/useUserProfile";
 
 // Public marketing pages
@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
+import Onboarding from "./pages/Auth/Onboarding";            // ✅ NEW
 import HowItWorks from "./pages/HowItWorks";
 import BenchmarksLibrary from "./pages/BenchmarksLibrary";
 import ToolboxLanding from "./pages/ToolboxLanding";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/onboarding" element={<Onboarding />} /> {/* ✅ NEW */}
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/benchmarks" element={<BenchmarksLibrary />} />
             <Route path="/toolbox" element={<ToolboxLanding />} />
@@ -79,7 +81,7 @@ const App = () => (
               <Route path="/toolbox/app" element={<Toolbox />} />
             </Route>
 
-            {/* Catch-all */}
+            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </UserProfileProvider>
