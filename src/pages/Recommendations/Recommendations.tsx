@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -9,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowUpRight, Check, X, ThumbsUp, Filter } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription, AlertAction } from "@/components/ui/alert";
 
 export default function Recommendations() {
   const { user, testMode } = useUserProfile();

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -502,7 +501,7 @@ const ExperimentCard = ({ experiment, onStart, onComplete, onDelete }: Experimen
       case "in_progress":
         return <Badge variant="default">In Progress</Badge>;
       case "completed":
-        return <Badge variant="success">Completed</Badge>;
+        return <Badge variant="default">Completed</Badge>;
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }

@@ -8,6 +8,15 @@ import { User, Session } from '@supabase/supabase-js';
 // Enable test mode with this flag
 const TEST_MODE = true;
 
+// Define the mock user type
+interface MockUser {
+  id: string;
+  email: string;
+  user_metadata: {
+    name: string;
+  };
+}
+
 interface UserContextType {
   user: User | null;
   session: Session | null;
@@ -37,6 +46,10 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
         user_metadata: {
           name: 'Test User',
         },
+        // Add missing required properties
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
       } as User;
       
       setUser(mockUser);

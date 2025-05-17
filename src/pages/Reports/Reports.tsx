@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -33,16 +32,19 @@ export default function Reports() {
   const userPlan = 'pro_plus'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
   
   // Mock data for reports
-  const [reports, setReports] = useState([
+  const reports = [
     {
       id: "1",
-      title: "Monthly Performance - April 2025",
-      type: "monthly_snapshot",
-      dateRange: { from: new Date(2025, 3, 1), to: new Date(2025, 3, 30) },
-      createdAt: new Date(2025, 4, 2),
+      title: "Monthly Performance Overview",
+      type: "monthly",
+      dateRange: { 
+        from: new Date(2023, 4, 1), 
+        to: new Date(2023, 4, 31) 
+      },
+      createdAt: new Date(2023, 5, 1),
       format: "pdf",
-      status: "ready",
-      downloadUrl: "#",
+      status: "completed",
+      downloadUrl: "https://example.com/reports/may-overview.pdf"
     },
     {
       id: "2",
@@ -74,7 +76,7 @@ export default function Reports() {
       status: "generating",
       downloadUrl: null,
     },
-  ]);
+  ];
   
   // New report state
   const [newReport, setNewReport] = useState({

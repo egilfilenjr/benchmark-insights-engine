@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -136,7 +135,8 @@ export default function Trends() {
     }, 500);
   }, [selectedKpi, selectedPeriod]);
 
-  const formatYAxis = (value: number) => {
+  // Fix the YAxis formatter to return strings
+  const formatYAxis = (value: number): string => {
     switch (selectedKpi) {
       case "roas":
         return `${value.toFixed(1)}x`;
@@ -145,11 +145,11 @@ export default function Trends() {
       case "ctr":
         return `${value.toFixed(1)}%`;
       case "aecr":
-        return value.toFixed(0);
+        return `${value.toFixed(0)}`;
       case "spend":
         return `$${value}`;
       default:
-        return value;
+        return `${value}`;
     }
   };
   
@@ -311,7 +311,7 @@ export default function Trends() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  {/* This would show aggregated weekly data in a real implementation */}
+                  {/* Fix the YAxis formatter here as well */}
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart
                       data={trendData.filter((_, i) => i % 7 === 0 || i === trendData.length - 1)}
@@ -344,7 +344,7 @@ export default function Trends() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  {/* Simplified monthly view for demo */}
+                  {/* Fix the YAxis formatter here as well */}
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart
                       data={[
@@ -383,7 +383,7 @@ export default function Trends() {
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
-                  {/* Simplified quarterly view for demo */}
+                  {/* Fix the YAxis formatter here as well */}
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart
                       data={[

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -201,7 +200,7 @@ export default function Toolbox() {
                 >
                   <CardHeader className="pb-2">
                     <div className="bg-primary/10 rounded-full p-2 w-10 h-10 flex items-center justify-center mb-2">
-                      {React.cloneElement(tool.icon as React.ReactElement, { className: "h-5 w-5 text-primary" })}
+                      {tool.icon}
                     </div>
                     <CardTitle className="text-base">{tool.name}</CardTitle>
                   </CardHeader>
@@ -261,7 +260,7 @@ export default function Toolbox() {
                 >
                   <CardHeader className="pb-2">
                     <div className="bg-primary/10 rounded-full p-2 w-10 h-10 flex items-center justify-center mb-2">
-                      {React.cloneElement(tool.icon as React.ReactElement, { className: "h-5 w-5 text-primary" })}
+                      {tool.icon}
                     </div>
                     <CardTitle className="text-base">{tool.name}</CardTitle>
                   </CardHeader>

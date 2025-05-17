@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -461,7 +460,7 @@ export default function TeamAccess() {
                             </TableCell>
                             <TableCell>
                               <Badge 
-                                variant={member.status === "active" ? "success" : "secondary"}
+                                variant={member.status === "active" ? "default" : "secondary"}
                               >
                                 {member.status === "active" ? "Active" : "Pending"}
                               </Badge>
