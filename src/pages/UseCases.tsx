@@ -1,77 +1,84 @@
 import MainLayout from "@/components/layout/MainLayout";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
-const personas = [
+const useCases = [
   {
-    role: "In-House Marketer",
-    value: "Monitor ROAS and CPA vs competitors weekly",
-    cta: "Track your weekly performance →",
-    url: "/signup",
+    persona: "In-House Marketer",
+    value: "Monitor ROAS and CPA vs competitors weekly.",
+    cta: "Stay on top of your paid performance.",
   },
   {
-    role: "CMO",
-    value: "Get a single AECR Score across all campaigns",
-    cta: "Get your AECR Score →",
-    url: "/signup",
+    persona: "CMO",
+    value: "Get a quick AECR Score across all media.",
+    cta: "Simplify board-ready performance reviews.",
   },
   {
-    role: "Agency",
-    value: "Benchmark client campaigns and deliver white-labeled reports",
-    cta: "Upgrade to agency reporting →",
-    url: "/signup",
+    persona: "Agency Strategist",
+    value: "Benchmark client results + deliver white-labeled reports.",
+    cta: "Impress clients with exportable industry proof.",
   },
   {
-    role: "Growth Hacker",
-    value: "Spot underperforming channels instantly",
-    cta: "Explore optimization ideas →",
-    url: "/signup",
+    persona: "Performance Marketer",
+    value: "Instantly find underperforming channels by ROI gap.",
+    cta: "Prioritize media spend where it counts.",
   },
   {
-    role: "Freelancer",
-    value: "Use benchmarks to pitch smarter strategy",
-    cta: "Start free to build smarter decks →",
-    url: "/signup",
+    persona: "Freelancer / Consultant",
+    value: "Use real benchmarks to pitch smarter strategies.",
+    cta: "Build trust with real data from day one.",
+  },
+  {
+    persona: "Growth Hacker",
+    value: "Surface quick wins from channel-level trends.",
+    cta: "Go from insight to impact in hours, not weeks.",
+  },
+  {
+    persona: "Paid Media Buyer",
+    value: "Compare CPA and ROAS across similar accounts.",
+    cta: "Buy smarter. Spend better. Prove ROI.",
+  },
+  {
+    persona: "Data Analyst",
+    value: "Blend benchmarked KPIs with internal trends.",
+    cta: "Spot anomalies faster. Validate internal insights.",
   },
 ];
 
 export default function UseCases() {
+  const navigate = useNavigate();
+
   return (
     <MainLayout>
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-10">
-        <header className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">How People Use Benchmarketing</h1>
-          <p className="text-muted-foreground text-lg">
-            From freelancers to CMOs, see how marketers turn benchmark data into better decisions.
+      <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+        {/* Header */}
+        <section className="text-center space-y-3">
+          <h1 className="text-4xl font-bold">Use Cases</h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            See how different marketers use Benchmarketing to get clarity, outperform, and grow.
           </p>
-        </header>
+        </section>
 
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {personas.map((persona, i) => (
-            <Card key={i} className="hover:shadow-lg transition">
-              <CardHeader>
-                <CardTitle>{persona.role}</CardTitle>
-                <CardDescription>{persona.value}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <Link
-                  to={persona.url}
-                  className="text-blue-600 text-sm font-medium hover:underline"
+        {/* Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {useCases.map((u, i) => (
+            <Card key={i} className="h-full hover:shadow transition">
+              <CardContent className="p-4 space-y-2">
+                <CardTitle>{u.persona}</CardTitle>
+                <p className="text-sm text-muted-foreground">{u.value}</p>
+                <p className="text-sm">{u.cta}</p>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0 mt-2"
+                  onClick={() => navigate("/signup")}
                 >
-                  {persona.cta}
-                </Link>
+                  Try it free →
+                </Button>
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        <div className="text-center mt-10">
-          <Link
-            to="/signup"
-            className="inline-block mt-4 px-6 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800"
-          >
-            Try it Free
-          </Link>
         </div>
       </div>
     </MainLayout>
