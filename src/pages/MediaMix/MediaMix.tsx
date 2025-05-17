@@ -108,4 +108,76 @@ export default function MediaMix() {
             <SelectContent>
               <SelectItem value="ga4">GA4</SelectItem>
               <SelectItem value="meta">Meta</SelectItem>
-              <SelectItem value="manual">Manual Upload
+              <SelectItem value="manual">Manual Upload</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Tabs defaultValue="spend">
+          <TabsList>
+            <TabsTrigger value="spend">Spend Breakdown</TabsTrigger>
+            <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="spend">
+            <Card>
+              <CardHeader>
+                <CardTitle>Spend Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      dataKey="value"
+                      data={spendData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label
+                    >
+                      {spendData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="performance">
+            <Card>
+              <CardHeader>
+                <CardTitle>Platform Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={performanceData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="platform" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="cpa" fill="#8884d8" name="CPA" />
+                    <Bar dataKey="roas" fill="#82ca9d" name="ROAS" />
+                    <Bar dataKey="ctr" fill="#ffc658" name="CTR" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertTitle>Note</AlertTitle>
+          <AlertDescription>
+            Data is based on your selected source. Accuracy may vary based on integration completeness.
+          </AlertDescription>
+        </Alert>
+      </div>
+    </AppLayout>
+  );
+}
