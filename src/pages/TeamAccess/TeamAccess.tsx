@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -296,7 +295,7 @@ export default function TeamAccess() {
     // Define the plans that allow team access
     const teamPlans: PlanType[] = ['pro_plus', 'agency'];
     
-    // Check if the plan is in basicPlans array using includes instead of equality
+    // Check if the plan is in basicPlans array using includes
     if (basicPlans.includes(plan)) {
       return true;
     }
