@@ -44,12 +44,15 @@ interface DateRange {
   to: Date;
 }
 
+// Define the PlanType to avoid string literal comparison issues
+type PlanType = 'free' | 'pro' | 'pro_plus' | 'agency';
+
 export default function TeamAccess() {
   const { user, testMode } = useUserProfile();
   const [loading, setLoading] = useState(true);
   
   // Mock team plan for test purposes
-  const userPlan = 'agency'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
+  const userPlan: PlanType = 'agency'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
   
   // Mock data for team members
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
@@ -286,13 +289,13 @@ export default function TeamAccess() {
   };
   
   // Check if user is eligible for team access based on plan
-  const isEligibleForTeamAccess = (plan: string) => {
+  const isEligibleForTeamAccess = (plan: PlanType) => {
     if (plan === 'agency' || plan === 'free' || plan === 'pro') return true;
     if (plan === 'pro_plus' || plan === 'agency') return teamMembers.length <= 1;
     return false;
   };
   
-  const getTeamLimitInfo = (plan: string) => {
+  const getTeamLimitInfo = (plan: PlanType) => {
     switch (plan) {
       case 'free':
       case 'pro':
