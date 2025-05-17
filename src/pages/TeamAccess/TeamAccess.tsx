@@ -310,6 +310,7 @@ export default function TeamAccess() {
   };
   
   const getTeamLimitInfo = (plan: PlanType): string => {
+    // Use a switch statement with type-safe cases instead of strict equality checks
     switch (plan) {
       case 'free':
       case 'pro':
