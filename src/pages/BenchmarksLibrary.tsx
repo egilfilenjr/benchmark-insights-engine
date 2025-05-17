@@ -1,121 +1,131 @@
+import MainLayout from "@/components/layout/MainLayout";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+
 const mockBenchmarks = [
-  // SaaS
   {
-    id: "1",
-    title: "SaaS - Meta - CPA",
-    description: "Cost per acquisition benchmarks for SaaS companies running Meta campaigns.",
-    url: "/benchmarks/saas-meta-cpa",
+    title: "SaaS – Meta Ads – CPA",
+    slug: "saas-meta-cpa",
+    metric: "CPA",
+    platform: "Meta",
+    industry: "SaaS",
+    values: {
+      median: "$74",
+      percentile_25: "$51",
+      percentile_75: "$96",
+    },
   },
   {
-    id: "2",
-    title: "SaaS - Google - ROAS",
-    description: "ROAS averages for SaaS advertisers on Google Search.",
-    url: "/benchmarks/saas-google-roas",
+    title: "Ecommerce – Google – ROAS",
+    slug: "ecommerce-google-roas",
+    metric: "ROAS",
+    platform: "Google",
+    industry: "Ecommerce",
+    values: {
+      median: "3.2x",
+      percentile_25: "2.1x",
+      percentile_75: "4.5x",
+    },
   },
   {
-    id: "3",
-    title: "SaaS - LinkedIn - CTR",
-    description: "Click-through rates for SaaS campaigns on LinkedIn.",
-    url: "/benchmarks/saas-linkedin-ctr",
-  },
-
-  // Ecommerce
-  {
-    id: "4",
-    title: "Ecommerce - Google - ROAS",
-    description: "Return on ad spend for ecommerce brands running Google campaigns.",
-    url: "/benchmarks/ecommerce-google-roas",
+    title: "Finance – TikTok – CTR",
+    slug: "finance-tiktok-ctr",
+    metric: "CTR",
+    platform: "TikTok",
+    industry: "Finance",
+    values: {
+      median: "1.9%",
+      percentile_25: "1.2%",
+      percentile_75: "2.7%",
+    },
   },
   {
-    id: "5",
-    title: "Ecommerce - Meta - CPA",
-    description: "CPA benchmarks for ecommerce campaigns on Meta.",
-    url: "/benchmarks/ecommerce-meta-cpa",
+    title: "Healthcare – LinkedIn – CPA",
+    slug: "healthcare-linkedin-cpa",
+    metric: "CPA",
+    platform: "LinkedIn",
+    industry: "Healthcare",
+    values: {
+      median: "$138",
+      percentile_25: "$102",
+      percentile_75: "$174",
+    },
   },
   {
-    id: "6",
-    title: "Ecommerce - TikTok - CTR",
-    description: "Click-through rate for ecommerce brands using TikTok ads.",
-    url: "/benchmarks/ecommerce-tiktok-ctr",
-  },
-
-  // Finance
-  {
-    id: "7",
-    title: "Finance - TikTok - CTR",
-    description: "CTR performance for finance vertical campaigns on TikTok.",
-    url: "/benchmarks/finance-tiktok-ctr",
-  },
-  {
-    id: "8",
-    title: "Finance - Google - CPA",
-    description: "Average CPA for financial service firms using Google Search.",
-    url: "/benchmarks/finance-google-cpa",
-  },
-  {
-    id: "9",
-    title: "Finance - Meta - ROAS",
-    description: "ROAS averages for finance advertisers on Meta.",
-    url: "/benchmarks/finance-meta-roas",
-  },
-
-  // Healthcare
-  {
-    id: "10",
-    title: "Healthcare - Meta - CPA",
-    description: "Cost per lead for healthcare clinics and wellness brands on Meta.",
-    url: "/benchmarks/healthcare-meta-cpa",
-  },
-  {
-    id: "11",
-    title: "Healthcare - Google - CTR",
-    description: "CTR benchmarks for medical practices running Google Search ads.",
-    url: "/benchmarks/healthcare-google-ctr",
-  },
-  {
-    id: "12",
-    title: "Healthcare - LinkedIn - ROAS",
-    description: "ROAS on LinkedIn for healthcare SaaS and B2B platforms.",
-    url: "/benchmarks/healthcare-linkedin-roas",
-  },
-
-  // Education
-  {
-    id: "13",
-    title: "Education - LinkedIn - ROAS",
-    description: "Return on ad spend for education providers using LinkedIn Ads.",
-    url: "/benchmarks/education-linkedin-roas",
-  },
-  {
-    id: "14",
-    title: "Education - Google - CPA",
-    description: "Cost per acquisition benchmarks for education lead gen.",
-    url: "/benchmarks/education-google-cpa",
-  },
-  {
-    id: "15",
-    title: "Education - Meta - CTR",
-    description: "Click-through rates for colleges and bootcamps advertising on Meta.",
-    url: "/benchmarks/education-meta-ctr",
-  },
-
-  // Local Services
-  {
-    id: "16",
-    title: "Local Services - Google - CTR",
-    description: "CTR performance for local service providers on Google.",
-    url: "/benchmarks/localservices-google-ctr",
-  },
-  {
-    id: "17",
-    title: "Local Services - Meta - ROAS",
-    description: "ROAS trends for local businesses running Meta campaigns.",
-    url: "/benchmarks/localservices-meta-roas",
-  },
-  {
-    id: "18",
-    title: "Local Services - TikTok - CPA",
-    description: "TikTok CPA benchmarks for salons, dentists, and home services.",
-    url: "/benchmarks/localservices-tiktok-cpa",
+    title: "Education – Meta – ROAS",
+    slug: "education-meta-roas",
+    metric: "ROAS",
+    platform: "Meta",
+    industry: "Education",
+    values: {
+      median: "2.8x",
+      percentile_25: "1.9x",
+      percentile_75: "3.6x",
+    },
   },
 ];
+
+export default function BenchmarksLibrary() {
+  const [industry, setIndustry] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [metric, setMetric] = useState("");
+  const navigate = useNavigate();
+
+  const filtered = mockBenchmarks.filter((b) => {
+    const matchIndustry = !industry || b.industry.toLowerCase().includes(industry.toLowerCase());
+    const matchPlatform = !platform || b.platform.toLowerCase().includes(platform.toLowerCase());
+    const matchMetric = !metric || b.metric.toLowerCase().includes(metric.toLowerCase());
+    return matchIndustry && matchPlatform && matchMetric;
+  });
+
+  return (
+    <MainLayout>
+      <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+        {/* Header */}
+        <section className="text-center space-y-3">
+          <h1 className="text-4xl font-bold">Benchmarks Library</h1>
+          <p className="text-muted-foreground max-w-xl mx-auto text-lg">
+            See how your KPIs compare. Filter by industry, platform, or metric.
+          </p>
+        </section>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <Label>Industry</Label>
+            <Input value={industry} onChange={(e) => setIndustry(e.target.value)} />
+          </div>
+          <div>
+            <Label>Platform</Label>
+            <Input value={platform} onChange={(e) => setPlatform(e.target.value)} />
+          </div>
+          <div>
+            <Label>Metric</Label>
+            <Input value={metric} onChange={(e) => setMetric(e.target.value)} />
+          </div>
+        </div>
+
+        {/* Results */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((bm, i) => (
+            <Card key={i} className="hover:shadow-md transition">
+              <CardContent className="p-4 space-y-2">
+                <CardTitle>{bm.title}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Median: <strong>{bm.values.median}</strong> • 25th: {bm.values.percentile_25} • 75th: {bm.values.percentile_75}
+                </p>
+                <Button variant="link" className="p-0 text-sm" onClick={() => navigate(`/signup`)}>
+                  Compare Your Own Data →
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
