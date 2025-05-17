@@ -36,7 +36,8 @@ export default function ProtectedRoute() {
     check();
   }, []);
 
-  if (checking) return null; // optionally show a loading spinner
+  // 👇 This is the line you asked about — shows a message while checking
+  if (checking) return <div className="text-center py-8">Checking access…</div>;
 
   if (!allowed) return <Navigate to="/onboarding" replace />;
 
