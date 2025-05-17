@@ -11,6 +11,18 @@ import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Benchmarks from "./pages/Benchmarks/Benchmarks";
+import Recommendations from "./pages/Recommendations/Recommendations";
+import Opportunities from "./pages/Opportunities/Opportunities";
+import Trends from "./pages/Trends/Trends";
+import MediaMix from "./pages/MediaMix/MediaMix";
+import MyData from "./pages/MyData/MyData";
+import Reports from "./pages/Reports/Reports";
+import SavedViews from "./pages/SavedViews/SavedViews";
+import Alerts from "./pages/Alerts/Alerts";
+import Experiments from "./pages/Experiments/Experiments";
+import TeamAccess from "./pages/TeamAccess/TeamAccess";
+import Settings from "./pages/Settings/Settings";
+import Toolbox from "./pages/Toolbox/Toolbox";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -33,18 +45,18 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:platform" element={<Dashboard />} />
               <Route path="/benchmarks" element={<Benchmarks />} />
-              <Route path="/recommendations" element={<Dashboard />} />
-              <Route path="/opportunities" element={<Dashboard />} />
-              <Route path="/trends" element={<Dashboard />} />
-              <Route path="/media-mix" element={<Dashboard />} />
-              <Route path="/my-data" element={<Dashboard />} />
-              <Route path="/reports" element={<Dashboard />} />
-              <Route path="/saved-views" element={<Dashboard />} />
-              <Route path="/alerts" element={<Dashboard />} />
-              <Route path="/experiments" element={<Dashboard />} />
-              <Route path="/team-access" element={<Dashboard />} />
-              <Route path="/settings" element={<Dashboard />} />
-              <Route path="/toolbox" element={<Dashboard />} />
+              <Route path="/recommendations" element={<Recommendations />} />
+              <Route path="/opportunities" element={<Opportunities />} />
+              <Route path="/trends" element={<Trends />} />
+              <Route path="/media-mix" element={<MediaMix />} />
+              <Route path="/my-data" element={<MyData />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/saved-views" element={<SavedViews />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/experiments" element={<Experiments />} />
+              <Route path="/team-access" element={<TeamAccess />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/toolbox" element={<Toolbox />} />
             </Route>
             
             {/* Catch-all route */}

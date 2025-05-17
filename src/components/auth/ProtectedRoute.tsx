@@ -3,10 +3,10 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 const ProtectedRoute = () => {
-  const { user, loading } = useUserProfile();
+  const { user, loading, testMode } = useUserProfile();
   const location = useLocation();
 
-  // While checking authentication status, show nothing
+  // While checking authentication status, show loading
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -18,13 +18,13 @@ const ProtectedRoute = () => {
     );
   }
 
-  // If not authenticated, redirect to login
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // If test mode is enabled or user is authenticated, show the protected content
+  if (testMode || user) {
+    return <Outlet />;
   }
 
-  // If authenticated, show the protected content
-  return <Outlet />;
+  // If not authenticated and not in test mode, redirect to login
+  return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default ProtectedRoute;

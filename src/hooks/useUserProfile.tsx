@@ -5,10 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { User, Session } from '@supabase/supabase-js';
 
+// Enable test mode with this flag
+const TEST_MODE = true;
+
 interface UserContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  testMode: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -21,9 +25,26 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [testMode] = useState(TEST_MODE);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (testMode) {
+      // Create a mock user for test mode
+      const mockUser = {
+        id: 'test-user-123',
+        email: 'test@example.com',
+        user_metadata: {
+          name: 'Test User',
+        },
+      } as User;
+      
+      setUser(mockUser);
+      setLoading(false);
+      return;
+    }
+    
+    // Regular authentication flow for non-test mode
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -44,7 +65,7 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, testMode]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -90,6 +111,12 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    if (testMode) {
+      // In test mode, just navigate to login without actually signing out
+      navigate('/login');
+      return;
+    }
+    
     try {
       await supabase.auth.signOut();
       navigate('/login');
@@ -103,6 +130,25 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfile = async (data: { name?: string }) => {
+    if (testMode) {
+      // In test mode, just update the mock user
+      if (user) {
+        setUser({
+          ...user,
+          user_metadata: {
+            ...user.user_metadata,
+            ...data
+          }
+        });
+      }
+      
+      toast({
+        title: "Test mode",
+        description: "Profile updated in test mode",
+      });
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.updateUser({ 
         data
@@ -139,6 +185,7 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
       user, 
       session, 
       loading, 
+      testMode,
       signIn, 
       signUp, 
       signOut,
