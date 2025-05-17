@@ -310,7 +310,7 @@ export default function TeamAccess() {
   };
   
   const getTeamLimitInfo = (plan: PlanType): string => {
-    // Use a switch statement with type-safe cases instead of direct equality checks
+    // Use a switch statement with type-safe cases
     switch (plan) {
       case 'free':
         return '1 user (yourself)';
