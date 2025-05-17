@@ -1,115 +1,112 @@
 import MainLayout from "@/components/layout/MainLayout";
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-
-const plans = [
-  {
-    name: "Free",
-    price: "$0",
-    yearly: "$0",
-    features: [
-      "Benchmark Explorer access",
-      "Industry KPI data",
-      "Demo data preview",
-    ],
-    cta: "Start Free",
-    url: "/signup",
-  },
-  {
-    name: "Pro",
-    price: "$99",
-    yearly: "$79/mo",
-    features: [
-      "OAuth data sync",
-      "1 user seat",
-      "See personal KPIs",
-    ],
-    cta: "Upgrade to Pro",
-    url: "/signup",
-  },
-  {
-    name: "Pro+",
-    price: "$149",
-    yearly: "$119/mo",
-    features: [
-      "AI recommendations",
-      "5 user seats",
-      "Reports and exports",
-    ],
-    cta: "Upgrade to Pro+",
-    url: "/signup",
-  },
-  {
-    name: "Agency",
-    price: "$299",
-    yearly: "$239/mo",
-    features: [
-      "White-label reports",
-      "100 user seats",
-      "Client dashboard sharing",
-    ],
-    cta: "Upgrade to Agency",
-    url: "/signup",
-  },
-];
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 export default function Pricing() {
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [yearly, setYearly] = useState(false);
+
+  const plans = [
+    {
+      name: "Free",
+      monthly: "$0",
+      yearly: "$0",
+      features: ["Benchmark Explorer", "Demo Data Only"],
+    },
+    {
+      name: "Pro",
+      monthly: "$99",
+      yearly: "$79/mo",
+      features: ["OAuth Sync", "1 User", "Personal KPI Overlay"],
+    },
+    {
+      name: "Pro+",
+      monthly: "$149",
+      yearly: "$119/mo",
+      features: ["AI Recommendations", "5 Users", "Reports & Exports"],
+    },
+    {
+      name: "Agency",
+      monthly: "$299",
+      yearly: "$239/mo",
+      features: ["White-Label Reports", "100 Users", "Team Sharing"],
+    },
+  ];
 
   return (
     <MainLayout>
-      <div className="max-w-6xl mx-auto px-6 py-12 space-y-10">
-        <header className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Simple pricing for every type of marketer</h1>
-          <p className="text-muted-foreground text-lg">
-            Start free. Upgrade when you're ready to benchmark your actual results.
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+        {/* Header */}
+        <section className="text-center space-y-3">
+          <h1 className="text-4xl font-bold">Pricing Plans</h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            Start free or upgrade for more power. Save 20% with annual billing.
           </p>
-          <div className="mt-4 flex justify-center gap-4">
-            <Button
-              variant={billing === "monthly" ? "default" : "outline"}
-              onClick={() => setBilling("monthly")}
-            >
-              Monthly
-            </Button>
-            <Button
-              variant={billing === "yearly" ? "default" : "outline"}
-              onClick={() => setBilling("yearly")}
-            >
-              Yearly (save 20%)
-            </Button>
-          </div>
-        </header>
+        </section>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {plans.map((plan) => (
-            <Card key={plan.name} className="border rounded-xl">
-              <CardHeader>
-                <CardTitle>{plan.name}</CardTitle>
-                <CardDescription>
-                  {billing === "monthly" ? plan.price : plan.yearly}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="text-sm text-muted-foreground space-y-2">
-                  {plan.features.map((feature, i) => (
-                    <li key={i}>• {feature}</li>
+        {/* Billing toggle */}
+        <div className="flex justify-center items-center gap-3">
+          <span className="text-sm">Monthly</span>
+          <Switch checked={yearly} onCheckedChange={setYearly} />
+          <span className="text-sm">Yearly (Save 20%)</span>
+        </div>
+
+        {/* Plans */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {plans.map((p, i) => (
+            <Card key={i} className="h-full hover:shadow transition">
+              <CardContent className="p-6 space-y-3">
+                <CardTitle>{p.name}</CardTitle>
+                <p className="text-3xl font-bold">{yearly ? p.yearly : p.monthly}</p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  {p.features.map((f, j) => (
+                    <li key={j}>{f}</li>
                   ))}
                 </ul>
-                <Button asChild className="w-full">
-                  <Link to={plan.url}>{plan.cta}</Link>
+                <Button className="w-full mt-4">
+                  {p.name === "Free" ? "Start Free" : "Upgrade Now"}
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <footer className="text-center text-sm text-muted-foreground mt-10">
-          No contracts. Cancel anytime. GDPR compliant.
-        </footer>
+        {/* Comparison table */}
+        <section className="overflow-x-auto mt-12">
+          <table className="w-full text-sm text-left border">
+            <thead className="bg-muted text-muted-foreground">
+              <tr>
+                <th className="px-4 py-2">Feature</th>
+                <th className="px-4 py-2">Free</th>
+                <th className="px-4 py-2">Pro</th>
+                <th className="px-4 py-2">Pro+</th>
+                <th className="px-4 py-2">Agency</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Benchmark Explorer", "✅", "✅", "✅", "✅"],
+                ["OAuth Integrations", "❌", "✅", "✅", "✅"],
+                ["Personal KPI Overlay", "❌", "✅", "✅", "✅"],
+                ["AI Recommendations", "❌", "❌", "✅", "✅"],
+                ["Reports & Exports", "❌", "❌", "✅", "✅"],
+                ["White-Label Branding", "❌", "❌", "❌", "✅"],
+                ["Team Seats", "1", "1", "5", "100"],
+              ].map(([feature, ...vals], i) => (
+                <tr key={i} className="border-t">
+                  <td className="px-4 py-2 font-medium">{feature}</td>
+                  {vals.map((val, j) => (
+                    <td key={j} className="px-4 py-2">
+                      {val}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
       </div>
     </MainLayout>
   );
 }
-
