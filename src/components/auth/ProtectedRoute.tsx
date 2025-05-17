@@ -1,30 +1,44 @@
+import { useEffect, useState } from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useUserProfile } from "@/hooks/useUserProfile";
+export default function ProtectedRoute() {
+  const [checking, setChecking] = useState(true);
+  const [allowed, setAllowed] = useState(false);
 
-const ProtectedRoute = () => {
-  const { user, loading, testMode } = useUserProfile();
-  const location = useLocation();
+  useEffect(() => {
+    const check = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  // While checking authentication status, show loading
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+      if (!user) {
+        setAllowed(false);
+        setChecking(false);
+        return;
+      }
 
-  // If test mode is enabled or user is authenticated, show the protected content
-  if (testMode || user) {
-    return <Outlet />;
-  }
+      const { data: preferences } = await supabase
+        .from("user_preferences")
+        .select("onboarding_completed")
+        .eq("user_id", user.id)
+        .single();
 
-  // If not authenticated and not in test mode, redirect to login
-  return <Navigate to="/login" state={{ from: location }} replace />;
-};
+      if (preferences?.onboarding_completed) {
+        setAllowed(true);
+      } else {
+        setAllowed(false);
+      }
 
-export default ProtectedRoute;
+      setChecking(false);
+    };
+
+    check();
+  }, []);
+
+  if (checking) return null; // optionally show a loading spinner
+
+  if (!allowed) return <Navigate to="/onboarding" replace />;
+
+  return <Outlet />;
+}
