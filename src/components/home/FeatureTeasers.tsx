@@ -14,7 +14,7 @@ const FeatureTeasers = () => {
       icon: <TrendingUp size={40} className="text-aqua" />,
     },
     {
-      title: 'Fix What's Not Working',
+      title: 'Fix What\'s Not Working',
       description: 'AI tips for campaigns below benchmark',
       icon: <CheckCircle size={40} className="text-success" />,
     },
