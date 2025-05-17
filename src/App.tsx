@@ -1,14 +1,18 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UserProfileProvider } from "@/hooks/useUserProfile";
+
+// Public pages
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
+import HowItWorks from "./pages/HowItWorks"; // ✅ newly added
+
+// App pages (protected)
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Benchmarks from "./pages/Benchmarks/Benchmarks";
 import Recommendations from "./pages/Recommendations/Recommendations";
@@ -23,6 +27,7 @@ import Experiments from "./pages/Experiments/Experiments";
 import TeamAccess from "./pages/TeamAccess/TeamAccess";
 import Settings from "./pages/Settings/Settings";
 import Toolbox from "./pages/Toolbox/Toolbox";
+
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -39,7 +44,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            
+            <Route path="/how-it-works" element={<HowItWorks />} /> {/* ✅ added */}
+
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
@@ -58,7 +64,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/toolbox" element={<Toolbox />} />
             </Route>
-            
+
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
