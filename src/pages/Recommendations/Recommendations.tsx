@@ -1,156 +1,179 @@
 
-import { useState, useEffect } from "react";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import AppLayout from "@/components/layout/AppLayout";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CustomBadge } from "@/components/ui/custom-badge";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowUpRight, Check, X, ThumbsUp, Filter } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import React, { useState, useEffect } from 'react';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import AppLayout from '@/components/layout/AppLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { 
+  CheckCircle, 
+  Clock, 
+  X, 
+  Lightbulb, 
+  ArrowRight, 
+  Tag,
+  ChevronDown,
+  Filter,
+  SortDesc,
+  RefreshCw
+} from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { CustomBadge } from '@/components/ui/custom-badge';
+import { Separator } from '@/components/ui/separator';
+import { toast } from '@/hooks/use-toast';
 
-export default function Recommendations() {
+// This is the main component that will be exported
+function Recommendations() {
   const { user, testMode } = useUserProfile();
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({
-    platform: "all",
-    kpiType: "all",
-    funnelStage: "all"
-  });
+  const [recommendations, setRecommendations] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [sort, setSort] = useState('impact');
   
-  // Mock recommendations data
-  const [recommendations, setRecommendations] = useState([
-    {
-      id: "1",
-      platform: "Meta",
-      channel: "Feed",
-      kpi: "ROAS",
-      kpiType: "roas",
-      funnelStage: "middle",
-      problem: "ROAS is 22% below benchmark for your primary lookalike audience",
-      recommendation: "Narrow your lookalike audience from 3% to 1% and test a video creative focused on testimonials",
-      estimatedImpact: "15-20% ROAS increase",
-      status: "open"
-    },
-    {
-      id: "2",
-      platform: "Google",
-      channel: "Search",
-      kpi: "CPA",
-      kpiType: "cpa",
-      funnelStage: "bottom",
-      problem: "CPA for branded terms is 30% higher than benchmark",
-      recommendation: "Update ad copy to emphasize limited-time offer and increase bid adjustments for high-converting geos",
-      estimatedImpact: "25-30% CPA reduction",
-      status: "open"
-    },
-    {
-      id: "3",
-      platform: "LinkedIn",
-      channel: "Sponsored",
-      kpi: "CTR",
-      kpiType: "ctr",
-      funnelStage: "top",
-      problem: "CTR is in the bottom 20% of your industry benchmark",
-      recommendation: "Implement carousel format with stronger headers and industry-specific statistics",
-      estimatedImpact: "40-45% CTR improvement",
-      status: "open"
-    },
-    {
-      id: "4",
-      platform: "TikTok",
-      channel: "Feed",
-      kpi: "ROAS",
-      kpiType: "roas",
-      funnelStage: "middle",
-      problem: "ROAS is 15% below benchmark for younger demographics",
-      recommendation: "Create shorter (< 15sec) videos with stronger CTAs that highlight core product benefits",
-      estimatedImpact: "10-15% ROAS increase",
-      status: "open"
-    },
-    {
-      id: "5",
-      platform: "Google",
-      channel: "Display",
-      kpi: "CPA",
-      kpiType: "cpa",
-      funnelStage: "top",
-      problem: "Awareness campaigns have a CPA 50% higher than similar audience targeting",
-      recommendation: "Implement custom intent audiences based on your highest converting search terms",
-      estimatedImpact: "30-35% CPA reduction",
-      status: "open"
-    },
-  ]);
-  
-  // Mock team plan for test mode
-  const userPlan = "pro_plus"; // Could be 'free', 'pro', 'pro_plus', 'agency'
+  // Mock user plan for test purposes
+  const userPlan = 'pro_plus'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
 
+  // Mock recommendations data
+  const mockRecommendations = [
+    {
+      id: "r1",
+      platform: "meta",
+      channel: "feed",
+      kpi: "cpa",
+      title: "Reduce CPA in Meta Feed Campaigns",
+      description: "Your CPA in Meta Feed campaigns is 32% higher than benchmark. Adjust your targeting and creative approach.",
+      recommendation: "Test lookalike audiences based on your top 1% of converters rather than your current 5% approach.",
+      impact: "high",
+      effort: "medium",
+      status: "open",
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "r2",
+      platform: "google",
+      channel: "search",
+      kpi: "roas",
+      title: "Improve ROAS in Google Search",
+      description: "Your Google Search campaigns have a ROAS of 2.1x compared to industry benchmark of 3.5x.",
+      recommendation: "Implement a tiered bidding strategy based on keyword conversion probability.",
+      impact: "high",
+      effort: "high",
+      status: "applied",
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "r3",
+      platform: "tiktok",
+      channel: "feed",
+      kpi: "ctr",
+      title: "Boost CTR on TikTok Feed Ads",
+      description: "Your CTR is in the bottom 25th percentile of benchmarks. Creative fatigue may be an issue.",
+      recommendation: "Refresh creative with trending audio and more dynamic first 2 seconds.",
+      impact: "medium",
+      effort: "medium",
+      status: "open",
+      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "r4",
+      platform: "linkedin",
+      channel: "sponsored",
+      kpi: "cpa",
+      title: "Reduce LinkedIn Sponsored Content CPA",
+      description: "You're paying 48% above benchmark for leads from LinkedIn Sponsored Content.",
+      recommendation: "Test document ads format which shows 26% lower CPA in similar accounts.",
+      impact: "medium",
+      effort: "low",
+      status: "ignored",
+      createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "r5",
+      platform: "meta",
+      channel: "stories",
+      kpi: "roas",
+      title: "Improve ROAS on Instagram Stories",
+      description: "Your Instagram Stories campaigns have a ROAS of 1.3x compared to benchmark of 2.0x.",
+      recommendation: "Implement a product highlight format with clear price and CTA in first 3 seconds.",
+      impact: "high",
+      effort: "low",
+      status: "open",
+      createdAt: new Date(),
+    },
+  ];
+  
   useEffect(() => {
-    // Simulating API loading
+    // In a real app, we would fetch recommendations from the API
+    // For now, we'll use mock data
     setTimeout(() => {
+      setRecommendations(mockRecommendations);
       setLoading(false);
     }, 1000);
   }, []);
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilter(prev => ({ ...prev, [key]: value }));
-  };
-
   const filteredRecommendations = recommendations.filter(rec => {
-    return (
-      (filter.platform === "all" || rec.platform === filter.platform) &&
-      (filter.kpiType === "all" || rec.kpiType === filter.kpiType) &&
-      (filter.funnelStage === "all" || rec.funnelStage === filter.funnelStage)
-    );
+    if (filter === 'all') return true;
+    if (filter === 'open') return rec.status === 'open';
+    if (filter === 'applied') return rec.status === 'applied';
+    if (filter === 'ignored') return rec.status === 'ignored';
+    if (filter === 'high-impact') return rec.impact === 'high';
+    return true;
   });
-
-  const handleApply = (id: string) => {
-    // In a real implementation, would update the status in Supabase
+  
+  const sortedRecommendations = [...filteredRecommendations].sort((a, b) => {
+    if (sort === 'impact') {
+      const impactOrder = { high: 3, medium: 2, low: 1 };
+      return impactOrder[b.impact] - impactOrder[a.impact];
+    }
+    if (sort === 'newest') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sort === 'oldest') {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    return 0;
+  });
+  
+  const handleRecommendationAction = (id, action) => {
     setRecommendations(prev => 
       prev.map(rec => 
-        rec.id === id ? { ...rec, status: "applied" } : rec
+        rec.id === id 
+          ? { ...rec, status: action === 'ignore' ? 'ignored' : action === 'apply' ? 'applied' : rec.status } 
+          : rec
       )
     );
     
     toast({
-      title: "Recommendation applied",
-      description: "The recommendation has been marked as applied.",
+      title: action === 'ignore' ? "Recommendation ignored" : "Recommendation applied",
+      description: action === 'ignore' 
+        ? "This recommendation won't appear in your active list." 
+        : "Great! We'll track the impact of this change.",
     });
   };
 
-  const handleIgnore = (id: string) => {
-    // In a real implementation, would update the status in Supabase
-    setRecommendations(prev => 
-      prev.map(rec => 
-        rec.id === id ? { ...rec, status: "ignored" } : rec
-      )
-    );
-    
-    toast({
-      title: "Recommendation ignored",
-      description: "The recommendation has been marked as ignored.",
-    });
-  };
-
-  // Check if user is eligible for this feature
-  const planAccessible = userPlan === "pro_plus" || userPlan === "agency";
-
-  if (!planAccessible && !testMode) {
+  // Check if user is on the right plan to access recommendations
+  const isAccessible = userPlan === 'pro_plus' || userPlan === 'agency' || testMode;
+  
+  if (!isAccessible) {
     return (
       <AppLayout>
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Recommendations</h1>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">AI Recommendations</h1>
+              <p className="text-muted-foreground">
+                Get personalized recommendations to improve your campaigns.
+              </p>
+            </div>
           </div>
           
           <Card className="py-12">
-            <CardContent className="flex flex-col items-center justify-center">
+            <CardContent className="flex flex-col items-center justify-center text-center">
+              <Lightbulb size={48} className="mb-4 text-muted-foreground" />
               <h3 className="text-xl font-semibold mb-2">Pro+ or Agency Plan Required</h3>
-              <p className="text-muted-foreground text-center max-w-md mb-6">
-                AI-powered recommendations are available on Pro+ and Agency plans. Upgrade to unlock personalized performance improvements.
+              <p className="text-muted-foreground max-w-md mb-6">
+                AI-driven recommendations are available with Pro+ and Agency plans. Upgrade to receive personalized advice based on benchmarks.
               </p>
               <Button className="w-full sm:w-auto">Upgrade Plan</Button>
             </CardContent>
@@ -163,251 +186,249 @@ export default function Recommendations() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-bold">AI Recommendations</h1>
             <p className="text-muted-foreground">
-              Personalized, data-driven suggestions to improve your marketing performance.
+              Get personalized recommendations to improve your campaigns.
             </p>
+          </div>
+          
+          <div className="flex items-center mt-4 md:mt-0 space-x-2">
+            <Button variant="outline" size="sm" className="h-8 px-2">
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Refresh
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 px-2">
+                  <Filter className="h-4 w-4 mr-1" />
+                  Filter
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setFilter('all')}>
+                  All Recommendations
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilter('open')}>
+                  Open
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilter('applied')}>
+                  Applied
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilter('ignored')}>
+                  Ignored
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilter('high-impact')}>
+                  High Impact Only
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 px-2">
+                  <SortDesc className="h-4 w-4 mr-1" />
+                  Sort
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSort('impact')}>
+                  By Impact
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSort('newest')}>
+                  Newest First
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSort('oldest')}>
+                  Oldest First
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <Tabs defaultValue="open">
-              <div className="flex justify-between items-center mb-4">
-                <TabsList>
-                  <TabsTrigger value="open">Open</TabsTrigger>
-                  <TabsTrigger value="applied">Applied</TabsTrigger>
-                  <TabsTrigger value="ignored">Ignored</TabsTrigger>
-                </TabsList>
-                
-                <div className="flex gap-2">
-                  <Select onValueChange={(value) => handleFilterChange("platform", value)}>
-                    <SelectTrigger className="w-[140px]">
-                      <Filter className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Platforms</SelectItem>
-                      <SelectItem value="Google">Google</SelectItem>
-                      <SelectItem value="Meta">Meta</SelectItem>
-                      <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                      <SelectItem value="TikTok">TikTok</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select onValueChange={(value) => handleFilterChange("kpiType", value)}>
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="KPI Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All KPIs</SelectItem>
-                      <SelectItem value="cpa">CPA</SelectItem>
-                      <SelectItem value="roas">ROAS</SelectItem>
-                      <SelectItem value="ctr">CTR</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select onValueChange={(value) => handleFilterChange("funnelStage", value)}>
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="Funnel Stage" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Stages</SelectItem>
-                      <SelectItem value="top">Top Funnel</SelectItem>
-                      <SelectItem value="middle">Mid Funnel</SelectItem>
-                      <SelectItem value="bottom">Bottom Funnel</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+        <Tabs defaultValue="all">
+          <TabsList>
+            <TabsTrigger value="all">All Recommendations</TabsTrigger>
+            <TabsTrigger value="platform">By Platform</TabsTrigger>
+            <TabsTrigger value="kpi">By KPI</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="all" className="mt-6 space-y-6">
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader className="pb-2">
+                      <div className="h-5 bg-gray-200 rounded w-2/3"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-              
-              <TabsContent value="open" className="space-y-4">
-                {loading ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    {[1, 2, 3].map(i => (
-                      <Card key={i} className="animate-pulse">
-                        <CardHeader className="bg-gray-100 h-20"></CardHeader>
-                        <CardContent className="py-6">
-                          <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                          <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
-                          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                        </CardContent>
-                        <CardFooter className="bg-gray-50 h-16"></CardFooter>
-                      </Card>
-                    ))}
-                  </div>
-                ) : filteredRecommendations.filter(r => r.status === "open").length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    {filteredRecommendations
-                      .filter(r => r.status === "open")
-                      .map(recommendation => (
-                        <RecommendationCard 
-                          key={recommendation.id}
-                          recommendation={recommendation}
-                          onApply={() => handleApply(recommendation.id)}
-                          onIgnore={() => handleIgnore(recommendation.id)}
-                        />
-                      ))
-                    }
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="py-8 text-center">
-                      <p className="text-muted-foreground">No open recommendations match your current filters.</p>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="applied" className="space-y-4">
-                {filteredRecommendations.filter(r => r.status === "applied").length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    {filteredRecommendations
-                      .filter(r => r.status === "applied")
-                      .map(recommendation => (
-                        <RecommendationCard 
-                          key={recommendation.id}
-                          recommendation={recommendation}
-                          onApply={() => {}}
-                          onIgnore={() => {}}
-                          isApplied
-                        />
-                      ))
-                    }
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="py-8 text-center">
-                      <p className="text-muted-foreground">No applied recommendations yet.</p>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="ignored" className="space-y-4">
-                {filteredRecommendations.filter(r => r.status === "ignored").length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    {filteredRecommendations
-                      .filter(r => r.status === "ignored")
-                      .map(recommendation => (
-                        <RecommendationCard 
-                          key={recommendation.id}
-                          recommendation={recommendation}
-                          onApply={() => handleApply(recommendation.id)}
-                          onIgnore={() => {}}
-                          isIgnored
-                        />
-                      ))
-                    }
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="py-8 text-center">
-                      <p className="text-muted-foreground">No ignored recommendations.</p>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+            ) : sortedRecommendations.length > 0 ? (
+              <div className="space-y-4">
+                {sortedRecommendations.map(recommendation => (
+                  <RecommendationCard 
+                    key={recommendation.id}
+                    recommendation={recommendation}
+                    onAction={handleRecommendationAction}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <CheckCircle size={48} className="mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-semibold mb-2">All caught up!</h3>
+                  <p className="text-muted-foreground max-w-md mb-2">
+                    You don't have any recommendations right now. Check back later or update your campaign data.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="platform" className="mt-6">
+            <Alert>
+              <AlertTitle>Coming Soon</AlertTitle>
+              <AlertDescription>
+                Platform-specific recommendations will be available in an upcoming update.
+              </AlertDescription>
+            </Alert>
+          </TabsContent>
+          
+          <TabsContent value="kpi" className="mt-6">
+            <Alert>
+              <AlertTitle>Coming Soon</AlertTitle>
+              <AlertDescription>
+                KPI-focused recommendations will be available in an upcoming update.
+              </AlertDescription>
+            </Alert>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );
 }
 
-type Recommendation = {
-  id: string;
-  platform: string;
-  channel: string;
-  kpi: string;
-  kpiType: string;
-  funnelStage: string;
-  problem: string;
-  recommendation: string;
-  estimatedImpact: string;
-  status: string;
-};
-
-interface RecommendationCardProps {
-  recommendation: Recommendation;
-  onApply: () => void;
-  onIgnore: () => void;
-  isApplied?: boolean;
-  isIgnored?: boolean;
-}
-
-const RecommendationCard = ({ 
-  recommendation, 
-  onApply, 
-  onIgnore,
-  isApplied = false,
-  isIgnored = false
-}: RecommendationCardProps) => {
-  const { platform, channel, kpi, problem, recommendation: recommendationText, estimatedImpact } = recommendation;
+// Recommendation Card Component
+const RecommendationCard = ({ recommendation, onAction }) => {
+  // Helper function to format the platform name for display
+  const getPlatformDisplay = (platform) => {
+    const platforms = {
+      meta: "Meta",
+      google: "Google",
+      tiktok: "TikTok",
+      linkedin: "LinkedIn"
+    };
+    return platforms[platform] || platform;
+  };
   
+  // Helper function to get badge color based on impact
+  const getImpactBadge = (impact) => {
+    if (impact === 'high') return "bg-red-500 text-white";
+    if (impact === 'medium') return "bg-yellow-500 text-white";
+    return "bg-blue-500 text-white";
+  };
+  
+  // Helper function to format date
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const now = new Date();
+    const diffTime = Math.abs(now - d);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else {
+      return `${diffDays} days ago`;
+    }
+  };
+
   return (
-    <Card className={isIgnored ? "opacity-75" : ""}>
-      <CardHeader className="bg-gray-50">
+    <Card className={recommendation.status === 'ignored' ? "opacity-60" : ""}>
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <Badge variant="outline" className="mb-1">{platform} {channel}</Badge>
-            <CardTitle className="text-lg">{kpi} Optimization</CardTitle>
+            <div className="flex items-center gap-2 mb-1">
+              <CustomBadge variant="outline" className="px-2 py-0.5 text-xs">
+                {recommendation.platform.toUpperCase()}
+              </CustomBadge>
+              <CustomBadge variant="outline" className="px-2 py-0.5 text-xs capitalize">
+                {recommendation.channel}
+              </CustomBadge>
+              <CustomBadge variant="outline" className="px-2 py-0.5 text-xs uppercase">
+                {recommendation.kpi}
+              </CustomBadge>
+            </div>
+            <CardTitle className="text-lg">{recommendation.title}</CardTitle>
           </div>
-          <Badge variant={kpi === "ROAS" ? "default" : kpi === "CPA" ? "destructive" : "secondary"}>
-            {kpi}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <CustomBadge variant="outline" className={`${getImpactBadge(recommendation.impact)} border-0`}>
+              {recommendation.impact.charAt(0).toUpperCase() + recommendation.impact.slice(1)} Impact
+            </CustomBadge>
+            
+            {recommendation.status === 'applied' && (
+              <CustomBadge variant="success" className="flex items-center gap-1">
+                <CheckCircle size={12} />
+                Applied
+              </CustomBadge>
+            )}
+            
+            {recommendation.status === 'ignored' && (
+              <CustomBadge variant="outline" className="flex items-center gap-1 text-gray-500">
+                <X size={12} />
+                Ignored
+              </CustomBadge>
+            )}
+          </div>
         </div>
+        <CardDescription className="flex items-center mt-1">
+          <Clock size={14} className="mr-1" />
+          {formatDate(recommendation.createdAt)}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-1">Problem:</h4>
-            <p>{problem}</p>
+      <CardContent>
+        <p className="mb-4 text-muted-foreground">{recommendation.description}</p>
+        <div className="bg-muted p-4 rounded-md mb-4">
+          <div className="flex items-center">
+            <Lightbulb className="h-5 w-5 mr-2 text-primary" />
+            <strong>Recommendation:</strong>
           </div>
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-1">Recommendation:</h4>
-            <p>{recommendationText}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-1">Estimated Impact:</h4>
-            <p className="font-semibold text-green-600">{estimatedImpact}</p>
-          </div>
+          <p className="mt-1">{recommendation.recommendation}</p>
         </div>
-      </CardContent>
-      <CardFooter className="border-t p-4 bg-gray-50 flex justify-between">
-        {isApplied ? (
-          <CustomBadge variant="success" className="flex items-center gap-1">
-            <Check size={14} />
-            Applied
-          </CustomBadge>
-        ) : isIgnored ? (
-          <div className="flex space-x-2">
-            <Badge variant="outline" className="flex items-center gap-1">
-              <X size={14} />
-              Ignored
-            </Badge>
-            <Button variant="outline" size="sm" onClick={onApply}>
-              Reconsider
-            </Button>
-          </div>
-        ) : (
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={onIgnore}>
+        
+        {recommendation.status === 'open' && (
+          <div className="flex flex-col xs:flex-row gap-2 justify-end">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onAction(recommendation.id, 'ignore')}
+            >
+              <X className="h-4 w-4 mr-1" />
               Ignore
             </Button>
-            <Button size="sm" onClick={onApply}>
-              Apply
+            <Button 
+              size="sm" 
+              onClick={() => onAction(recommendation.id, 'apply')}
+            >
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Apply Recommendation
             </Button>
           </div>
         )}
-        <Button variant="ghost" size="sm" className="text-gray-500">
-          <ArrowUpRight size={14} className="mr-1" />
-          View Details
-        </Button>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 };

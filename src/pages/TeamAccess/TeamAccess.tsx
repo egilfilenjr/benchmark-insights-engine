@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -21,6 +22,28 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format, subDays, subHours } from "date-fns";
+
+// Define the TeamMember type
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "editor" | "viewer";
+  status: "active" | "pending" | "removed";
+  lastActive: Date | null;
+}
+
+// Define DateRange type for consistency
+interface DateRange {
+  from: Date;
+  to: Date;
+}
 
 export default function TeamAccess() {
   const { user, testMode } = useUserProfile();
@@ -30,7 +53,7 @@ export default function TeamAccess() {
   const userPlan = 'agency'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
   
   // Mock data for team members
-  const [teamMembers, setTeamMembers] = useState([
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     {
       id: "1",
       name: "John Smith",
@@ -162,8 +185,8 @@ export default function TeamAccess() {
       id: Math.random().toString(36).substring(7),
       name: invitation.email.split('@')[0], // Placeholder name from email
       email: invitation.email,
-      role: invitation.role,
-      status: "pending",
+      role: invitation.role as "admin" | "editor" | "viewer",
+      status: "pending" as const,
       lastActive: null,
     };
     
@@ -201,7 +224,7 @@ export default function TeamAccess() {
     setTeamMembers(prev => 
       prev.map(member => 
         member.id === editRole.userId 
-          ? { ...member, role: editRole.role } 
+          ? { ...member, role: editRole.role as "admin" | "editor" | "viewer" } 
           : member
       )
     );
@@ -240,7 +263,7 @@ export default function TeamAccess() {
     
     setTeamMembers(prev => 
       prev.map(m => 
-        m.id === id ? { ...m, status: "removed" } : m
+        m.id === id ? { ...m, status: "removed" as const } : m
       )
     );
     
@@ -527,17 +550,19 @@ export default function TeamAccess() {
   );
 }
 
+interface TeamMemberRowProps {
+  member: TeamMember;
+  onRemove: () => void;
+  onChangeRole: (role: string) => void;
+  isCurrentUser: boolean;
+}
+
 const TeamMemberRow = ({ 
   member, 
   onRemove, 
   onChangeRole, 
   isCurrentUser 
-}: { 
-  member: TeamMember; 
-  onRemove: () => void; 
-  onChangeRole: (role: string) => void;
-  isCurrentUser: boolean;
-}) => {
+}: TeamMemberRowProps) => {
   return (
     <div className="flex items-center justify-between py-4 border-b">
       <div className="flex items-center space-x-4">
@@ -559,7 +584,10 @@ const TeamMemberRow = ({
             Pending
           </CustomBadge>
         ) : (
-          <CustomBadge variant={member.role === "admin" ? "secondary" : "success"} className="flex items-center gap-1">
+          <CustomBadge 
+            variant={member.role === "admin" ? "secondary" : "success"} 
+            className="flex items-center gap-1"
+          >
             {member.role === "admin" ? (
               <Shield size={12} />
             ) : member.role === "editor" ? (

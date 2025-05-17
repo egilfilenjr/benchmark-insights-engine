@@ -1,15 +1,26 @@
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Mail, 
+  Lock, 
+  Bell, 
+  HelpCircle, 
+  CreditCard, 
+  User, 
+  Check, 
+  ArrowRight,
+  AlertTriangle
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { FileDown, User, Mail, Check, X, AlertCircle } from "lucide-react";
+import { Toaster } from "@/components/ui/toaster";
+import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,252 +33,279 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-export default function Settings() {
-  const { user, updateProfile, signOut } = useUserProfile();
-  const [formData, setFormData] = useState({
-    name: user?.user_metadata?.name || "",
-  });
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+const Settings = () => {
+  const { user, signOut, updateUserProfile } = useUserProfile();
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState("pro");
-  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [isTwoFactorAuthEnabled, setIsTwoFactorAuthEnabled] = useState(false);
   
-  // Mock team plan for test purposes
-  const userPlan = 'agency'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
+  // Mock user plan for test purposes
+  const userPlan = 'pro_plus'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
   
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedTheme = localStorage.getItem('theme') === 'dark';
-      setIsDarkTheme(storedTheme);
-      document.documentElement.classList.toggle('dark', storedTheme);
-    }
-  }, []);
-
-  const handleThemeToggle = () => {
-    const newTheme = !isDarkTheme;
-    setIsDarkTheme(newTheme);
-    document.documentElement.classList.toggle('dark', newTheme);
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    // Simulate loading user data
+    setTimeout(() => {
+      if (user) {
+        setName(user.user_metadata?.name || '');
+        setEmail(user.email || '');
+        setIsSubscribed(true); // Mock value
+        setIsNotificationsEnabled(true); // Mock value
+        setIsTwoFactorAuthEnabled(false); // Mock value
+      }
+      setLoading(false);
+    }, 600);
+  }, [user]);
+  
+  const handleNameChange = (e) => {
+    setName(e.target.value);
   };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
+  
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+  
+  const handleUpdateProfile = async () => {
+    setLoading(true);
+    
+    // Simulate API call
+    setTimeout(async () => {
+      const metadata = { name };
+      
+      try {
+        await updateUserProfile({ data: metadata });
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been updated successfully.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error updating profile",
+          description: "There was an error updating your profile. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }, 800);
+  };
+  
+  const handleSubscriptionChange = () => {
+    setIsSubscribed(!isSubscribed);
+    
+    toast({
+      title: "Subscription updated",
+      description: isSubscribed ? "You have unsubscribed from our newsletter." : "You have subscribed to our newsletter.",
     });
   };
-
-  const handleSaveProfile = async () => {
-    setIsSaving(true);
-    try {
-      await updateProfile({
-        name: formData.name
-      });
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Update failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
+  
+  const handleNotificationsChange = () => {
+    setIsNotificationsEnabled(!isNotificationsEnabled);
+    
+    toast({
+      title: "Notifications updated",
+      description: isNotificationsEnabled ? "You have disabled notifications." : "You have enabled notifications.",
+    });
+  };
+  
+  const handleTwoFactorAuthChange = () => {
+    setIsTwoFactorAuthEnabled(!isTwoFactorAuthEnabled);
+    
+    toast({
+      title: "Two-factor authentication updated",
+      description: isTwoFactorAuthEnabled ? "You have disabled two-factor authentication." : "You have enabled two-factor authentication.",
+    });
+  };
+  
+  const handleDeleteAccount = () => {
+    toast({
+      title: "Account deletion initiated",
+      description: "We have received your request to delete your account. This process may take up to 7 days.",
+    });
+  };
+  
+  const getPlanInfo = (plan: string) => {
+    switch (plan) {
+      case 'free':
+        return 'Free Plan';
+      case 'pro':
+        return 'Pro Plan';
+      case 'pro_plus':
+        return 'Pro+ Plan';
+      case 'agency':
+        return 'Agency Plan';
+      default:
+        return 'Unknown Plan';
     }
   };
   
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error: any) {
-      toast({
-        title: "Sign out failed",
-        description: error.message,
-        variant: "destructive",
-      });
+  const getPlanFeatures = (plan: string) => {
+    switch (plan) {
+      case 'free':
+        return 'Limited features, basic support';
+      case 'pro':
+        return 'Standard features, priority support';
+      case 'pro_plus':
+        return 'Advanced features, premium support';
+      case 'agency':
+        return 'All features, dedicated support';
+      default:
+        return 'No features';
     }
   };
-
+  
+  const isEligibleForWhiteLabel = (plan: string) => {
+    return plan === 'agency';
+  };
+  
+  const isEligibleForTeamAccess = (plan: string) => {
+    return plan === 'pro_plus' || plan === 'agency';
+  };
+  
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
+        <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account settings and set preferences.
-          </p>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>
-              Update your profile information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="Your name"
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                placeholder="hello@example.com"
-                value={user?.email || ""}
-                disabled
-              />
-            </div>
-            <Button onClick={handleSaveProfile} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save Changes"}
-            </Button>
-          </CardContent>
-        </Card>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+              <CardDescription>
+                Update your profile information.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Name</Label>
+                <Input 
+                  id="name" 
+                  placeholder="Your Name" 
+                  value={name}
+                  onChange={handleNameChange}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  placeholder="Your Email" 
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  disabled
+                />
+              </div>
+              
+              <Button onClick={handleUpdateProfile} disabled={loading}>
+                {loading ? "Updating..." : "Update Profile"}
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Plan Details</CardTitle>
+              <CardDescription>
+                View your current plan details and features.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1">
+                <div className="text-lg font-semibold">{getPlanInfo(userPlan)}</div>
+                <p className="text-sm text-muted-foreground">{getPlanFeatures(userPlan)}</p>
+              </div>
+              
+              <Button>Upgrade Plan</Button>
+              
+              <Separator />
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium leading-none">Team Access</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isEligibleForTeamAccess(userPlan) 
+                        ? "Manage team members and their access permissions." 
+                        : "Upgrade to Pro+ or Agency plan to unlock team access."}
+                    </p>
+                  </div>
+                  <Button variant="secondary" size="sm" disabled={!isEligibleForTeamAccess(userPlan)}>
+                    {isEligibleForTeamAccess(userPlan) ? "Manage" : "Upgrade"}
+                  </Button>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium leading-none">White-Label Reports</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isEligibleForWhiteLabel(userPlan) 
+                        ? "Customize your reports with your own branding." 
+                        : "Upgrade to Agency plan to unlock white-label reports."}
+                    </p>
+                  </div>
+                  <Button variant="secondary" size="sm" disabled={!isEligibleForWhiteLabel(userPlan)}>
+                    {isEligibleForWhiteLabel(userPlan) ? "Customize" : "Upgrade"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
         <Card>
           <CardHeader>
-            <CardTitle>Plan & Billing</CardTitle>
+            <CardTitle>Security</CardTitle>
             <CardDescription>
-              Manage your subscription plan and billing details.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle>Free</CardTitle>
-                  <CardDescription>For individuals getting started</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    Access to basic features
-                  </p>
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    Limited data storage
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant={selectedPlan === "free" ? "default" : "outline"}
-                    onClick={() => setSelectedPlan("free")}
-                  >
-                    {selectedPlan === "free" ? "Current Plan" : "Choose Free"}
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle>Pro</CardTitle>
-                  <CardDescription>For growing businesses</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    All free features
-                  </p>
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    Advanced analytics
-                  </p>
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    Priority support
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant={selectedPlan === "pro" ? "default" : "outline"}
-                    onClick={() => setSelectedPlan("pro")}
-                  >
-                    {selectedPlan === "pro" ? "Current Plan" : "Choose Pro"}
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle>Agency</CardTitle>
-                  <CardDescription>For large teams and agencies</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    All pro features
-                  </p>
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    Unlimited data storage
-                  </p>
-                  <p className="text-sm">
-                    <Check className="h-4 w-4 mr-1 inline-block" />
-                    Dedicated account manager
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant={selectedPlan === "agency" ? "default" : "outline"}
-                    onClick={() => setSelectedPlan("agency")}
-                  >
-                    {selectedPlan === "agency" ? "Current Plan" : "Choose Agency"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-            
-            <div className="border rounded-md p-4 bg-muted/20">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Next Payment</p>
-                  <p className="text-xs text-muted-foreground">May 20, 2024</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Amount</p>
-                  <p className="text-xs text-muted-foreground">$29.99</p>
-                </div>
-                <div>
-                  <Button variant="outline" size="sm">Update Payment Info</Button>
-                </div>
-              </div>
-            </div>
-            
-            {(userPlan === "pro_plus" || userPlan === "agency") && (
-              <AlertCircle className="h-4 w-4 mr-2" />
-            )}
-            
-            {(userPlan === "pro_plus" || userPlan === "agency") && (
-              <AlertCircle className="h-4 w-4 mr-2" />
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>
-              Customize the look and feel of the application.
+              Manage your account security settings.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="theme">Dark Mode</Label>
-              <Switch id="theme" checked={isDarkTheme} onCheckedChange={handleThemeToggle} />
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium leading-none">Two-Factor Authentication</p>
+                <p className="text-sm text-muted-foreground">
+                  Add an extra layer of security to your account.
+                </p>
+              </div>
+              <Switch id="2fa" checked={isTwoFactorAuthEnabled} onCheckedChange={handleTwoFactorAuthChange} />
             </div>
-          </CardContent>
-        </Card>
-
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium leading-none">Change Password</p>
+                <p className="text-sm text-muted-foreground">
+                  Update your password regularly to keep your account secure.
+                </p>
+              </div>
+              <Button variant="secondary" size="sm">Change Password</Button>
+            </div>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Delete Account</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your account
+                    and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteAccount}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </Card>
+        
         <Card>
           <CardHeader>
             <CardTitle>Notifications</CardTitle>
@@ -277,65 +315,29 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="notifications">Enable Notifications</Label>
-              <Switch
-                id="notifications"
-                checked={isNotificationsEnabled}
-                onCheckedChange={(checked) => setIsNotificationsEnabled(checked)}
-              />
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium leading-none">Email Notifications</p>
+                <p className="text-sm text-muted-foreground">
+                  Receive important updates and announcements via email.
+                </p>
+              </div>
+              <Switch id="email-notifications" checked={isNotificationsEnabled} onCheckedChange={handleNotificationsChange} />
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Download Data</CardTitle>
-            <CardDescription>
-              Download your data in CSV format.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button>
-              <FileDown className="h-4 w-4 mr-2" />
-              Download CSV
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Danger Zone</CardTitle>
-            <CardDescription>
-              Be careful, these actions can have consequences.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Delete Account</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    your account and remove your data from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSignOut}>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
             
-            <Button variant="secondary" onClick={handleSignOut}>
-              <FileDown className="h-4 w-4 mr-2" />
-              Log out
-            </Button>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium leading-none">Newsletter Subscription</p>
+                <p className="text-sm text-muted-foreground">
+                  Subscribe to our newsletter for the latest news and updates.
+                </p>
+              </div>
+              <Switch id="newsletter" checked={isSubscribed} onCheckedChange={handleSubscriptionChange} />
+            </div>
           </CardContent>
         </Card>
       </div>
     </AppLayout>
   );
-}
+};
+
+export default Settings;
