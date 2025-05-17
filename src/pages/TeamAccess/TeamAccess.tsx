@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -310,9 +311,10 @@ export default function TeamAccess() {
   };
   
   const getTeamLimitInfo = (plan: PlanType): string => {
-    // Use a switch statement with type-safe cases instead of strict equality checks
+    // Use a switch statement with type-safe cases instead of direct equality checks
     switch (plan) {
       case 'free':
+        return '1 user (yourself)';
       case 'pro':
         return '1 user (yourself)';
       case 'pro_plus':
