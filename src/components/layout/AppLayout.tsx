@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -82,7 +81,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <Avatar>
                   <AvatarImage src="/placeholder.svg" alt="User" />
                   <AvatarFallback>
-                    {user?.name?.charAt(0) || 'U'}
+                    {user?.user_metadata?.name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </div>
