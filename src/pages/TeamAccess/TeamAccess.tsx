@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -290,17 +289,27 @@ export default function TeamAccess() {
   };
   
   // Check if user is eligible for team access based on plan
-  const isEligibleForTeamAccess = (plan: PlanType) => {
-    // Create an array of eligible plans for cleaner comparison
+  const isEligibleForTeamAccess = (plan: PlanType): boolean => {
+    // Define the plans that allow basic access
     const basicPlans: PlanType[] = ['free', 'pro', 'agency'];
+    // Define the plans that allow team access
     const teamPlans: PlanType[] = ['pro_plus', 'agency'];
     
-    if (basicPlans.includes(plan)) return true;
-    if (teamPlans.includes(plan)) return teamMembers.length <= 1;
+    // Check if the plan is in basicPlans array
+    if (basicPlans.includes(plan)) {
+      return true;
+    }
+    
+    // Check if the plan is in teamPlans array and if team members are <= 1
+    if (teamPlans.includes(plan) && teamMembers.length <= 1) {
+      return true;
+    }
+    
+    // Default return
     return false;
   };
   
-  const getTeamLimitInfo = (plan: PlanType) => {
+  const getTeamLimitInfo = (plan: PlanType): string => {
     switch (plan) {
       case 'free':
       case 'pro':
