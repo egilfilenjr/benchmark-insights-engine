@@ -5,14 +5,21 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UserProfileProvider } from "@/hooks/useUserProfile";
 
-// Public pages
+// Public marketing pages
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
-import HowItWorks from "./pages/HowItWorks"; // ✅ newly added
+import HowItWorks from "./pages/HowItWorks";
+import BenchmarksLibrary from "./pages/BenchmarksLibrary"; // ✅ NEW
+import ToolboxLanding from "./pages/ToolboxLanding";       // ✅ NEW
+import Pricing from "./pages/Pricing";                     // ✅ FUTURE
+import Industries from "./pages/Industries";               // ✅ FUTURE
+import UseCases from "./pages/UseCases";                   // ✅ FUTURE
+import About from "./pages/About";                         // ✅ FUTURE
+import Resources from "./pages/Resources";                 // ✅ FUTURE
 
-// App pages (protected)
+// Protected app pages
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Benchmarks from "./pages/Benchmarks/Benchmarks";
 import Recommendations from "./pages/Recommendations/Recommendations";
@@ -44,13 +51,20 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/how-it-works" element={<HowItWorks />} /> {/* ✅ added */}
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/benchmarks" element={<BenchmarksLibrary />} />
+            <Route path="/toolbox" element={<ToolboxLanding />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/industries" element={<Industries />} />
+            <Route path="/use-cases" element={<UseCases />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/resources" element={<Resources />} />
 
-            {/* Protected routes */}
+            {/* Protected app routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:platform" element={<Dashboard />} />
-              <Route path="/benchmarks" element={<Benchmarks />} />
+              <Route path="/benchmarks/app" element={<Benchmarks />} />
               <Route path="/recommendations" element={<Recommendations />} />
               <Route path="/opportunities" element={<Opportunities />} />
               <Route path="/trends" element={<Trends />} />
@@ -62,10 +76,10 @@ const App = () => (
               <Route path="/experiments" element={<Experiments />} />
               <Route path="/team-access" element={<TeamAccess />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/toolbox" element={<Toolbox />} />
+              <Route path="/toolbox/app" element={<Toolbox />} />
             </Route>
 
-            {/* Catch-all route */}
+            {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </UserProfileProvider>
