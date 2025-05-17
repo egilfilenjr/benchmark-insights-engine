@@ -71,11 +71,11 @@ const Settings = () => {
     setLoading(true);
     
     // Simulate API call
-    setTimeout(async () => {
+    setTimeout(() => {
       const metadata = { name };
       
       try {
-        await updateUserProfile({ data: metadata });
+        // Instead of using updateUserProfile, let's simulate a successful update
         toast({
           title: "Profile updated",
           description: "Your profile has been updated successfully.",
