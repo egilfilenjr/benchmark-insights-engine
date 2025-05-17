@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Benchmarks from "./pages/Benchmarks/Benchmarks";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -31,7 +32,7 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:platform" element={<Dashboard />} />
-              <Route path="/benchmarks" element={<Dashboard />} />
+              <Route path="/benchmarks" element={<Benchmarks />} />
               <Route path="/recommendations" element={<Dashboard />} />
               <Route path="/opportunities" element={<Dashboard />} />
               <Route path="/trends" element={<Dashboard />} />
