@@ -1,18 +1,25 @@
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { CustomBadge } from "@/components/ui/custom-badge"; 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPlus, UserMinus, Settings, Clock, Users, Info, AlertTriangle, UserCog } from "lucide-react";
-import { format, subHours, subDays } from "date-fns";
+import { 
+  Users, 
+  UserPlus, 
+  Mail, 
+  Check, 
+  Shield, 
+  EyeIcon, 
+  Pencil,
+  Clock,
+  Trash,
+  AlertTriangle
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function TeamAccess() {
@@ -437,141 +444,14 @@ export default function TeamAccess() {
                       {teamMembers
                         .filter(member => member.status !== "removed")
                         .map(member => (
-                          <TableRow key={member.id}>
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>{member.email}</TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={
-                                  member.role === "admin" 
-                                    ? "default" 
-                                    : member.role === "editor" 
-                                      ? "secondary" 
-                                      : "outline"
-                                }
-                              >
-                                {member.role === "admin" 
-                                  ? "Admin" 
-                                  : member.role === "editor" 
-                                    ? "Editor" 
-                                    : "Viewer"
-                                }
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={member.status === "active" ? "default" : "secondary"}
-                              >
-                                {member.status === "active" ? "Active" : "Pending"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {member.lastActive 
-                                ? format(member.lastActive, "MMM d, h:mm a")
-                                : "Never"
-                              }
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm"
-                                      onClick={() => setEditRole({ userId: member.id, role: member.role })}
-                                    >
-                                      <UserCog className="h-4 w-4" />
-                                      <span className="sr-only">Edit Role</span>
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Change Role</DialogTitle>
-                                      <DialogDescription>
-                                        Update the role and permissions for {member.name}.
-                                      </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="py-4 space-y-4">
-                                      <div className="space-y-2">
-                                        <Label htmlFor="member-role">Role</Label>
-                                        <Select 
-                                          value={editRole.role}
-                                          onValueChange={(value) => setEditRole(prev => ({ ...prev, role: value }))}
-                                        >
-                                          <SelectTrigger id="member-role">
-                                            <SelectValue placeholder="Select a role" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="admin">Admin (Full access)</SelectItem>
-                                            <SelectItem value="editor">Editor (Can edit, but not manage team)</SelectItem>
-                                            <SelectItem value="viewer">Viewer (View only)</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      
-                                      <div className="space-y-1">
-                                        <h4 className="text-sm font-medium">Role Permissions:</h4>
-                                        <ul className="text-sm text-muted-foreground space-y-1">
-                                          <li className="flex items-center gap-1">
-                                            <Badge variant="outline" className="text-xs h-5">Admin</Badge>
-                                            Full access to all features, can manage team and billing
-                                          </li>
-                                          <li className="flex items-center gap-1">
-                                            <Badge variant="outline" className="text-xs h-5">Editor</Badge>
-                                            Can create and modify content, but cannot manage team
-                                          </li>
-                                          <li className="flex items-center gap-1">
-                                            <Badge variant="outline" className="text-xs h-5">Viewer</Badge>
-                                            Can view dashboards and reports, but cannot make changes
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                    <DialogFooter>
-                                      <Button variant="outline" onClick={() => {}}>Cancel</Button>
-                                      <Button onClick={handleUpdateRole}>Update Role</Button>
-                                    </DialogFooter>
-                                  </DialogContent>
-                                </Dialog>
-                                
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm"
-                                      className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                                    >
-                                      <UserMinus className="h-4 w-4" />
-                                      <span className="sr-only">Remove User</span>
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Remove Team Member</DialogTitle>
-                                      <DialogDescription>
-                                        Are you sure you want to remove {member.name} from your team?
-                                      </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="py-4">
-                                      <Alert variant="destructive">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        <AlertDescription>
-                                          This action cannot be undone. The user will lose access to your team's data.
-                                        </AlertDescription>
-                                      </Alert>
-                                    </div>
-                                    <DialogFooter>
-                                      <Button variant="outline" onClick={() => {}}>Cancel</Button>
-                                      <Button variant="destructive" onClick={() => handleRemoveMember(member.id)}>
-                                        Remove Team Member
-                                      </Button>
-                                    </DialogFooter>
-                                  </DialogContent>
-                                </Dialog>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                      ))}
+                          <TeamMemberRow 
+                            key={member.id} 
+                            member={member} 
+                            onRemove={() => handleRemoveMember(member.id)} 
+                            onChangeRole={(role: string) => setEditRole({ userId: member.id, role })}
+                            isCurrentUser={user?.user_metadata?.name === member.name}
+                          />
+                        ))}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -646,3 +526,124 @@ export default function TeamAccess() {
     </AppLayout>
   );
 }
+
+const TeamMemberRow = ({ 
+  member, 
+  onRemove, 
+  onChangeRole, 
+  isCurrentUser 
+}: { 
+  member: TeamMember; 
+  onRemove: () => void; 
+  onChangeRole: (role: string) => void;
+  isCurrentUser: boolean;
+}) => {
+  return (
+    <div className="flex items-center justify-between py-4 border-b">
+      <div className="flex items-center space-x-4">
+        <Avatar>
+          <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div>
+          <div className="font-medium flex items-center">
+            {member.name} 
+            {isCurrentUser && <span className="text-xs text-muted-foreground ml-2">(You)</span>}
+          </div>
+          <div className="text-sm text-muted-foreground">{member.email}</div>
+        </div>
+      </div>
+      <div className="flex items-center space-x-2">
+        {member.status === "pending" ? (
+          <CustomBadge variant="outline" className="flex items-center gap-1 text-amber-500 border-amber-200 bg-amber-50">
+            <Clock size={12} />
+            Pending
+          </CustomBadge>
+        ) : (
+          <CustomBadge variant={member.role === "admin" ? "secondary" : "success"} className="flex items-center gap-1">
+            {member.role === "admin" ? (
+              <Shield size={12} />
+            ) : member.role === "editor" ? (
+              <Pencil size={12} />
+            ) : (
+              <EyeIcon size={12} />
+            )}
+            {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+          </CustomBadge>
+        )}
+        
+        {!isCurrentUser && (
+          <>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <span className="sr-only">Change role</span>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Change user role</DialogTitle>
+                  <DialogDescription>
+                    Select a new role for {member.name}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button 
+                      variant={member.role === "admin" ? "default" : "outline"} 
+                      className="justify-start"
+                      onClick={() => onChangeRole("admin")}
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      Admin
+                      <span className="ml-auto text-xs text-muted-foreground">Full access</span>
+                    </Button>
+                    <Button 
+                      variant={member.role === "editor" ? "default" : "outline"} 
+                      className="justify-start"
+                      onClick={() => onChangeRole("editor")}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Editor
+                      <span className="ml-auto text-xs text-muted-foreground">Can edit data</span>
+                    </Button>
+                    <Button 
+                      variant={member.role === "viewer" ? "default" : "outline"} 
+                      className="justify-start"
+                      onClick={() => onChangeRole("viewer")}
+                    >
+                      <EyeIcon className="mr-2 h-4 w-4" />
+                      Viewer
+                      <span className="ml-auto text-xs text-muted-foreground">Read-only</span>
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                  <span className="sr-only">Remove user</span>
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Remove team member</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to remove {member.name} from your team?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline">Cancel</Button>
+                  <Button variant="destructive" onClick={onRemove}>Remove</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};

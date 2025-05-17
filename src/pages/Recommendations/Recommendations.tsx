@@ -1,14 +1,16 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CustomBadge } from "@/components/ui/custom-badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowUpRight, Check, X, ThumbsUp, Filter } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Alert, AlertTitle, AlertDescription, AlertAction } from "@/components/ui/alert";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function Recommendations() {
   const { user, testMode } = useUserProfile();
@@ -377,10 +379,10 @@ const RecommendationCard = ({
       </CardContent>
       <CardFooter className="border-t p-4 bg-gray-50 flex justify-between">
         {isApplied ? (
-          <Badge variant="success" className="flex items-center gap-1">
+          <CustomBadge variant="success" className="flex items-center gap-1">
             <Check size={14} />
             Applied
-          </Badge>
+          </CustomBadge>
         ) : isIgnored ? (
           <div className="flex space-x-2">
             <Badge variant="outline" className="flex items-center gap-1">
@@ -409,3 +411,5 @@ const RecommendationCard = ({
     </Card>
   );
 };
+
+export default Recommendations;

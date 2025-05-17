@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from 'react-router-dom';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -15,7 +16,7 @@ import {
   FlaskConical, 
   Users, 
   Settings, 
-  Tool,
+  Wrench,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -57,7 +58,7 @@ const sidebarItems: SidebarItem[] = [
   { title: 'Experiments', path: '/experiments', icon: FlaskConical },
   { title: 'Team Access', path: '/team-access', icon: Users },
   { title: 'Settings', path: '/settings', icon: Settings },
-  { title: 'Toolbox', path: '/toolbox', icon: Tool },
+  { title: 'Toolbox', path: '/toolbox', icon: Wrench },
 ];
 
 const AppSidebar = () => {

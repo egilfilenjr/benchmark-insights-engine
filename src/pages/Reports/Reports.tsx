@@ -32,7 +32,7 @@ export default function Reports() {
   const userPlan = 'pro_plus'; // Possible values: 'free', 'pro', 'pro_plus', 'agency'
   
   // Mock data for reports
-  const reports = [
+  const [reports, setReports] = useState([
     {
       id: "1",
       title: "Monthly Performance Overview",
@@ -76,7 +76,7 @@ export default function Reports() {
       status: "generating",
       downloadUrl: null,
     },
-  ];
+  ]);
   
   // New report state
   const [newReport, setNewReport] = useState({
