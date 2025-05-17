@@ -295,7 +295,7 @@ export default function TeamAccess() {
     // Define the plans that allow team access
     const teamPlans: PlanType[] = ['pro_plus', 'agency'];
     
-    // Check if the plan is in basicPlans array
+    // Check if the plan is in basicPlans array using includes instead of equality
     if (basicPlans.includes(plan)) {
       return true;
     }
