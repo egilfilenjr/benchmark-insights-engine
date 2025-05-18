@@ -9,10 +9,10 @@ import { ActivityLog } from '../types/teamTypes';
 
 interface ActivityLogTableProps {
   activityLogs: ActivityLog[];
-  loading: boolean;
+  loading?: boolean;
 }
 
-const ActivityLogTable = ({ activityLogs, loading }: ActivityLogTableProps) => {
+const ActivityLogTable = ({ activityLogs, loading = false }: ActivityLogTableProps) => {
   if (loading) {
     return (
       <Card>
@@ -57,13 +57,13 @@ const ActivityLogTable = ({ activityLogs, loading }: ActivityLogTableProps) => {
           <TableBody>
             {activityLogs.map(log => (
               <TableRow key={log.id}>
-                <TableCell className="font-medium">{log.userName}</TableCell>
+                <TableCell className="font-medium">{log.user}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className="capitalize">
-                    {log.action.replace(/_/g, ' ')}
+                    {log.event.replace(/_/g, ' ')}
                   </Badge>
                 </TableCell>
-                <TableCell>{log.details}</TableCell>
+                <TableCell>{log.event}</TableCell>
                 <TableCell className="text-muted-foreground">
                   <div className="flex items-center">
                     <Clock className="h-3 w-3 mr-1" />

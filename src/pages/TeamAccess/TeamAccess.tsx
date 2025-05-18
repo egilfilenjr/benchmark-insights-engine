@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -88,7 +89,7 @@ export default function TeamAccess() {
     ]);
 
     setLoading(false);
-  }, [user]);
+  }, [user, canManageTeam]);
 
   if (!canManageTeam) {
     return (
@@ -118,7 +119,6 @@ export default function TeamAccess() {
             </p>
           </div>
           <InviteMemberDialog
-            disabled={current >= max}
             onInvite={(newInvite) => {
               setInvitations((prev) => [...prev, newInvite]);
               toast({ title: "Invitation sent!" });
@@ -144,18 +144,20 @@ export default function TeamAccess() {
           <TabsContent value="members">
             <TeamMembersTable
               teamMembers={teamMembers}
-              invitations={invitations}
+              currentUserName={user?.email}
+              loading={loading}
               onRemove={(id) =>
                 setTeamMembers((prev) => prev.filter((m) => m.id !== id))
               }
-              onResend={(email) =>
-                toast({ title: `Resent invitation to ${email}` })
-              }
+              onChangeRole={(userId, role) => {
+                // Implementation for changing role
+                toast({ title: `Role updated for user ${userId}` });
+              }}
             />
           </TabsContent>
 
           <TabsContent value="log">
-            <ActivityLogTable activity={activityLog} />
+            <ActivityLogTable activityLogs={activityLog} loading={loading} />
           </TabsContent>
         </Tabs>
       </div>

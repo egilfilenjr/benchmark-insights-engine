@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -42,7 +43,7 @@ type Experiment = {
 };
 
 export default function Experiments() {
-  const { user, testMode } = useUserProfile();
+  const { user } = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [experiments, setExperiments] = useState<Experiment[]>([]);
 
@@ -146,7 +147,7 @@ export default function Experiments() {
                   <Badge
                     variant={
                       exp.status === "Completed"
-                        ? "success"
+                        ? "outline"
                         : exp.status === "Canceled"
                         ? "destructive"
                         : "default"

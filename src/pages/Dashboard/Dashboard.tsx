@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -9,6 +10,7 @@ import CampaignTable from "@/components/dashboard/CampaignTable";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
 import { subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { AlertItem } from "@/components/dashboard/types";
 
 type KPI = {
   value: number;
@@ -62,6 +64,22 @@ export default function Dashboard() {
     })),
   });
 
+  // Mock alerts for AlertsPanel
+  const [alerts, setAlerts] = useState<AlertItem[]>([
+    {
+      id: "1",
+      title: "CPA Threshold Exceeded",
+      description: "Your CPA is 15% above target on Meta campaigns",
+      severity: "high"
+    },
+    {
+      id: "2",
+      title: "Budget Pacing Alert",
+      description: "You've spent 75% of monthly budget with 45% of month remaining",
+      severity: "medium"
+    }
+  ]);
+
   // Placeholder for real data fetching logic
   useEffect(() => {
     const fetchData = async () => {
@@ -87,14 +105,23 @@ export default function Dashboard() {
 
   const renderKpiTiles = useMemo(() => {
     return Object.entries(kpis).map(([key, kpi]) => (
-      <KpiTile key={key} label={key.toUpperCase()} {...kpi} />
+      <KpiTile 
+        key={key} 
+        label={key.toUpperCase()} 
+        value={kpi.value} 
+        change={kpi.change} 
+        benchmark={kpi.benchmark} 
+      />
     ));
   }, [kpis]);
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        <FilterBar dateRange={dateRange} onDateChange={setDateRange} />
+        <FilterBar 
+          dateRange={dateRange} 
+          onDateRangeChange={setDateRange} 
+        />
 
         <AecrScorePanel
           score={aecrScore.score}
@@ -106,11 +133,23 @@ export default function Dashboard() {
           {renderKpiTiles}
         </div>
 
-        <TrendGraph data={trendData.cpa} title="CPA Trend" />
+        <TrendGraph 
+          data={trendData.cpa.map(item => ({
+            date: item.date.toISOString(),
+            value: item.value
+          }))} 
+          title="CPA Trend" 
+          valueLabel="Cost Per Acquisition" 
+        />
 
-        <CampaignTable dateRange={dateRange} loading={loading} />
+        <CampaignTable 
+          dateRange={dateRange} 
+          loading={loading} 
+          title="Campaign Performance"
+          campaigns={[]}
+        />
 
-        <AlertsPanel />
+        <AlertsPanel alerts={alerts} />
       </div>
     </AppLayout>
   );

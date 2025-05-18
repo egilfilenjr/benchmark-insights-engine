@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -173,7 +174,7 @@ export default function Trends() {
 
         {/* Example Anomaly Callout */}
         {selectedKpi === "cpa" && trendData[trendData.length - 1]?.value > 35 && (
-          <Alert variant="warning">
+          <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Spike detected</AlertTitle>
             <AlertDescription>

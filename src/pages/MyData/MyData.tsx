@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -56,6 +57,15 @@ export default function MyData() {
   const { user } = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [connections, setConnections] = useState<OAuthConnection[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+  
+  const handleAddFiles = (newFiles: File[]) => {
+    setFiles(prev => [...prev, ...newFiles]);
+  };
+  
+  const handleRemoveFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -89,7 +99,7 @@ export default function MyData() {
   const getStatusBadge = (status: OAuthConnection["status"]) => {
     switch (status) {
       case "active":
-        return <Badge variant="success">Connected</Badge>;
+        return <Badge variant="outline">Connected</Badge>;
       case "error":
         return <Badge variant="destructive">Error</Badge>;
       case "pending":
@@ -161,7 +171,11 @@ export default function MyData() {
                 <CardDescription>Use this to upload campaign CSVs.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Dropzone />
+                <Dropzone
+                  value={files}
+                  onAddFiles={handleAddFiles}
+                  onRemoveFile={handleRemoveFile}
+                />
               </CardContent>
             </Card>
           </TabsContent>

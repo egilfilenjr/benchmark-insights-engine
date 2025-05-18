@@ -6,12 +6,16 @@ export interface KpiTileProps {
   change: number;
   benchmark: number;
   key: string;
-  label?: string; // Added to fix the type error
+  label: string; // Added for Dashboard.tsx
+  title?: string; // Optional title prop
 }
 
 export interface FilterBarProps {
-  dateRange?: { from: Date; to: Date }; // Added to fix the type error
+  dateRange?: { from: Date; to: Date }; 
   onDateChange?: (range: { from: Date; to: Date }) => void;
+  onDateRangeChange?: (range: { from: Date; to: Date }) => void; // Added for compatibility
+  onComparisonChange?: (comparison: string) => void;
+  onFilterChange?: (filters: Record<string, string>) => void;
 }
 
 export interface TrendGraphProps {
@@ -21,12 +25,19 @@ export interface TrendGraphProps {
 }
 
 export interface CampaignTableProps {
-  dateRange?: { from: Date; to: Date }; // Added to fix the type error
+  dateRange?: { from: Date; to: Date }; 
   loading?: boolean;
+  title?: string;
+  campaigns?: any[];
+  sortBy?: string;
+  ascending?: boolean;
+  onSort?: (column: string) => void;
 }
 
 export interface AlertsPanelProps {
   alerts: AlertItem[]; // Required property
+  loading?: boolean;
+  onClearAll?: () => void;
 }
 
 export interface TrendEntry {

@@ -5,12 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import TeamMemberRow from './TeamMemberRow';
 import { TeamMember } from '../types/teamTypes';
 
-interface TeamMembersTableProps {
+export interface TeamMembersTableProps {
   teamMembers: TeamMember[];
   onRemove: (id: string) => void;
   onChangeRole: (userId: string, role: string) => void;
   currentUserName?: string;
-  loading: boolean;
+  loading?: boolean;
 }
 
 const TeamMembersTable = ({ 
@@ -18,7 +18,7 @@ const TeamMembersTable = ({
   onRemove, 
   onChangeRole, 
   currentUserName,
-  loading 
+  loading = false
 }: TeamMembersTableProps) => {
   if (loading) {
     return (

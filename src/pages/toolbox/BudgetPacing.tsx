@@ -1,3 +1,4 @@
+
 import MainLayout from "@/components/layout/MainLayout";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -9,13 +10,14 @@ export default function BudgetPacing() {
   const [spend, setSpend] = useState("");
   const [day, setDay] = useState("");
 
-  const pace =
-    parseFloat(day) > 0
-      ? ((parseFloat(spend) / parseFloat(day)) * 30).toFixed(2)
-      : null;
+  // Parse the values with defaults
+  const budgetNum = parseFloat(budget) || 0;
+  const spendNum = parseFloat(spend) || 0;
+  const dayNum = parseFloat(day) || 0;
 
-  const delta =
-    pace && budget ? (parseFloat(pace) - parseFloat(budget)).toFixed(2) : null;
+  // Calculate pace and delta only if day is valid
+  const pace = dayNum > 0 ? ((spendNum / dayNum) * 30).toFixed(2) : null;
+  const delta = pace && budgetNum ? (parseFloat(pace) - budgetNum).toFixed(2) : null;
 
   return (
     <MainLayout>
@@ -34,15 +36,15 @@ export default function BudgetPacing() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Monthly Budget ($)</Label>
-              <Input value={budget} onChange={(e) => setBudget(e.target.value)} />
+              <Input value={budget} onChange={(e) => setBudget(e.target.value)} type="number" />
             </div>
             <div className="space-y-2">
               <Label>Spend So Far ($)</Label>
-              <Input value={spend} onChange={(e) => setSpend(e.target.value)} />
+              <Input value={spend} onChange={(e) => setSpend(e.target.value)} type="number" />
             </div>
             <div className="space-y-2">
               <Label>Current Day of Month</Label>
-              <Input value={day} onChange={(e) => setDay(e.target.value)} />
+              <Input value={day} onChange={(e) => setDay(e.target.value)} type="number" />
             </div>
           </CardContent>
         </Card>
@@ -52,10 +54,12 @@ export default function BudgetPacing() {
             <p>
               Projected Spend: <span className="font-semibold">${pace}</span>
             </p>
-            <p className="text-muted-foreground">
-              You are <strong>{delta > 0 ? "over" : "under"}</strong> budget by{" "}
-              <strong>${Math.abs(delta)}</strong>.
-            </p>
+            {delta && (
+              <p className="text-muted-foreground">
+                You are <strong>{delta > 0 ? "over" : "under"}</strong> budget by{" "}
+                <strong>${Math.abs(parseFloat(delta))}</strong>.
+              </p>
+            )}
           </div>
         )}
       </div>

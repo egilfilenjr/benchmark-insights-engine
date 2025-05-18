@@ -1,26 +1,12 @@
 
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Calculator,
-  DollarSign,
-  BarChart,
-  TrendingUp,
-  Target,
-  Clock,
-  Search,
-} from "lucide-react";
+import { Calculator, DollarSign, BarChart, TrendingUp, Target, Clock, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Toolbox() {
@@ -35,7 +21,7 @@ export default function Toolbox() {
       description: "Calculate return on ad spend from revenue and spend",
       category: "kpi",
       icon: <Calculator />,
-      url: "/toolbox/roas-calculator",
+      url: "/toolbox/roas-calculator"
     },
     {
       id: "cpa",
@@ -43,7 +29,7 @@ export default function Toolbox() {
       description: "Determine cost per acquisition across channels",
       category: "kpi",
       icon: <DollarSign />,
-      url: "/toolbox/cpa-calculator",
+      url: "/toolbox/cpa-calculator"
     },
     {
       id: "ctr",
@@ -51,7 +37,7 @@ export default function Toolbox() {
       description: "Measure click-through rate efficiency",
       category: "kpi",
       icon: <BarChart />,
-      url: "/toolbox/ctr-calculator",
+      url: "/toolbox/ctr-calculator"
     },
     {
       id: "aecr",
@@ -59,7 +45,7 @@ export default function Toolbox() {
       description: "Understand your Acquisition Efficiency to Conversion Ratio",
       category: "lift",
       icon: <TrendingUp />,
-      url: "/toolbox/aecr-explainer",
+      url: "/toolbox/aecr-explainer"
     },
     {
       id: "media",
@@ -67,7 +53,7 @@ export default function Toolbox() {
       description: "Visualize budget allocation by channel",
       category: "budget",
       icon: <Target />,
-      url: "/toolbox/media-mix-planner",
+      url: "/toolbox/media-mix-planner"
     },
     {
       id: "forecast",
@@ -75,9 +61,8 @@ export default function Toolbox() {
       description: "Forecast leads and conversions over time",
       category: "forecasting",
       icon: <Clock />,
-      url: "/toolbox/funnel-forecast",
-    },
-    // TODO: Add the other 40+ tools dynamically or from DB
+      url: "/toolbox/funnel-forecast"
+    }
   ];
 
   const filteredTools = allTools.filter(
@@ -98,12 +83,15 @@ export default function Toolbox() {
           </div>
         </div>
 
-        <Input
-          placeholder="Search tools..."
-          icon={<Search />}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search tools..."
+            value={searchQuery}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
         <Tabs value={category} onValueChange={setCategory}>
           <TabsList className="grid w-full grid-cols-5">
@@ -114,17 +102,21 @@ export default function Toolbox() {
             <TabsTrigger value="forecasting">Forecasting</TabsTrigger>
           </TabsList>
 
-          <TabsContent value={category}>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <TabsContent value={category} className="mt-6">
+            <div className="grid gap-4 md:grid-cols-3">
               {filteredTools.map((tool) => (
-                <Link key={tool.id} to={tool.url}>
-                  <Card className="hover:shadow-md transition">
+                <Link to={tool.url} key={tool.id}>
+                  <Card className="h-full transition-all hover:bg-accent/50 cursor-pointer">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        {tool.icon}
-                        {tool.name}
-                      </CardTitle>
-                      <CardDescription>{tool.description}</CardDescription>
+                      <div className="flex items-start space-x-4">
+                        <div className="bg-primary/10 p-2 rounded-full">
+                          {tool.icon}
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{tool.name}</CardTitle>
+                          <CardDescription>{tool.description}</CardDescription>
+                        </div>
+                      </div>
                     </CardHeader>
                   </Card>
                 </Link>
@@ -132,18 +124,6 @@ export default function Toolbox() {
             </div>
           </TabsContent>
         </Tabs>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Want your numbers benchmarked?</CardTitle>
-            <CardDescription>
-              Get personalized AECR scores and see where you stand.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button>See Your Score</Button>
-          </CardContent>
-        </Card>
       </div>
     </AppLayout>
   );

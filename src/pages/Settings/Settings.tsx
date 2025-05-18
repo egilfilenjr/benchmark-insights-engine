@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -5,165 +6,180 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import {
-  User,
-  Mail,
-  Bell,
-  CreditCard,
-  AlertTriangle,
-  Lock,
-  ArrowRight,
-} from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
+import { Bell, Lock, UserCircle, CreditCard, LogOut } from "lucide-react";
 
 export default function Settings() {
   const { user, signOut } = useUserProfile();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
-  const [reportFooterNote, setReportFooterNote] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [personalInfo, setPersonalInfo] = useState({
+    email: user?.email || "",
+    fullName: "",
+    company: "",
+    title: "",
+  });
 
   useEffect(() => {
     if (user) {
-      setName(user.name || "");
-      setEmail(user.email || "");
+      setPersonalInfo(prev => ({
+        ...prev,
+        email: user.email || "",
+      }));
     }
-    setLoading(false);
   }, [user]);
 
-  const handleSave = () => {
-    toast({ title: "Settings saved!" });
-    // TODO: Push to Supabase
+  const handleSavePersonalInfo = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Profile updated",
+        description: "Your personal information has been saved.",
+      });
+    }, 1000);
   };
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your account preferences and subscription
+          </p>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <User className="w-5 h-5 inline mr-2" />
-              Profile
-            </CardTitle>
-            <CardDescription>Manage your personal details</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div>
-              <Label>Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div>
-              <Label>Email</Label>
-              <Input value={email} disabled />
-            </div>
-            <Button onClick={handleSave} className="w-fit mt-2">
-              Save Changes
-            </Button>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="profile">
+          <TabsList className="grid grid-cols-4 w-[400px]">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <Bell className="w-5 h-5 inline mr-2" />
-              Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <Label>Enable KPI alert emails</Label>
-              <Switch
-                checked={isNotificationsEnabled}
-                onCheckedChange={setIsNotificationsEnabled}
-              />
-            </div>
-          </CardContent>
-        </Card>
+          <TabsContent value="profile" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>
+                  Update your personal details and company information
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarFallback className="text-lg">
+                      {personalInfo.fullName
+                        ? personalInfo.fullName.charAt(0)
+                        : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button size="sm">Change Avatar</Button>
+                </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <CreditCard className="w-5 h-5 inline mr-2" />
-              Billing
-            </CardTitle>
-            <CardDescription>Manage your subscription</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline">
-              Open Billing Portal <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      value={personalInfo.fullName}
+                      onChange={(e) =>
+                        setPersonalInfo({
+                          ...personalInfo,
+                          fullName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      value={personalInfo.email}
+                      disabled
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company">Company</Label>
+                    <Input
+                      id="company"
+                      value={personalInfo.company}
+                      onChange={(e) =>
+                        setPersonalInfo({
+                          ...personalInfo,
+                          company: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Job Title</Label>
+                    <Input
+                      id="title"
+                      value={personalInfo.title}
+                      onChange={(e) =>
+                        setPersonalInfo({
+                          ...personalInfo,
+                          title: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSavePersonalInfo} disabled={loading}>
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Sign Out</CardTitle>
+                <CardDescription>
+                  End your current session
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="destructive" 
+                  onClick={signOut}
+                  className="flex items-center"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>White-label Report Footer (Agency Only)</CardTitle>
-            <CardDescription>
-              Add a custom note or footer to exported reports
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Input
-              placeholder="e.g., Powered by Benchmarketing"
-              value={reportFooterNote}
-              onChange={(e) => setReportFooterNote(e.target.value)}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <Lock className="w-5 h-5 inline mr-2" />
-              Danger Zone
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Delete My Account</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Are you sure you want to delete your account?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently erase your data and cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => toast({ title: "Account deleted" })}>
-                    Confirm Deletion
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </CardContent>
-        </Card>
+          {/* Additional tabs content can be added here */}
+        </Tabs>
       </div>
     </AppLayout>
   );
