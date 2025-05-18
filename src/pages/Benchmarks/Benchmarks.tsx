@@ -69,9 +69,9 @@ export default function Benchmarks() {
     industry: "SaaS",
     platform: "Google",
     channel: "Search",
-    kpi: "CPA", // Added missing kpi property
+    kpi: "CPA", 
     conversionType: "Lead",
-    geo: "North America", // Added missing geo property
+    geo: "North America", 
   });
   
   const [benchmarks, setBenchmarks] = useState(MOCK_BENCHMARKS);
