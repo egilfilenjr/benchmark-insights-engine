@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -10,6 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CampaignTableProps } from "./types";
 
 interface Campaign {
   id: string;
@@ -23,21 +23,13 @@ interface Campaign {
   vsBenchmark: number;
 }
 
-interface CampaignTableProps {
-  title: string;
-  campaigns: Campaign[];
-  sortBy?: keyof Campaign;
-  ascending?: boolean;
-  loading?: boolean;
-  onSort?: (column: keyof Campaign) => void;
-}
-
 export default function CampaignTable({
   title,
   campaigns,
   sortBy = "vsBenchmark",
   ascending = false,
   loading = false,
+  dateRange, // Add dateRange property
   onSort,
 }: CampaignTableProps) {
   const formatCurrency = (value: number) => {
