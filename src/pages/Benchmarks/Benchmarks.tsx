@@ -12,42 +12,55 @@ import { AlertCircle, Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 
-// Mock benchmark data
+// Convert mock benchmark data to match component expectations
 const MOCK_BENCHMARKS = [
   {
+    id: "1",
+    industry: "SaaS",
+    platform: "Google",
+    channel: "Search",
     kpi: "CPA",
-    industry: "SaaS",
-    platform: "Google",
-    channel: "Search",
-    p25: 42.67,
+    conversionType: "Lead",
+    percentile_25: 42.67,
     median: 58.23,
-    p75: 75.48,
-    yourValue: 54.12,
-    unit: "currency"
+    percentile_75: 75.48,
+    sample_size: 1250,
+    region: "North America"
   },
   {
+    id: "2",
+    industry: "SaaS",
+    platform: "Google",
+    channel: "Search",
     kpi: "ROAS",
-    industry: "SaaS",
-    platform: "Google",
-    channel: "Search",
-    p25: 2.1,
+    conversionType: "Lead",
+    percentile_25: 2.1,
     median: 3.4,
-    p75: 5.2,
-    yourValue: 3.8,
-    unit: "ratio"
+    percentile_75: 5.2,
+    sample_size: 1250,
+    region: "North America"
   },
   {
-    kpi: "CTR",
+    id: "3",
     industry: "SaaS",
     platform: "Google",
     channel: "Search",
-    p25: 0.015,
-    median: 0.024,
-    p75: 0.042,
-    yourValue: 0.028,
-    unit: "percentage"
+    kpi: "CTR",
+    conversionType: "Lead",
+    percentile_25: 1.5,
+    median: 2.4,
+    percentile_75: 4.2,
+    sample_size: 1250,
+    region: "North America"
   }
 ];
+
+// Mock performance data for the logged-in user
+const YOUR_PERFORMANCE = {
+  CPA: 54.12,
+  ROAS: 3.8,
+  CTR: 2.8
+};
 
 export default function Benchmarks() {
   const { user, plan } = useUserProfile();
@@ -56,8 +69,9 @@ export default function Benchmarks() {
     industry: "SaaS",
     platform: "Google",
     channel: "Search",
+    kpi: "CPA", // Added missing kpi property
     conversionType: "Lead",
-    period: "Last 30 Days"
+    geo: "North America", // Added missing geo property
   });
   
   const [benchmarks, setBenchmarks] = useState(MOCK_BENCHMARKS);
@@ -115,7 +129,6 @@ export default function Benchmarks() {
         <BenchmarkFilterBar 
           filters={filters}
           onFilterChange={handleFilterChange}
-          loading={loading}
         />
 
         {plan === "free" && (
@@ -138,7 +151,7 @@ export default function Benchmarks() {
                 <div className="flex gap-2">
                   {benchmarks.map(benchmark => (
                     <Button 
-                      key={benchmark.kpi}
+                      key={benchmark.id}
                       variant={selectedKPI === benchmark.kpi ? "default" : "outline"}
                       onClick={() => setSelectedKPI(benchmark.kpi)}
                       size="sm"
@@ -149,25 +162,25 @@ export default function Benchmarks() {
                 </div>
                 
                 <BenchmarkPercentileVisual 
-                  benchmark={activeBenchmark}
+                  data={activeBenchmark}
+                  yourPerformance={plan !== "free" ? YOUR_PERFORMANCE[selectedKPI as keyof typeof YOUR_PERFORMANCE] : undefined}
                   loading={loading}
-                  showYourValue={plan !== "free"}
+                  showYourData={plan !== "free"}
                 />
               </div>
             </CardContent>
           </Card>
           
           <IndustryComparison 
-            industry={filters.industry}
-            kpi={selectedKPI}
-            loading={loading}
+            yourPerformance={YOUR_PERFORMANCE}
+            selectedKpi={selectedKPI}
+            industryBenchmarks={benchmarks}
           />
         </div>
 
         <BenchmarkTable 
-          benchmarks={benchmarks}
+          data={benchmarks}
           loading={loading}
-          showYourValue={plan !== "free"}
         />
       </div>
     </AppLayout>
