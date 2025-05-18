@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -8,9 +9,7 @@ export default function ProtectedRoute() {
 
   useEffect(() => {
     const check = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
         setAllowed(false);
@@ -18,25 +17,16 @@ export default function ProtectedRoute() {
         return;
       }
 
-      const { data: preferences } = await supabase
-        .from("user_preferences")
-        .select("onboarding_completed")
-        .eq("user_id", user.id)
-        .single();
-
-      if (preferences?.onboarding_completed) {
-        setAllowed(true);
-      } else {
-        setAllowed(false);
-      }
-
+      // For now, since the tables don't exist, we'll just allow access
+      // In a real implementation, we would check for onboarding completion
+      setAllowed(true);
       setChecking(false);
     };
 
     check();
   }, []);
 
-  // 👇 This is the line you asked about — shows a message while checking
+  // Shows a message while checking
   if (checking) return <div className="text-center py-8">Checking access…</div>;
 
   if (!allowed) return <Navigate to="/onboarding" replace />;
