@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -14,16 +15,13 @@ import {
   AlertTitle,
   AlertDescription,
 } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  Button,
-  Badge,
-  Input,
-  Label,
-  Switch,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
   Dialog,
   DialogTrigger,
   DialogContent,
@@ -31,7 +29,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui";
+} from "@/components/ui/dialog";
 import {
   Bell,
   PlusCircle,
@@ -58,7 +56,7 @@ type AlertConfig = {
 };
 
 export default function Alerts() {
-  const { user, plan } = useUserProfile();
+  const { plan } = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState<AlertConfig[]>([]);
 
@@ -97,7 +95,7 @@ export default function Alerts() {
 
     setAlerts(mockAlerts);
     setLoading(false);
-  }, [user]);
+  }, [canAccess]);
 
   const toggleAlert = (id: string) => {
     setAlerts((prev) =>
