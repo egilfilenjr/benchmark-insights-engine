@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -20,7 +21,7 @@ import {
   Clock,
   Search,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 
 export default function Toolbox() {
   const { user } = useUserProfile();
@@ -116,7 +117,7 @@ export default function Toolbox() {
           <TabsContent value={category}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredTools.map((tool) => (
-                <Link key={tool.id} href={tool.url}>
+                <Link key={tool.id} to={tool.url}>
                   <Card className="hover:shadow-md transition">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
