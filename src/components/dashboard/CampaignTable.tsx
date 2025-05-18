@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -9,27 +10,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CampaignTableProps } from "./types";
-
-interface Campaign {
-  id: string;
-  name: string;
-  platform: string;
-  spend: number;
-  conversions: number;
-  cpa: number;
-  roas: number;
-  ctr: number;
-  vsBenchmark: number;
-}
+import { Campaign, CampaignTableProps } from "./types";
 
 export default function CampaignTable({
   title,
-  campaigns,
+  campaigns = [],
   sortBy = "vsBenchmark",
   ascending = false,
   loading = false,
-  dateRange, // Add dateRange property
+  dateRange,
   onSort,
 }: CampaignTableProps) {
   const formatCurrency = (value: number) => {
@@ -68,6 +57,10 @@ export default function CampaignTable({
         {loading ? (
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
             Loading campaigns...
+          </div>
+        ) : campaigns.length === 0 ? (
+          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            No campaign data available for the selected date range.
           </div>
         ) : (
           <div className="overflow-x-auto">

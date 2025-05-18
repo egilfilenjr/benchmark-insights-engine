@@ -37,11 +37,23 @@ export interface TrendGraphProps {
   loading?: boolean;
 }
 
+export interface Campaign {
+  id: string;
+  name: string;
+  platform: string;
+  spend: number;
+  conversions: number;
+  cpa: number;
+  roas: number;
+  ctr: number;
+  vsBenchmark: number;
+}
+
 export interface CampaignTableProps {
   dateRange: { from: Date; to: Date }; 
   loading?: boolean;
   title?: string;
-  campaigns?: any[];
+  campaigns?: Campaign[];
   sortBy?: string;
   ascending?: boolean;
   onSort?: (column: string) => void;
