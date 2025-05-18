@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
+import { toast } from "@/hooks/use-toast";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
@@ -17,9 +18,16 @@ export default function SignUp() {
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
     } else {
-      toast.success("Check your email to confirm your account.");
+      toast({
+        title: "Success",
+        description: "Check your email to confirm your account."
+      });
       navigate("/login");
     }
   };

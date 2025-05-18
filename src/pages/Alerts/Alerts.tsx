@@ -167,7 +167,7 @@ export default function Alerts() {
               <CardHeader>
                 <CardTitle>{a.name}</CardTitle>
                 <CardDescription>
-                  {a.kpi} {a.trigger} > {a.threshold}%
+                  {a.kpi} {a.trigger} &gt; {a.threshold}%
                 </CardDescription>
               </CardHeader>
               <CardContent>

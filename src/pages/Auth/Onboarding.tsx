@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
+import { toast } from "@/hooks/use-toast";
 
 const industries = ["SaaS", "Ecommerce", "Healthcare", "Finance", "Local Services", "Education"];
 const conversionTypes = ["Leads", "Purchases", "Appointments", "Signups", "Demos"];
@@ -32,7 +33,11 @@ export default function Onboarding() {
 
   const handleSubmit = async () => {
     if (!teamName || !industry || !conversionType) {
-      toast.error("Please complete all fields");
+      toast({
+        title: "Error",
+        description: "Please complete all fields",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -51,7 +56,11 @@ export default function Onboarding() {
       .single();
 
     if (teamError || !teamData) {
-      toast.error("Failed to create team");
+      toast({
+        title: "Error",
+        description: "Failed to create team",
+        variant: "destructive"
+      });
       setLoading(false);
       return;
     }
@@ -69,7 +78,10 @@ export default function Onboarding() {
       .upsert({ user_id: userId, onboarding_completed: true }, { onConflict: "user_id" });
 
     setLoading(false);
-    toast.success("You're all set!");
+    toast({
+      title: "Success",
+      description: "You're all set!"
+    });
     navigate("/dashboard");
   };
 
