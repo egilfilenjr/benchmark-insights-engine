@@ -27,7 +27,7 @@ type KPIData = {
 };
 
 export default function Dashboard() {
-  const { profile } = useUserProfile();
+  const userProfile = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState({
     from: subDays(new Date(), 30),
@@ -80,7 +80,7 @@ export default function Dashboard() {
       // const { data, error } = await supabase
       //   .from("metrics")
       //   .select("*")
-      //   .eq("user_id", profile?.id);
+      //   .eq("user_id", userProfile.userId);
 
       // if (data) {
       //   setKpis(data.kpis);
@@ -92,7 +92,7 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, [profile]);
+  }, [userProfile]);
 
   const renderKpiTiles = useMemo(() => {
     return Object.entries(kpis).map(([key, kpi]) => (

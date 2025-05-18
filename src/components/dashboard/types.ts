@@ -73,4 +73,3 @@ export interface TrendEntry {
   date: string;
   value: number;
 }
-

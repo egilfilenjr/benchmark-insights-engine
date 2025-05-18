@@ -54,7 +54,7 @@ type OAuthConnection = {
 };
 
 export default function MyData() {
-  const { profile } = useUserProfile();
+  const userProfile = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [connections, setConnections] = useState<OAuthConnection[]>([]);
   const [files, setFiles] = useState<File[]>([]);
@@ -94,7 +94,7 @@ export default function MyData() {
 
     setConnections(mockConnections);
     setLoading(false);
-  }, [profile]);
+  }, [userProfile]);
 
   const getStatusBadge = (status: OAuthConnection["status"]) => {
     switch (status) {

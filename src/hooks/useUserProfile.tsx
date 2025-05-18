@@ -12,7 +12,7 @@ type UserProfile = {
   user?: User | null;
 };
 
-interface UserProfileContextType extends UserProfile {
+export interface UserProfileContextType extends UserProfile {
   signOut?: () => Promise<void>;
 }
 
@@ -53,13 +53,14 @@ export const useUserProfile = () => {
   const context = useContext(UserProfileContext);
   
   // Return a default object if the context is null
-  return context || { 
-    plan: "free", 
-    role: "viewer",
-    // Add a dummy signOut function to prevent errors
-    signOut: async () => {
+  return {
+    userId: context?.userId,
+    teamId: context?.teamId,
+    plan: context?.plan || "free", 
+    role: context?.role || "viewer",
+    user: context?.user || null,
+    signOut: context?.signOut || (async () => {
       console.log("Sign out not implemented");
-    },
-    user: null
+    })
   };
 };
