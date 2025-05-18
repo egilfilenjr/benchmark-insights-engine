@@ -9,21 +9,33 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { addDays, format, startOfDay, endOfDay, subDays, subMonths } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DateRangeSelectorProps {
   onDateRangeChange: (range: { from: Date; to: Date }) => void;
+  initialDateRange?: { from: Date; to: Date };
   className?: string;
 }
 
-export default function DateRangeSelector({ onDateRangeChange, className }: DateRangeSelectorProps) {
+export default function DateRangeSelector({ 
+  onDateRangeChange, 
+  initialDateRange,
+  className 
+}: DateRangeSelectorProps) {
   const [date, setDate] = useState<{
     from: Date;
     to: Date;
-  }>({
+  }>(initialDateRange || {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
+
+  useEffect(() => {
+    // Initialize with the provided date range
+    if (initialDateRange) {
+      setDate(initialDateRange);
+    }
+  }, [initialDateRange]);
 
   const predefinedRanges = [
     { label: "Last 7D", getRange: () => ({ from: subDays(new Date(), 7), to: new Date() }) },

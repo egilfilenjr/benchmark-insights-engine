@@ -9,14 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Filter } from "lucide-react";
-
-interface FilterBarProps {
-  onDateRangeChange: (range: { from: Date; to: Date }) => void;
-  onComparisonChange: (comparison: string) => void;
-  onFilterChange: (filters: Record<string, string>) => void;
-}
+import { FilterBarProps } from "./types";
 
 export default function FilterBar({
+  dateRange,
   onDateRangeChange,
   onComparisonChange,
   onFilterChange,
@@ -42,13 +38,13 @@ export default function FilterBar({
 
   const handleComparisonChange = (comparison: string) => {
     setActiveComparison(comparison);
-    onComparisonChange(comparison);
+    if (onComparisonChange) onComparisonChange(comparison);
   };
 
   const handleFilterChange = (type: string, value: string) => {
     const newFilters = { ...filters, [type]: value };
     setFilters(newFilters);
-    onFilterChange(newFilters);
+    if (onFilterChange) onFilterChange(newFilters);
   };
 
   return (
