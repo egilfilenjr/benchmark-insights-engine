@@ -29,7 +29,7 @@ const testimonials = [
     role: 'CMO',
     company: 'Shopify Plus Partner',
     image: 'https://randomuser.me/api/portraits/women/3.jpg',
-    quote: 'We've cut our CPA by 42% after implementing the recommendations from Benchmarketing. An essential tool for our team.',
+    quote: "We've cut our CPA by 42% after implementing the recommendations from Benchmarketing. An essential tool for our team.",
     stars: 5
   }
 ];
