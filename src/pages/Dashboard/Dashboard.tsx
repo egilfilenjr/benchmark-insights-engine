@@ -48,6 +48,7 @@ export default function Dashboard() {
     conversions: { value: 386, change: 18.4, benchmark: 310 },
   });
 
+  // Create proper DataPoint[] array for the trend graph
   const [trendData, setTrendData] = useState<DataPoint[]>(
     Array.from({ length: 30 }, (_, i) => ({
       date: subDays(new Date(), 30 - i),
@@ -112,8 +113,8 @@ export default function Dashboard() {
         <FilterBar 
           dateRange={dateRange} 
           onDateRangeChange={setDateRange}
-          onComparisonChange={() => {}} 
-          onFilterChange={() => {}}
+          onComparisonChange={(comparison) => console.log('Comparison changed:', comparison)} 
+          onFilterChange={(filters) => console.log('Filters changed:', filters)}
         />
 
         <AecrScorePanel
