@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,15 +11,17 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
-import Onboarding from "./pages/Auth/Onboarding";            // ✅ NEW
+import Onboarding from "./pages/Auth/Onboarding";
 import HowItWorks from "./pages/HowItWorks";
 import BenchmarksLibrary from "./pages/BenchmarksLibrary";
 import ToolboxLanding from "./pages/ToolboxLanding";
+import ToolboxIndex from "./pages/Toolbox/ToolboxIndex";
 import Pricing from "./pages/Pricing";
 import Industries from "./pages/Industries";
 import UseCases from "./pages/UseCases";
 import About from "./pages/About";
 import Resources from "./pages/Resources";
+import Integrations from "./pages/Integrations";
 
 // Protected app pages
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -52,15 +55,17 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/onboarding" element={<Onboarding />} /> {/* ✅ NEW */}
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/benchmarks" element={<BenchmarksLibrary />} />
-            <Route path="/toolbox" element={<ToolboxLanding />} />
+            <Route path="/toolbox" element={<ToolboxIndex />} /> {/* Updated toolbox route */}
+            <Route path="/toolbox/:toolName" element={<ToolboxLanding />} /> {/* Individual tools */}
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/industries" element={<Industries />} />
             <Route path="/use-cases" element={<UseCases />} />
             <Route path="/about" element={<About />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/integrations" element={<Integrations />} />
 
             {/* Protected app routes */}
             <Route element={<ProtectedRoute />}>

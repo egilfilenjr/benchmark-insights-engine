@@ -7,6 +7,9 @@ import { TestimonialCarousel } from "@/components/home/TestimonialCarousel";
 import { ToolsPreview } from "@/components/home/ToolsPreview";
 import { PlatformsSupported } from "@/components/home/PlatformsSupported";
 import { MarketingSolutions } from "@/components/home/MarketingSolutions";
+import { AecrScoreDemo } from "@/components/home/AecrScoreDemo";
+import { PlanSelectorPreview } from "@/components/home/PlanSelectorPreview";
+import { IntegrationsDisplay } from "@/components/home/IntegrationsDisplay";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -40,9 +43,12 @@ export default function Index() {
       
       <HeroSection />
       <SocialProof />
+      <AecrScoreDemo />
       <MarketingSolutions />
       <FeatureTeasers />
       <PlatformsSupported />
+      <IntegrationsDisplay />
+      <PlanSelectorPreview />
       <ToolsPreview />
       <TestimonialCarousel />
     </MainLayout>
