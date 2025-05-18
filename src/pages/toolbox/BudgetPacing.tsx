@@ -17,7 +17,7 @@ export default function BudgetPacing() {
 
   // Calculate pace and delta only if day is valid
   const pace = dayNum > 0 ? ((spendNum / dayNum) * 30).toFixed(2) : null;
-  const delta = pace && budgetNum ? (parseFloat(pace) - budgetNum).toFixed(2) : null;
+  const delta = pace !== null && budgetNum > 0 ? (parseFloat(pace) - budgetNum).toFixed(2) : null;
 
   return (
     <MainLayout>
@@ -56,7 +56,7 @@ export default function BudgetPacing() {
             </p>
             {delta && (
               <p className="text-muted-foreground">
-                You are <strong>{delta > 0 ? "over" : "under"}</strong> budget by{" "}
+                You are <strong>{parseFloat(delta) > 0 ? "over" : "under"}</strong> budget by{" "}
                 <strong>${Math.abs(parseFloat(delta))}</strong>.
               </p>
             )}

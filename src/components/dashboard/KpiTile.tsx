@@ -2,19 +2,7 @@
 import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-interface KpiTileProps {
-  title: string;
-  value: number | string;
-  change: number;
-  format?: "percentage" | "currency" | "number";
-  tooltipText?: string;
-  loading?: boolean;
-  benchmarkComparison?: {
-    value: number;
-    label: string;
-  };
-}
+import { KpiTileProps } from "./types";
 
 export default function KpiTile({
   title,

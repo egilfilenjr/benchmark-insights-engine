@@ -3,21 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, BellRing, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-interface Alert {
-  id: string;
-  type: "warning" | "info" | "success";
-  message: string;
-  timestamp: Date;
-  actionLabel?: string;
-  onAction?: () => void;
-}
-
-interface AlertsPanelProps {
-  alerts: Alert[];
-  loading?: boolean;
-  onClearAll?: () => void;
-}
+import { Alert, AlertsPanelProps } from "./types";
 
 export default function AlertsPanel({
   alerts,
@@ -36,7 +22,7 @@ export default function AlertsPanel({
   };
 
   const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString([], {
+    return date.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });

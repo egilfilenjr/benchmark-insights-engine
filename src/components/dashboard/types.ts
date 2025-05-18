@@ -2,30 +2,43 @@
 // This file is meant to define types for dashboard components
 
 export interface KpiTileProps {
+  title: string;
   value: number;
   change: number;
   benchmark: number;
-  key: string;
-  label: string; // Added for Dashboard.tsx
-  title?: string; // Optional title prop
+  format?: "percentage" | "currency" | "number";
+  tooltipText?: string;
+  loading?: boolean;
+  benchmarkComparison?: {
+    value: number;
+    label: string;
+  };
 }
 
 export interface FilterBarProps {
-  dateRange?: { from: Date; to: Date }; 
-  onDateChange?: (range: { from: Date; to: Date }) => void;
-  onDateRangeChange?: (range: { from: Date; to: Date }) => void; // Added for compatibility
+  dateRange: { from: Date; to: Date }; 
+  onDateRangeChange: (range: { from: Date; to: Date }) => void;
   onComparisonChange?: (comparison: string) => void;
   onFilterChange?: (filters: Record<string, string>) => void;
 }
 
+export interface DataPoint {
+  date: Date;
+  value: number;
+  benchmark?: number;
+}
+
 export interface TrendGraphProps {
-  data: TrendEntry[];
+  data: DataPoint[];
   title: string;
-  valueLabel: string; // Required property
+  valueLabel: string;
+  benchmarkLabel?: string;
+  valueFormat?: "currency" | "percentage" | "number";
+  loading?: boolean;
 }
 
 export interface CampaignTableProps {
-  dateRange?: { from: Date; to: Date }; 
+  dateRange: { from: Date; to: Date }; 
   loading?: boolean;
   title?: string;
   campaigns?: any[];
@@ -34,15 +47,19 @@ export interface CampaignTableProps {
   onSort?: (column: string) => void;
 }
 
-export interface AlertsPanelProps {
-  alerts: AlertItem[]; // Required property
-  loading?: boolean;
-  onClearAll?: () => void;
+export interface Alert {
+  id: string;
+  type: "warning" | "info" | "success";
+  message: string;
+  timestamp: Date;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
-export interface TrendEntry {
-  date: string;
-  value: number;
+export interface AlertsPanelProps {
+  alerts: Alert[];
+  loading?: boolean;
+  onClearAll?: () => void;
 }
 
 export interface AlertItem {
@@ -51,3 +68,9 @@ export interface AlertItem {
   description: string;
   severity: 'low' | 'medium' | 'high';
 }
+
+export interface TrendEntry {
+  date: string;
+  value: number;
+}
+

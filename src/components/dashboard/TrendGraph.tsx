@@ -10,22 +10,8 @@ import {
   Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format } from "date-fns";
-
-interface DataPoint {
-  date: Date;
-  value: number;
-  benchmark?: number;
-}
-
-interface TrendGraphProps {
-  title: string;
-  data: DataPoint[];
-  valueLabel: string;
-  benchmarkLabel?: string;
-  valueFormat?: "currency" | "percentage" | "number";
-  loading?: boolean;
-}
+import { format, parseISO } from "date-fns";
+import { DataPoint, TrendGraphProps } from "./types";
 
 export default function TrendGraph({
   title,
@@ -46,12 +32,15 @@ export default function TrendGraph({
     }
   };
 
-  // Transform data for recharts
-  const chartData = data.map((point) => ({
-    date: format(new Date(point.date), "MMM dd"),
-    [valueLabel]: point.value,
-    ...(point.benchmark !== undefined && { [benchmarkLabel || "Benchmark"]: point.benchmark }),
-  }));
+  // Transform data for recharts - handle both Date objects and ISO strings
+  const chartData = data.map((point) => {
+    const dateObj = typeof point.date === 'string' ? new Date(point.date) : point.date;
+    return {
+      date: format(dateObj, "MMM dd"),
+      [valueLabel]: point.value,
+      ...(point.benchmark !== undefined && { [benchmarkLabel || "Benchmark"]: point.benchmark }),
+    };
+  });
 
   return (
     <Card className="h-full">

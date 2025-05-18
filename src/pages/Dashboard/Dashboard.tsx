@@ -10,7 +10,7 @@ import CampaignTable from "@/components/dashboard/CampaignTable";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
 import { subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertItem } from "@/components/dashboard/types";
+import { Alert, DataPoint } from "@/components/dashboard/types";
 
 type KPI = {
   value: number;
@@ -26,17 +26,8 @@ type KPIData = {
   conversions: KPI;
 };
 
-type TrendEntry = {
-  date: Date;
-  value: number;
-};
-
-type TrendData = {
-  cpa: TrendEntry[];
-};
-
 export default function Dashboard() {
-  const { user } = useUserProfile();
+  const { profile } = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState({
     from: subDays(new Date(), 30),
@@ -57,26 +48,26 @@ export default function Dashboard() {
     conversions: { value: 386, change: 18.4, benchmark: 310 },
   });
 
-  const [trendData, setTrendData] = useState<TrendData>({
-    cpa: Array.from({ length: 30 }, (_, i) => ({
+  const [trendData, setTrendData] = useState<DataPoint[]>(
+    Array.from({ length: 30 }, (_, i) => ({
       date: subDays(new Date(), 30 - i),
       value: 30 + Math.random() * 10,
-    })),
-  });
+    }))
+  );
 
   // Mock alerts for AlertsPanel
-  const [alerts, setAlerts] = useState<AlertItem[]>([
+  const [alerts, setAlerts] = useState<Alert[]>([
     {
       id: "1",
-      title: "CPA Threshold Exceeded",
-      description: "Your CPA is 15% above target on Meta campaigns",
-      severity: "high"
+      type: "warning",
+      message: "Your CPA is 15% above target on Meta campaigns",
+      timestamp: new Date(),
     },
     {
       id: "2",
-      title: "Budget Pacing Alert",
-      description: "You've spent 75% of monthly budget with 45% of month remaining",
-      severity: "medium"
+      type: "info",
+      message: "You've spent 75% of monthly budget with 45% of month remaining",
+      timestamp: new Date(),
     }
   ]);
 
@@ -89,7 +80,7 @@ export default function Dashboard() {
       // const { data, error } = await supabase
       //   .from("metrics")
       //   .select("*")
-      //   .eq("user_id", user?.id);
+      //   .eq("user_id", profile?.id);
 
       // if (data) {
       //   setKpis(data.kpis);
@@ -101,13 +92,13 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, [user]);
+  }, [profile]);
 
   const renderKpiTiles = useMemo(() => {
     return Object.entries(kpis).map(([key, kpi]) => (
       <KpiTile 
         key={key} 
-        label={key.toUpperCase()} 
+        title={key.toUpperCase()} 
         value={kpi.value} 
         change={kpi.change} 
         benchmark={kpi.benchmark} 
@@ -120,7 +111,9 @@ export default function Dashboard() {
       <div className="space-y-6">
         <FilterBar 
           dateRange={dateRange} 
-          onDateRangeChange={setDateRange} 
+          onDateRangeChange={setDateRange}
+          onComparisonChange={() => {}} 
+          onFilterChange={() => {}}
         />
 
         <AecrScorePanel
@@ -134,10 +127,7 @@ export default function Dashboard() {
         </div>
 
         <TrendGraph 
-          data={trendData.cpa.map(item => ({
-            date: item.date.toISOString(),
-            value: item.value
-          }))} 
+          data={trendData} 
           title="CPA Trend" 
           valueLabel="Cost Per Acquisition" 
         />

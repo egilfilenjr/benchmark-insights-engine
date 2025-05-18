@@ -54,7 +54,7 @@ type OAuthConnection = {
 };
 
 export default function MyData() {
-  const { user } = useUserProfile();
+  const { profile } = useUserProfile();
   const [loading, setLoading] = useState(true);
   const [connections, setConnections] = useState<OAuthConnection[]>([]);
   const [files, setFiles] = useState<File[]>([]);
@@ -63,8 +63,8 @@ export default function MyData() {
     setFiles(prev => [...prev, ...newFiles]);
   };
   
-  const handleRemoveFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveFile = (file: File) => {
+    setFiles(prev => prev.filter(f => f !== file));
   };
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export default function MyData() {
 
     setConnections(mockConnections);
     setLoading(false);
-  }, [user]);
+  }, [profile]);
 
   const getStatusBadge = (status: OAuthConnection["status"]) => {
     switch (status) {
