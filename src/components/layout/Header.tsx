@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import AuthStatus from '@/components/auth/AuthStatus';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,18 +58,9 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* CTA Buttons */}
-        <div className="hidden lg:flex items-center space-x-4">
-          <Link to="/login">
-            <Button variant="outline" className="font-medium">
-              Login
-            </Button>
-          </Link>
-          <Link to="/signup">
-            <Button className="bg-lilac hover:bg-lilac-700 text-white font-medium">
-              See Your Score
-            </Button>
-          </Link>
+        {/* CTA Buttons - Replaced with AuthStatus */}
+        <div className="hidden lg:block">
+          <AuthStatus />
         </div>
 
         {/* Mobile Menu Button */}
@@ -95,17 +86,8 @@ const Header = () => {
                 {link.name}
               </Link>
             ))}
-            <div className="flex flex-col space-y-3 pt-4">
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)}>
-                <Button className="w-full bg-lilac hover:bg-lilac-700">
-                  See Your Score
-                </Button>
-              </Link>
+            <div className="pt-4">
+              <AuthStatus />
             </div>
           </nav>
         </div>

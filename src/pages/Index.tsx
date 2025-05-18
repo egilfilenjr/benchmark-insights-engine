@@ -7,10 +7,37 @@ import { TestimonialCarousel } from "@/components/home/TestimonialCarousel";
 import { ToolsPreview } from "@/components/home/ToolsPreview";
 import { PlatformsSupported } from "@/components/home/PlatformsSupported";
 import { MarketingSolutions } from "@/components/home/MarketingSolutions";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function Index() {
+  const navigate = useNavigate();
+  const { user } = useUserProfile();
+
   return (
     <MainLayout>
+      {/* Hero CTA for Login/Dashboard */}
+      <div className="bg-gradient-to-r from-lilac/10 to-blue-50 py-4 text-center">
+        <div className="container mx-auto">
+          {user ? (
+            <Button 
+              className="bg-lilac hover:bg-lilac-700 text-white font-medium"
+              onClick={() => navigate('/dashboard')}
+            >
+              Go to Dashboard
+            </Button>
+          ) : (
+            <Button 
+              className="bg-lilac hover:bg-lilac-700 text-white font-medium"
+              onClick={() => navigate('/login')}
+            >
+              Login to See Your Dashboard
+            </Button>
+          )}
+        </div>
+      </div>
+      
       <HeroSection />
       <SocialProof />
       <MarketingSolutions />
