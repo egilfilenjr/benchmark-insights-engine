@@ -1,0 +1,1 @@
+export default function Toolbox() { return <div className='p-4 text-xl'>Toolbox Page</div>; }
