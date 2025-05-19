@@ -1,1 +1,0 @@
-export default function Integrations() { return <div className='p-4 text-xl'>Integrations Page</div>; }
