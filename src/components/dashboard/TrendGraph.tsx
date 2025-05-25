@@ -22,13 +22,17 @@ export default function TrendGraph({
   loading = false,
 }: TrendGraphProps) {
   const formatValue = (value: number): string => {
+    // Ensure value is a valid number
+    const numVal = Number(value);
+    if (isNaN(numVal)) return "N/A";
+    
     switch (valueFormat) {
       case "currency":
-        return `$${value.toFixed(2)}`;
+        return `$${numVal.toFixed(2)}`;
       case "percentage":
-        return `${value.toFixed(2)}%`;
+        return `${numVal.toFixed(2)}%`;
       default:
-        return value.toFixed(2);
+        return numVal.toFixed(2);
     }
   };
 
@@ -37,8 +41,8 @@ export default function TrendGraph({
     const dateObj = typeof point.date === 'string' ? new Date(point.date) : point.date;
     return {
       date: format(dateObj, "MMM dd"),
-      [valueLabel]: point.value,
-      ...(point.benchmark !== undefined && { [benchmarkLabel || "Benchmark"]: point.benchmark }),
+      [valueLabel]: Number(point.value) || 0,
+      ...(point.benchmark !== undefined && { [benchmarkLabel || "Benchmark"]: Number(point.benchmark) || 0 }),
     };
   });
 

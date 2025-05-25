@@ -16,16 +16,20 @@ export default function KpiTile({
   const formatValue = (val: number | string): string => {
     if (typeof val === "string") return val;
     
+    // Ensure val is a valid number
+    const numVal = Number(val);
+    if (isNaN(numVal)) return "N/A";
+    
     switch (format) {
       case "percentage":
-        return `${val.toFixed(2)}%`;
+        return `${numVal.toFixed(2)}%`;
       case "currency":
-        return `$${val.toLocaleString("en-US", {
+        return `$${numVal.toLocaleString("en-US", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}`;
       default:
-        return val.toLocaleString("en-US", {
+        return numVal.toLocaleString("en-US", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 2,
         });
@@ -33,11 +37,12 @@ export default function KpiTile({
   };
 
   const renderChangeIndicator = () => {
-    if (change === 0) {
+    const changeNum = Number(change);
+    if (isNaN(changeNum) || changeNum === 0) {
       return <Minus className="h-4 w-4 text-yellow-500" />;
     }
     
-    const isPositive = change > 0;
+    const isPositive = changeNum > 0;
     const Icon = isPositive ? ArrowUpRight : ArrowDownRight;
     const colorClass = title === "CPA" 
       ? (isPositive ? "text-red-500" : "text-green-500") 
@@ -46,7 +51,7 @@ export default function KpiTile({
     return (
       <div className={`flex items-center ${colorClass}`}>
         <Icon className="h-4 w-4 mr-1" />
-        <span>{Math.abs(change).toFixed(1)}%</span>
+        <span>{Math.abs(changeNum).toFixed(1)}%</span>
       </div>
     );
   };
