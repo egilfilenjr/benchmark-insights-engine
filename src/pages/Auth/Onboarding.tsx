@@ -1,5 +1,3 @@
-// src/pages/Onboarding.tsx
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +15,9 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
-  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [timezone, setTimezone] = useState(
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
   const [goals, setGoals] = useState<string[]>([]);
 
   const toggleGoal = (goal: string) => {
@@ -30,22 +30,32 @@ export default function Onboarding() {
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
   return (
-    <div className="max-w-xl mx-auto py-12">
+    <div className="w-full max-w-xl mx-auto px-4 sm:px-6 py-12">
+      {/* Progress Bar */}
+      <div className="flex justify-between text-xs font-medium text-muted-foreground px-2 mb-4">
+        <span className={step >= 1 ? "text-primary" : ""}>👋 Welcome</span>
+        <span className={step >= 2 ? "text-primary" : ""}>🏢 Company</span>
+        <span className={step >= 3 ? "text-primary" : ""}>🎯 Goals</span>
+        <span className={step >= 4 ? "text-primary" : ""}>🔌 Integrations</span>
+        <span className={step >= 5 ? "text-primary" : ""}>✅ Done</span>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-semibold">
-            {step === 1 && "Welcome to Benchmarketing"}
-            {step === 2 && "Tell Us About Your Company"}
-            {step === 3 && "What Are Your Goals?"}
-            {step === 4 && "Connect Your Integrations"}
-            {step === 5 && "You're All Set!"}
+          <CardTitle className="text-2xl font-semibold flex items-center gap-2">
+            {step === 1 && <>👋 Welcome to Benchmarketing</>}
+            {step === 2 && <>🏢 Tell Us About Your Company</>}
+            {step === 3 && <>🎯 What Are Your Goals?</>}
+            {step === 4 && <>🔌 Connect Your Integrations</>}
+            {step === 5 && <>✅ You're All Set!</>}
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {step === 1 && (
-            <div className="text-gray-600 text-sm">
-              Let’s set up your account to unlock insights, benchmarks, and automation.
+            <div className="text-gray-600 text-sm leading-relaxed">
+              Let’s set up your workspace so we can generate performance benchmarks and
+              uncover insights for your campaigns. This takes less than 2 minutes.
             </div>
           )}
 
@@ -85,10 +95,18 @@ export default function Onboarding() {
 
           {step === 4 && (
             <div className="space-y-4">
-              <Button variant="outline" className="w-full" onClick={() => alert("Connect GA")}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => alert("TODO: Connect Google Analytics")}
+              >
                 Connect Google Analytics
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => alert("Connect Google Ads")}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => alert("TODO: Connect Google Ads")}
+              >
                 Connect Google Ads
               </Button>
               <p className="text-sm text-muted-foreground text-center">
@@ -98,9 +116,26 @@ export default function Onboarding() {
           )}
 
           {step === 5 && (
-            <div className="text-center space-y-2">
+            <div className="space-y-4 text-center">
               <p className="text-green-600 font-medium">🎉 Onboarding Complete!</p>
-              <p className="text-sm text-gray-600">Redirecting you to your dashboard...</p>
+              <p className="text-sm text-gray-600">
+                You’re ready to explore your performance insights.
+              </p>
+              <ul className="text-sm text-left text-gray-600 space-y-1 pt-4">
+                <li>
+                  <strong>Company:</strong> {companyName}
+                </li>
+                <li>
+                  <strong>Industry:</strong> {industry}
+                </li>
+                <li>
+                  <strong>Timezone:</strong> {timezone}
+                </li>
+                <li>
+                  <strong>Goals:</strong>{" "}
+                  {goals.length > 0 ? goals.join(", ") : "None selected"}
+                </li>
+              </ul>
             </div>
           )}
 
