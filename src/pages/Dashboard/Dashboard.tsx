@@ -101,11 +101,15 @@ export default function Dashboard() {
             benchmark: Number(trend.benchmark) || 0,
           })) : [];
 
+          // Safely parse campaigns and alerts arrays
+          const safeCampaigns = Array.isArray(entry.campaigns) ? entry.campaigns.filter(c => c && typeof c === 'object') : [];
+          const safeAlerts = Array.isArray(entry.alerts) ? entry.alerts.filter(a => a && typeof a === 'object') : [];
+
           setKpis(safeKpis);
           setAecrScore(safeAecrScore);
           setTrendData(safeTrendData);
-          setCampaigns(Array.isArray(entry.campaigns) ? entry.campaigns : []);
-          setAlerts(Array.isArray(entry.alerts) ? entry.alerts : []);
+          setCampaigns(safeCampaigns);
+          setAlerts(safeAlerts);
         }
       } catch (err: any) {
         console.error(err);
@@ -153,14 +157,28 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="p-6 space-y-6">
-        <FilterBar dateRange={dateRange} setDateRange={setDateRange} />
-        <AecrScorePanel score={aecrScore} />
+        <FilterBar 
+          dateRange={dateRange} 
+          onDateRangeChange={setDateRange} 
+        />
+        <AecrScorePanel score={aecrScore.score} />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {renderKpiTiles}
         </div>
-        <TrendGraph data={trendData} />
-        <CampaignTable campaigns={campaigns} onSort={handleSort} />
-        <AlertsPanel alerts={alerts} onClear={handleClearAlerts} />
+        <TrendGraph 
+          data={trendData} 
+          title="Performance Trend"
+          valueLabel="Performance" 
+        />
+        <CampaignTable 
+          campaigns={campaigns} 
+          onSort={handleSort}
+          dateRange={dateRange}
+        />
+        <AlertsPanel 
+          alerts={alerts} 
+          onClearAll={handleClearAlerts} 
+        />
       </div>
     </AppLayout>
   );
