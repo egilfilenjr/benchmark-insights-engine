@@ -101,9 +101,35 @@ export default function Dashboard() {
             benchmark: Number(trend.benchmark) || 0,
           })) : [];
 
-          // Safely parse campaigns and alerts arrays
-          const safeCampaigns = Array.isArray(entry.campaigns) ? entry.campaigns.filter(c => c && typeof c === 'object') : [];
-          const safeAlerts = Array.isArray(entry.alerts) ? entry.alerts.filter(a => a && typeof a === 'object') : [];
+          // Safely parse campaigns and alerts arrays with proper type casting
+          const safeCampaigns: Campaign[] = Array.isArray(entry.campaigns) 
+            ? entry.campaigns
+                .filter(c => c && typeof c === 'object')
+                .map((c: any) => ({
+                  id: c.id || '',
+                  name: c.name || '',
+                  platform: c.platform || '',
+                  spend: Number(c.spend) || 0,
+                  conversions: Number(c.conversions) || 0,
+                  cpa: Number(c.cpa) || 0,
+                  roas: Number(c.roas) || 0,
+                  ctr: Number(c.ctr) || 0,
+                  vsBenchmark: Number(c.vsBenchmark) || 0,
+                }))
+            : [];
+
+          const safeAlerts: Alert[] = Array.isArray(entry.alerts)
+            ? entry.alerts
+                .filter(a => a && typeof a === 'object')
+                .map((a: any) => ({
+                  id: a.id || '',
+                  type: a.type || 'info',
+                  message: a.message || '',
+                  timestamp: new Date(a.timestamp || Date.now()),
+                  actionLabel: a.actionLabel,
+                  onAction: a.onAction,
+                }))
+            : [];
 
           setKpis(safeKpis);
           setAecrScore(safeAecrScore);
@@ -161,7 +187,11 @@ export default function Dashboard() {
           dateRange={dateRange} 
           onDateRangeChange={setDateRange} 
         />
-        <AecrScorePanel score={aecrScore.score} />
+        <AecrScorePanel 
+          score={aecrScore.score} 
+          percentile={aecrScore.percentile}
+          previousScore={aecrScore.previousScore}
+        />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {renderKpiTiles}
         </div>
