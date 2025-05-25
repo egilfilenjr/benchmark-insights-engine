@@ -68,53 +68,44 @@ export default function Dashboard() {
         if (data && data.length > 0) {
           const entry = data[0];
           
-          // Ensure all values are numbers with safe fallbacks
+          // Safe JSON parsing with type checking
+          const parseKpiData = (jsonData: any, kpiName: string) => ({
+            value: Number(jsonData?.[kpiName]?.value) || 0,
+            change: Number(jsonData?.[kpiName]?.change) || 0,
+            benchmark: Number(jsonData?.[kpiName]?.benchmark) || 0,
+          });
+
+          // Safely parse KPI data
+          const kpiData = entry.kpis as any;
           const safeKpis = {
-            cpa: {
-              value: Number(entry.kpis?.cpa?.value) || 0,
-              change: Number(entry.kpis?.cpa?.change) || 0,
-              benchmark: Number(entry.kpis?.cpa?.benchmark) || 0,
-            },
-            roas: {
-              value: Number(entry.kpis?.roas?.value) || 0,
-              change: Number(entry.kpis?.roas?.change) || 0,
-              benchmark: Number(entry.kpis?.roas?.benchmark) || 0,
-            },
-            ctr: {
-              value: Number(entry.kpis?.ctr?.value) || 0,
-              change: Number(entry.kpis?.ctr?.change) || 0,
-              benchmark: Number(entry.kpis?.ctr?.benchmark) || 0,
-            },
-            spend: {
-              value: Number(entry.kpis?.spend?.value) || 0,
-              change: Number(entry.kpis?.spend?.change) || 0,
-              benchmark: Number(entry.kpis?.spend?.benchmark) || 0,
-            },
-            conversions: {
-              value: Number(entry.kpis?.conversions?.value) || 0,
-              change: Number(entry.kpis?.conversions?.change) || 0,
-              benchmark: Number(entry.kpis?.conversions?.benchmark) || 0,
-            },
+            cpa: parseKpiData(kpiData, 'cpa'),
+            roas: parseKpiData(kpiData, 'roas'),
+            ctr: parseKpiData(kpiData, 'ctr'),
+            spend: parseKpiData(kpiData, 'spend'),
+            conversions: parseKpiData(kpiData, 'conversions'),
           };
 
+          // Safely parse AECR data
+          const aecrData = entry.aecr as any;
           const safeAecrScore = {
-            score: Number(entry.aecr?.score) || 0,
-            percentile: Number(entry.aecr?.percentile) || 0,
-            previousScore: Number(entry.aecr?.previousScore) || 0,
+            score: Number(aecrData?.score) || 0,
+            percentile: Number(aecrData?.percentile) || 0,
+            previousScore: Number(aecrData?.previousScore) || 0,
           };
 
-          // Ensure trend data has proper numeric values
-          const safeTrendData = (entry.trends || []).map((trend: any) => ({
+          // Safely parse trend data
+          const trendsData = entry.trends as any;
+          const safeTrendData = Array.isArray(trendsData) ? trendsData.map((trend: any) => ({
             date: trend.date,
             value: Number(trend.value) || 0,
             benchmark: Number(trend.benchmark) || 0,
-          }));
+          })) : [];
 
           setKpis(safeKpis);
           setAecrScore(safeAecrScore);
           setTrendData(safeTrendData);
-          setCampaigns(entry.campaigns || []);
-          setAlerts(entry.alerts || []);
+          setCampaigns(Array.isArray(entry.campaigns) ? entry.campaigns : []);
+          setAlerts(Array.isArray(entry.alerts) ? entry.alerts : []);
         }
       } catch (err: any) {
         console.error(err);

@@ -4,7 +4,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BenchmarkFilterBar from "@/components/benchmarks/BenchmarkFilterBar";
-import BenchmarkTable from "@/components/benchmarks/BenchmarkTable";
+import { BenchmarkTable } from "@/components/benchmarks/BenchmarkTable";
 import BenchmarkPercentileVisual from "@/components/benchmarks/BenchmarkPercentileVisual";
 import IndustryComparison from "@/components/benchmarks/IndustryComparison";
 import { Button } from "@/components/ui/button";
@@ -110,6 +110,13 @@ export default function Benchmarks() {
 
   const activeBenchmark = benchmarks.find(b => b.kpi === selectedKPI) || benchmarks[0];
 
+  // Convert benchmark data to table format
+  const tableData = benchmarks.map(benchmark => ({
+    metric: benchmark.kpi,
+    value: benchmark.median,
+    percentile: 50, // median is 50th percentile
+  }));
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -179,8 +186,9 @@ export default function Benchmarks() {
         </div>
 
         <BenchmarkTable 
-          data={benchmarks}
+          data={tableData}
           loading={loading}
+          showYourValue={plan !== "free"}
         />
       </div>
     </AppLayout>
