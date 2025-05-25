@@ -1,117 +1,119 @@
+// src/pages/Onboarding.tsx
 
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/lib/supabase";
-import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const industries = ["SaaS", "Ecommerce", "Healthcare", "Finance", "Local Services", "Education"];
-const conversionTypes = ["Leads", "Purchases", "Appointments", "Signups", "Demos"];
+const goalsList = [
+  "Benchmarking",
+  "Campaign Optimization",
+  "ROI Analysis",
+  "Competitor Insights",
+];
 
 export default function Onboarding() {
-  const navigate = useNavigate();
-  const [teamName, setTeamName] = useState("");
+  const [step, setStep] = useState(1);
+  const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
-  const [conversionType, setConversionType] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState("");
+  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [goals, setGoals] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user?.id) {
-        setUserId(data.user.id);
-      } else {
-        navigate("/login");
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const handleSubmit = async () => {
-    if (!teamName || !industry || !conversionType) {
-      toast({
-        title: "Error",
-        description: "Please complete all fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Since we don't have the actual tables yet, we'll simulate a successful onboarding
-      // In a real implementation, we would create the team and add the user to it
-      
-      // Simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setLoading(false);
-      toast({
-        title: "Success",
-        description: "You're all set!"
-      });
-      navigate("/dashboard");
-    } catch (error) {
-      setLoading(false);
-      toast({
-        title: "Error",
-        description: "Something went wrong",
-        variant: "destructive"
-      });
-    }
+  const toggleGoal = (goal: string) => {
+    setGoals((prev) =>
+      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
+    );
   };
 
+  const nextStep = () => setStep((s) => s + 1);
+  const prevStep = () => setStep((s) => Math.max(1, s - 1));
+
   return (
-    <div className="flex justify-center items-center min-h-screen px-4">
-      <Card className="w-full max-w-lg">
-        <CardContent className="py-6 space-y-6">
-          <CardTitle className="text-center text-2xl">Welcome to Benchmarketing</CardTitle>
+    <div className="max-w-xl mx-auto py-12">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-semibold">
+            {step === 1 && "Welcome to Benchmarketing"}
+            {step === 2 && "Tell Us About Your Company"}
+            {step === 3 && "What Are Your Goals?"}
+            {step === 4 && "Connect Your Integrations"}
+            {step === 5 && "You're All Set!"}
+          </CardTitle>
+        </CardHeader>
 
-          <div className="space-y-2">
-            <Label>Team Name</Label>
-            <Input value={teamName} onChange={(e) => setTeamName(e.target.value)} />
-          </div>
+        <CardContent className="space-y-6">
+          {step === 1 && (
+            <div className="text-gray-600 text-sm">
+              Let’s set up your account to unlock insights, benchmarks, and automation.
+            </div>
+          )}
 
-          <div className="space-y-2">
-            <Label>Industry</Label>
-            <select
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-              className="w-full border px-3 py-2 rounded text-sm"
-            >
-              <option value="">Select industry</option>
-              {industries.map((ind, i) => (
-                <option key={i} value={ind}>
-                  {ind}
-                </option>
+          {step === 2 && (
+            <div className="space-y-4">
+              <Input
+                placeholder="Company Name"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
+              <Input
+                placeholder="Industry"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+              />
+              <Input
+                placeholder="Timezone"
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+              />
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-3">
+              {goalsList.map((goal) => (
+                <label key={goal} className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={goals.includes(goal)}
+                    onCheckedChange={() => toggleGoal(goal)}
+                  />
+                  <span>{goal}</span>
+                </label>
               ))}
-            </select>
-          </div>
+            </div>
+          )}
 
-          <div className="space-y-2">
-            <Label>Conversion Type</Label>
-            <select
-              value={conversionType}
-              onChange={(e) => setConversionType(e.target.value)}
-              className="w-full border px-3 py-2 rounded text-sm"
-            >
-              <option value="">Select conversion type</option>
-              {conversionTypes.map((c, i) => (
-                <option key={i} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
+          {step === 4 && (
+            <div className="space-y-4">
+              <Button variant="outline" className="w-full" onClick={() => alert("Connect GA")}>
+                Connect Google Analytics
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => alert("Connect Google Ads")}>
+                Connect Google Ads
+              </Button>
+              <p className="text-sm text-muted-foreground text-center">
+                We’ll fetch your campaigns, KPIs, and performance data automatically.
+              </p>
+            </div>
+          )}
 
-          <Button className="w-full mt-4" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Finishing Setup..." : "Complete Onboarding"}
-          </Button>
+          {step === 5 && (
+            <div className="text-center space-y-2">
+              <p className="text-green-600 font-medium">🎉 Onboarding Complete!</p>
+              <p className="text-sm text-gray-600">Redirecting you to your dashboard...</p>
+            </div>
+          )}
+
+          <div className="flex justify-between pt-4">
+            <Button variant="ghost" disabled={step === 1} onClick={prevStep}>
+              Back
+            </Button>
+            {step < 5 ? (
+              <Button onClick={nextStep}>
+                {step === 4 ? "Finish" : "Next"}
+              </Button>
+            ) : null}
+          </div>
         </CardContent>
       </Card>
     </div>
