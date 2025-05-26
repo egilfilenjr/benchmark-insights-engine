@@ -1,50 +1,8 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { useUser } from "@supabase/auth-helpers-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
+// (You already have the top portion with imports and setup)
 
-interface AccountData {
-  id: string;
-  name?: string;
-  display_name?: string;
-  region_code?: string;
-  connected_at?: string;
-}
-
-interface IntegrationState {
-  key: string;
-  label: string;
-  table: string;
-  data: AccountData[];
-  setData: React.Dispatch<React.SetStateAction<AccountData[]>>;
-}
-
-export default function IntegrationsPage() {
-  const user = useUser();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const [loading, setLoading] = useState(true);
-
-  const [gaAccounts, setGaAccounts] = useState<AccountData[]>([]);
-  const [googleAds, setGoogleAds] = useState<AccountData[]>([]);
-  const [metaAds, setMetaAds] = useState<AccountData[]>([]);
-  const [linkedinAds, setLinkedinAds] = useState<AccountData[]>([]);
-  const [tiktokAds, setTiktokAds] = useState<AccountData[]>([]);
-
-  const [oauthMap, setOauthMap] = useState<Record<string, string | null>>({});
-
-  const integrations: IntegrationState[] = [
-    { key: "google_analytics", label: "Google Analytics", table: "ga_accounts", data: gaAccounts, setData: setGaAccounts },
-    { key: "google_ads", label: "Google Ads", table: "google_ads_accounts", data: googleAds, setData: setGoogleAds },
-    { key: "meta_ads", label: "Meta Ads", table: "meta_ads_accounts", data: metaAds, setData: setMetaAds },
-    { key: "linkedin_ads", label: "LinkedIn Ads", table: "linkedin_ads_accounts", data: linkedinAds, setData: setLinkedinAds },
-    { key: "tiktok_ads", label: "TikTok Ads", table: "tiktok_ads_accounts", data: tiktokAds, setData: setTiktokAds },
-  ];
+  const [oauthMap, setOauthMap] = useState<
+    Record<string, { connected_at: string; expires_at: string | null }>
+  >({});
 
   useEffect(() => {
     if (!user) return;
@@ -66,15 +24,17 @@ export default function IntegrationsPage() {
 
       const { data: oauths } = await supabase
         .from("oauth_accounts")
-        .select("provider, connected_at")
+        .select("provider, connected_at, expires_at")
         .eq("user_id", user.id);
 
-      const oauthMap = oauths?.reduce((acc, row) => {
-        acc[row.provider] = row.connected_at;
-        return acc;
-      }, {} as Record<string, string | null>) || {};
-
-      setOauthMap(oauthMap);
+      const map: Record<string, { connected_at: string; expires_at: string | null }> = {};
+      for (const row of oauths || []) {
+        map[row.provider] = {
+          connected_at: row.connected_at,
+          expires_at: row.expires_at,
+        };
+      }
+      setOauthMap(map);
 
       await Promise.all(
         integrations.map(async (i) => {
@@ -89,41 +49,32 @@ export default function IntegrationsPage() {
     loadAccounts();
   }, [user]);
 
-  const handleResync = async (provider: string) => {
-    const res = await fetch("/api/sync-integration", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: user?.id, provider }),
-    });
-
-    const text = await res.text();
-    toast({
-      title: res.ok ? `✅ Synced ${provider.replace("_", " ")}` : `❌ Sync Failed`,
-      description: text,
-      variant: res.ok ? "default" : "destructive",
+  const connectGoogleOAuth = async (scopes: string) => {
+    const redirectTo = window.location.origin + "/oauth/callback";
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        scopes,
+        redirectTo,
+      },
     });
   };
 
-  const handleDisconnect = async (provider: string) => {
-    const { error } = await supabase
-      .from("oauth_accounts")
-      .delete()
-      .eq("user_id", user?.id)
-      .eq("provider", provider);
-
-    if (error) {
-      toast({ title: `❌ Disconnect Failed`, description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: `✅ Disconnected ${provider.replace("_", " ")}` });
-      location.reload(); // refresh UI state
-    }
+  const oauthScopes: Record<string, string> = {
+    google_analytics: "https://www.googleapis.com/auth/analytics.readonly",
+    google_ads: "https://www.googleapis.com/auth/adwords",
   };
 
   const renderIntegration = (integration: IntegrationState) => {
     const { key, label, data } = integration;
-    const isConnected = !!oauthMap[key];
-    const lastSync = oauthMap[key]
-      ? new Date(oauthMap[key]!).toLocaleString()
+    const oauth = oauthMap[key];
+    const isConnected = !!oauth;
+    const isExpired = oauth?.expires_at
+      ? new Date(oauth.expires_at).getTime() < Date.now()
+      : false;
+
+    const lastSync = oauth?.connected_at
+      ? new Date(oauth.connected_at).toLocaleString()
       : null;
 
     return (
@@ -131,7 +82,7 @@ export default function IntegrationsPage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>{label}</CardTitle>
-            {isConnected && (
+            {isConnected && !isExpired && (
               <div className="flex gap-2">
                 <Button
                   variant="secondary"
@@ -149,10 +100,29 @@ export default function IntegrationsPage() {
                 </Button>
               </div>
             )}
+            {isConnected && isExpired && (
+              <div className="flex gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => connectGoogleOAuth(oauthScopes[key] || "")}
+                >
+                  🔁 Reconnect
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDisconnect(key)}
+                >
+                  ❌ Disconnect
+                </Button>
+              </div>
+            )}
           </div>
           {isConnected && lastSync && (
             <p className="text-xs text-muted-foreground mt-1">
               Last synced: {lastSync}
+              {isExpired && " (Expired)"}
             </p>
           )}
           {!isConnected && (
@@ -177,23 +147,3 @@ export default function IntegrationsPage() {
       </Card>
     );
   };
-
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-semibold">🔌 Connected Integrations</h1>
-        <Button variant="outline" onClick={() => navigate("/integrations/info")}>
-          View Supported Integrations
-        </Button>
-      </div>
-
-      {loading ? (
-        <p className="text-muted-foreground">Loading integrations...</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {integrations.map((integration) => renderIntegration(integration))}
-        </div>
-      )}
-    </div>
-  );
-}
