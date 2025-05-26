@@ -23,7 +23,7 @@ export default function Onboarding() {
     Intl.DateTimeFormat().resolvedOptions().timeZone
   );
   const [goals, setGoals] = useState<string[]>([]);
-  const [connected, setConnected] = useState<string[]>([]); // provider slugs
+  const [connected, setConnected] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchStepAndConnections = async () => {
@@ -85,6 +85,17 @@ export default function Onboarding() {
     });
   };
 
+  const syncGoogleAnalyticsAccounts = async () => {
+    const res = await fetch("/api/sync-integration", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user?.id, provider: "google_analytics" }),
+    });
+
+    const message = await res.text();
+    alert(res.ok ? `✅ ${message}` : `❌ ${message}`);
+  };
+
   const placeholderOAuth = (platform: string) => {
     alert(`TODO: Connect ${platform}. Requires external OAuth setup or token input.`);
   };
@@ -95,9 +106,20 @@ export default function Onboarding() {
     handler: () => void
   ) => {
     return connected.includes(key) ? (
-      <Button variant="outline" className="w-full text-green-600" disabled>
-        ✅ {label} Connected
-      </Button>
+      <>
+        <Button variant="outline" className="w-full text-green-600" disabled>
+          ✅ {label} Connected
+        </Button>
+        {key === "google_analytics" && (
+          <Button
+            variant="secondary"
+            className="w-full text-sm mt-1"
+            onClick={syncGoogleAnalyticsAccounts}
+          >
+            🔄 Sync Google Analytics Accounts
+          </Button>
+        )}
+      </>
     ) : (
       <Button variant="outline" className="w-full" onClick={handler}>
         Connect {label}
