@@ -1,269 +1,191 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const goalsList = [
-  "Benchmarking",
-  "Campaign Optimization",
-  "ROI Analysis",
-  "Competitor Insights",
-];
+const industries = ["E-commerce", "SaaS", "Healthcare", "Finance", "Education", "Retail", "Nonprofit", "Other"];
+const sizes = ["1–10", "11–50", "51–200", "201–500", "501–1,000", "1,001–5,000", "5,001+"];
+const revenues = ["< $500k", "$500k–$1M", "$1M–$5M", "$5M–$20M", "$20M–$100M", "$100M+"];
+const models = ["B2B", "B2C", "Both", "Marketplace", "Nonprofit", "Franchise"];
+const geo = ["Local", "Regional", "National", "Global"];
+const channels = ["Google Ads", "Meta Ads", "LinkedIn Ads", "TikTok Ads", "Email", "SEO", "Affiliate"];
+const crms = ["HubSpot", "Salesforce", "Klaviyo", "Mailchimp", "Zoho", "Other"];
+const commerce = ["Shopify", "WooCommerce", "Magento", "BigCommerce", "Custom"];
+const spend = ["< $5k", "$5k–$25k", "$25k–$100k", "$100k–$500k", "$500k+"];
+const roles = ["Founder", "CMO", "Marketing Manager", "Media Buyer", "Agency", "Other"];
+const reporting = ["Daily", "Weekly", "Monthly", "Quarterly"];
+const maturity = ["Beginner", "Intermediate", "Advanced", "Enterprise"];
 
 export default function Onboarding() {
   const user = useUser();
-
   const [step, setStep] = useState(1);
-  const [companyName, setCompanyName] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [timezone, setTimezone] = useState(
-    Intl.DateTimeFormat().resolvedOptions().timeZone
-  );
-  const [goals, setGoals] = useState<string[]>([]);
-  const [connected, setConnected] = useState<string[]>([]);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm({ defaultValues: {} });
 
   useEffect(() => {
-    const fetchStepAndConnections = async () => {
-      if (!user) return;
-
-      const [{ data: profile }, { data: integrations }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("onboarding_step")
-          .eq("id", user.id)
-          .single(),
-        supabase
-          .from("oauth_accounts")
-          .select("provider")
-          .eq("user_id", user.id),
-      ]);
-
-      if (profile?.onboarding_step) setStep(profile.onboarding_step);
-      if (integrations?.length) {
-        setConnected(integrations.map((i: any) => i.provider));
-      }
-    };
-
-    fetchStepAndConnections();
+    if (user) {
+      loadProfile();
+    }
   }, [user]);
 
-  const toggleGoal = (goal: string) => {
-    setGoals((prev) =>
-      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
-    );
-  };
-
-  const saveToSupabase = async () => {
-    if (!user) return;
-    await supabase
+  const loadProfile = async () => {
+    const { data } = await supabase
       .from("profiles")
-      .update({
-        company_name: companyName,
-        industry,
-        timezone,
-        onboarding_step: step,
-        goals,
-      })
-      .eq("id", user.id);
+      .select("*")
+      .eq("id", user?.id)
+      .single();
+    if (data) {
+      Object.entries(data).forEach(([key, value]) => setValue(key, value));
+      setStep(data.onboarding_step || 1);
+    }
   };
 
-  const nextStep = async () => {
-    if (step === 4) await saveToSupabase();
-    setStep((s) => s + 1);
+  const saveStep = async () => {
+    const values = getValues();
+    await supabase.from("profiles").update({
+      ...values,
+      onboarding_step: step + 1,
+    }).eq("id", user?.id);
   };
 
-  const prevStep = () => setStep((s) => Math.max(1, s - 1));
-
-  const connectGoogleOAuth = async (scopes: string) => {
-    const redirectTo = window.location.origin + "/oauth/callback";
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { scopes, redirectTo },
-    });
+  const onNext = async () => {
+    await saveStep();
+    setStep(step + 1);
   };
 
-  const syncGoogleAnalyticsAccounts = async () => {
-    const res = await fetch("/api/sync-integration", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: user?.id, provider: "google_analytics" }),
-    });
+  const onBack = () => setStep(step - 1);
 
-    const message = await res.text();
-    alert(res.ok ? `✅ ${message}` : `❌ ${message}`);
+  const onSubmit = async () => {
+    const values = getValues();
+    await supabase.from("profiles").update({
+      ...values,
+      onboarding_step: 5,
+    }).eq("id", user?.id);
+    console.log("🎉 Onboarding Complete!");
   };
 
-  const placeholderOAuth = (platform: string) => {
-    alert(`TODO: Connect ${platform}. Requires external OAuth setup or token input.`);
-  };
-
-  const renderIntegration = (
-    label: string,
-    key: string,
-    handler: () => void
-  ) => {
-    return connected.includes(key) ? (
-      <>
-        <Button variant="outline" className="w-full text-green-600" disabled>
-          ✅ {label} Connected
-        </Button>
-        {key === "google_analytics" && (
-          <Button
-            variant="secondary"
-            className="w-full text-sm mt-1"
-            onClick={syncGoogleAnalyticsAccounts}
-          >
-            🔄 Sync Google Analytics Accounts
-          </Button>
-        )}
-      </>
-    ) : (
-      <Button variant="outline" className="w-full" onClick={handler}>
-        Connect {label}
-      </Button>
-    );
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>
+            <Dropdown label="Industry" options={industries} register={register} name="industry" />
+            <Dropdown label="Company Size" options={sizes} register={register} name="company_size" />
+            <Dropdown label="Revenue" options={revenues} register={register} name="revenue" />
+            <Dropdown label="Business Model" options={models} register={register} name="model" />
+            <Dropdown label="Geo Focus" options={geo} register={register} name="geo" />
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <Multi label="Marketing Channels" options={channels} register={register} name="channels" />
+            <Dropdown label="Monthly Ad Spend" options={spend} register={register} name="ad_spend" />
+            <Dropdown label="CRM/CDP" options={crms} register={register} name="crm" />
+            <Dropdown label="Commerce Platform" options={commerce} register={register} name="commerce_platform" />
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <Dropdown label="Your Role" options={roles} register={register} name="role" />
+            <Dropdown label="Reporting Frequency" options={reporting} register={register} name="reporting_frequency" />
+            <Dropdown label="Analytics Maturity" options={maturity} register={register} name="analytics_maturity" />
+            <Checkbox label="Work with an agency" register={register} name="works_with_agency" />
+            <Checkbox label="Need integration help" register={register} name="needs_help" />
+            <Checkbox label="Join beta access group" register={register} name="join_beta" />
+          </>
+        );
+      case 4:
+        return (
+          <div className="text-center space-y-4">
+            <p className="text-lg font-semibold">🎉 All set!</p>
+            <p className="text-sm text-muted-foreground">Click Finish to save your onboarding profile.</p>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 sm:px-6 py-12">
-      <div className="flex justify-between text-xs font-medium text-muted-foreground px-2 mb-4">
-        <span className={step >= 1 ? "text-primary" : ""}>👋 Welcome</span>
-        <span className={step >= 2 ? "text-primary" : ""}>🏢 Company</span>
-        <span className={step >= 3 ? "text-primary" : ""}>🎯 Goals</span>
-        <span className={step >= 4 ? "text-primary" : ""}>🔌 Integrations</span>
-        <span className={step >= 5 ? "text-primary" : ""}>✅ Done</span>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold flex items-center gap-2">
-            {step === 1 && <>👋 Welcome to Benchmarketing</>}
-            {step === 2 && <>🏢 Tell Us About Your Company</>}
-            {step === 3 && <>🎯 What Are Your Goals?</>}
-            {step === 4 && <>🔌 Connect Your Integrations</>}
-            {step === 5 && <>✅ You're All Set!</>}
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {step === 1 && (
-            <div className="text-gray-600 text-sm leading-relaxed">
-              Let’s set up your workspace so we can generate performance benchmarks and
-              uncover insights for your campaigns. This takes less than 2 minutes.
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <Input
-                placeholder="Company Name"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-              />
-              <Input
-                placeholder="Industry"
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-              />
-              <Input
-                placeholder="Timezone"
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-              />
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-3">
-              {goalsList.map((goal) => (
-                <label key={goal} className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={goals.includes(goal)}
-                    onCheckedChange={() => toggleGoal(goal)}
-                  />
-                  <span>{goal}</span>
-                </label>
-              ))}
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-4">
-              {renderIntegration(
-                "Google Analytics",
-                "google_analytics",
-                () =>
-                  connectGoogleOAuth(
-                    "https://www.googleapis.com/auth/analytics.readonly"
-                  )
-              )}
-
-              {renderIntegration(
-                "Google Ads",
-                "google_ads",
-                () =>
-                  connectGoogleOAuth(
-                    "https://www.googleapis.com/auth/adwords"
-                  )
-              )}
-
-              {renderIntegration("Meta Ads", "meta_ads", () =>
-                placeholderOAuth("Meta Ads")
-              )}
-
-              {renderIntegration("LinkedIn Ads", "linkedin_ads", () =>
-                placeholderOAuth("LinkedIn Ads")
-              )}
-
-              {renderIntegration("TikTok Ads", "tiktok_ads", () =>
-                placeholderOAuth("TikTok Ads")
-              )}
-
-              <p className="text-sm text-muted-foreground text-center">
-                More integrations coming soon.
-              </p>
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="space-y-4 text-center">
-              <p className="text-green-600 font-medium">🎉 Onboarding Complete!</p>
-              <p className="text-sm text-gray-600">
-                You’re ready to explore your performance insights.
-              </p>
-              <ul className="text-sm text-left text-gray-600 space-y-1 pt-4">
-                <li>
-                  <strong>Company:</strong> {companyName}
-                </li>
-                <li>
-                  <strong>Industry:</strong> {industry}
-                </li>
-                <li>
-                  <strong>Timezone:</strong> {timezone}
-                </li>
-                <li>
-                  <strong>Goals:</strong>{" "}
-                  {goals.length > 0 ? goals.join(", ") : "None selected"}
-                </li>
-              </ul>
-            </div>
-          )}
-
-          <div className="flex justify-between pt-4">
-            <Button variant="ghost" disabled={step === 1} onClick={prevStep}>
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <ProgressBar step={step} />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-6">
+        {renderStep()}
+        <div className="flex justify-between pt-6">
+          {step > 1 ? (
+            <Button type="button" variant="outline" onClick={onBack}>
               Back
             </Button>
-            {step < 5 && (
-              <Button onClick={nextStep}>
-                {step === 4 ? "Finish" : "Next"}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          ) : (
+            <span />
+          )}
+          {step < 4 ? (
+            <Button type="button" onClick={onNext}>
+              Next
+            </Button>
+          ) : (
+            <Button type="submit">Finish</Button>
+          )}
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function ProgressBar({ step }: { step: number }) {
+  const steps = ["Basics", "Marketing", "Preferences", "Done"];
+  return (
+    <div className="flex justify-between text-xs font-medium text-muted-foreground px-1">
+      {steps.map((label, i) => (
+        <span key={label} className={step >= i + 1 ? "text-primary" : ""}>
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Dropdown({ label, options, register, name }: any) {
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      <select {...register(name)} className="w-full border p-2 rounded">
+        <option value="">Select {label}</option>
+        {options.map((opt: string) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function Multi({ label, options, register, name }: any) {
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      <select {...register(name)} multiple className="w-full border p-2 rounded h-32">
+        {options.map((opt: string) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function Checkbox({ label, name, register }: any) {
+  return (
+    <div className="flex items-center space-x-2">
+      <input type="checkbox" {...register(name)} />
+      <label>{label}</label>
     </div>
   );
 }
