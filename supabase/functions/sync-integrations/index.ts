@@ -3,8 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    Deno.env.get("PROJECT_URL")!,               // ✅ use this instead of SUPABASE_URL
+    Deno.env.get("SERVICE_ROLE_KEY")!           // ✅ use this instead of SUPABASE_SERVICE_ROLE_KEY
   );
 
   try {
