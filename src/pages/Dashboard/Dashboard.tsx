@@ -10,9 +10,13 @@ import AlertsPanel from "@/components/dashboard/AlertsPanel";
 import DateRangeSelector from "@/components/dashboard/DateRangeSelector";
 import DashboardFilters from "@/components/dashboard/DashboardFilters";
 import { DataPoint, Campaign, Alert } from "@/components/dashboard/types";
+import { subDays } from "date-fns";
 
 export default function Dashboard() {
-  const [dateRange, setDateRange] = useState("30d");
+  const [dateRange, setDateRange] = useState({
+    from: subDays(new Date(), 30),
+    to: new Date()
+  });
   const [selectedMetric, setSelectedMetric] = useState("cpa");
   const [industry, setIndustry] = useState("All");
   const [companySize, setCompanySize] = useState("All");
@@ -51,6 +55,8 @@ export default function Dashboard() {
       conversions: 89,
       cpa: 27.53,
       roas: 3.8,
+      ctr: 0.028,
+      vsBenchmark: 12.5,
       status: "active"
     }
   ]);
@@ -58,7 +64,7 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([
     {
       id: "1",
-      type: "performance",
+      type: "warning",
       message: "CPA increased by 15% in the last 7 days",
       timestamp: "2024-01-15T10:30:00Z"
     }
@@ -114,6 +120,8 @@ export default function Dashboard() {
               conversions: Number(item.conversions || 0),
               cpa: Number(item.cpa || 0),
               roas: Number(item.roas || 0),
+              ctr: Number(item.ctr || 0),
+              vsBenchmark: Number(item.vsBenchmark || 0),
               status: String(item.status || 'active')
             }));
             if (validCampaigns.length > 0) {
@@ -127,7 +135,7 @@ export default function Dashboard() {
               item && typeof item === 'object' && item.id && item.message
             ).map(item => ({
               id: String(item.id),
-              type: String(item.type || 'info'),
+              type: ['warning', 'info', 'success'].includes(item.type) ? item.type : 'info' as const,
               message: String(item.message),
               timestamp: String(item.timestamp || new Date().toISOString())
             }));
@@ -150,8 +158,8 @@ export default function Dashboard() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold">Dashboard</h1>
           <DateRangeSelector 
-            value={dateRange}
-            onChange={setDateRange}
+            onDateRangeChange={setDateRange}
+            initialDateRange={dateRange}
           />
         </div>
 
@@ -171,6 +179,8 @@ export default function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2">
           <TrendGraph 
             data={trendData}
+            title="Performance Trend"
+            valueLabel="Value"
             selectedMetric={selectedMetric}
             setSelectedMetric={setSelectedMetric}
           />
@@ -182,7 +192,11 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <CampaignTable campaigns={campaigns} />
+          <CampaignTable 
+            campaigns={campaigns} 
+            dateRange={dateRange}
+            title="Campaign Performance"
+          />
           <AlertsPanel alerts={alerts} />
         </div>
       </div>

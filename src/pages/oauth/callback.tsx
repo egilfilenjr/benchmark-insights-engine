@@ -1,11 +1,10 @@
-// src/pages/oauth/callback.tsx
 
 import { useEffect } from "react";
-import { useRouter } from "next/router";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
 export default function OAuthCallback() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const processOAuth = async () => {
@@ -13,7 +12,7 @@ export default function OAuthCallback() {
 
       if (error || !session?.user) {
         console.error("❌ Failed to retrieve user session:", error?.message);
-        router.push("/login");
+        navigate("/login");
         return;
       }
 
@@ -22,27 +21,42 @@ export default function OAuthCallback() {
       const providerAccessToken = session.provider_token || null;
       const providerRefreshToken = session.provider_refresh_token || null;
 
-      // Try to infer scope and expiration (optional)
+      // Try to infer expiration (optional)
       const expiresIn = session.expires_in || null;
       const expiresAt = expiresIn
         ? new Date(Date.now() + expiresIn * 1000).toISOString()
         : null;
+
+      // Get team_id (assuming user has a team)
+      const { data: teamData } = await supabase
+        .from("team_members")
+        .select("team_id")
+        .eq("user_id", userId)
+        .single();
+
+      const teamId = teamData?.team_id;
+
+      if (!teamId) {
+        console.error("❌ No team found for user");
+        navigate("/onboarding");
+        return;
+      }
 
       // Avoid duplicate inserts
       const { data: existing } = await supabase
         .from("oauth_accounts")
         .select("id")
         .eq("user_id", userId)
-        .eq("provider", provider)
+        .eq("platform", provider)
         .maybeSingle();
 
       if (!existing) {
         const { error: insertError } = await supabase.from("oauth_accounts").insert({
           user_id: userId,
-          provider,
+          team_id: teamId,
+          platform: provider,
           access_token: providerAccessToken,
           refresh_token: providerRefreshToken,
-          scope: session.scope || null,
           expires_at: expiresAt,
         });
 
@@ -55,11 +69,11 @@ export default function OAuthCallback() {
         console.log("ℹ️ Integration already connected:", provider);
       }
 
-      router.push("/onboarding");
+      navigate("/onboarding");
     };
 
     processOAuth();
-  }, [router]);
+  }, [navigate]);
 
   return (
     <div className="h-screen flex items-center justify-center text-muted-foreground">

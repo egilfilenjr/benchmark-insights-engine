@@ -1,5 +1,5 @@
 
-// This file is meant to define types for dashboard components
+// This file defines types for dashboard components
 
 export interface KpiTileProps {
   title: string;
@@ -9,6 +9,7 @@ export interface KpiTileProps {
   format?: "percentage" | "currency" | "number";
   tooltipText?: string;
   loading?: boolean;
+  color?: string;
   benchmarkComparison?: {
     value: number;
     label: string;
@@ -23,7 +24,7 @@ export interface FilterBarProps {
 }
 
 export interface DataPoint {
-  date: Date;
+  date: string; // Keep as string for easier JSON handling
   value: number;
   benchmark?: number;
 }
@@ -35,6 +36,8 @@ export interface TrendGraphProps {
   benchmarkLabel?: string;
   valueFormat?: "currency" | "percentage" | "number";
   loading?: boolean;
+  selectedMetric?: string;
+  setSelectedMetric?: (metric: string) => void;
 }
 
 export interface Campaign {
@@ -47,6 +50,7 @@ export interface Campaign {
   roas: number;
   ctr: number;
   vsBenchmark: number;
+  status?: string; // Optional status field
 }
 
 export interface CampaignTableProps {
@@ -63,7 +67,7 @@ export interface Alert {
   id: string;
   type: "warning" | "info" | "success";
   message: string;
-  timestamp: Date;
+  timestamp: string; // Keep as string for easier JSON handling
   actionLabel?: string;
   onAction?: () => void;
 }
@@ -84,4 +88,11 @@ export interface AlertItem {
 export interface TrendEntry {
   date: string;
   value: number;
+}
+
+// Date range selector props
+export interface DateRangeSelectorProps {
+  onDateRangeChange: (range: { from: Date; to: Date }) => void;
+  initialDateRange?: { from: Date; to: Date };
+  className?: string;
 }

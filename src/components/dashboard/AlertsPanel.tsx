@@ -21,8 +21,8 @@ export default function AlertsPanel({
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], {
+  const formatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });

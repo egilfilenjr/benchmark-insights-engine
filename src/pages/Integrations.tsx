@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -146,13 +145,13 @@ export default function IntegrationsPage() {
       );
 
       setLoading(false);
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     };
 
     loadData();
-
-    return () => {
-      supabase.removeChannel("realtime-sync-logs");
-    };
   }, [user]);
 
   const handleResync = async (provider: string) => {
