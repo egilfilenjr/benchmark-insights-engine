@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface AccountData {
   id: string;
@@ -36,13 +37,15 @@ export default function IntegrationsPage() {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState<Record<string, boolean>>({});
   const [gaAccounts, setGaAccounts] = useState<AccountData[]>([]);
   const [googleAds, setGoogleAds] = useState<AccountData[]>([]);
   const [metaAds, setMetaAds] = useState<AccountData[]>([]);
   const [linkedinAds, setLinkedinAds] = useState<AccountData[]>([]);
   const [tiktokAds, setTiktokAds] = useState<AccountData[]>([]);
   const [oauthMap, setOauthMap] = useState<Record<string, { connected_at: string; expires_at: string | null }>>({});
-  const [syncLogMap, setSyncLogMap] = useState<Record<string, SyncLog>>({});
+  const [syncLogMap, setSyncLogMap] = useState<Record<string, SyncLog[]>>({});
+  const [showHistory, setShowHistory] = useState<Record<string, boolean>>({});
 
   const integrations: IntegrationState[] = [
     { key: "google_analytics", label: "Google Analytics", table: "ga_accounts", data: gaAccounts, setData: setGaAccounts },
@@ -58,21 +61,39 @@ export default function IntegrationsPage() {
     const loadData = async () => {
       setLoading(true);
 
-      // Load latest sync logs
+      // Load sync logs
       const { data: syncLogs } = await supabase
         .from("sync_logs")
-        .select("provider, status, message, created_at")
+        .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      const logs = syncLogs?.reduce((acc, log) => {
-        if (!acc[log.provider]) acc[log.provider] = log;
-        return acc;
-      }, {} as Record<string, SyncLog>) ?? {};
+      const logMap: Record<string, SyncLog[]> = {};
+      for (const log of syncLogs || []) {
+        if (!logMap[log.provider]) logMap[log.provider] = [];
+        logMap[log.provider].push(log);
+      }
+      setSyncLogMap(logMap);
 
-      setSyncLogMap(logs);
+      // Subscribe to new sync logs
+      const channel = supabase
+        .channel("realtime-sync-logs")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "sync_logs", filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            const newLog = payload.new as SyncLog;
+            setSyncLogMap((prev) => {
+              const updated = [...(prev[newLog.provider] || [])];
+              updated.unshift(newLog);
+              return { ...prev, [newLog.provider]: updated };
+            });
+            setSyncing((prev) => ({ ...prev, [newLog.provider]: false }));
+          }
+        )
+        .subscribe();
 
-      // Load connection info
+      // Load auth tokens
       const { data: oauths } = await supabase
         .from("oauth_accounts")
         .select("provider, connected_at, expires_at")
@@ -88,7 +109,7 @@ export default function IntegrationsPage() {
 
       setOauthMap(oauthMap);
 
-      // Load account data for each integration
+      // Load account data
       await Promise.all(
         integrations.map(async (i) => {
           const { data, error } = await supabase
@@ -107,9 +128,15 @@ export default function IntegrationsPage() {
     };
 
     loadData();
+
+    return () => {
+      supabase.removeChannel("realtime-sync-logs");
+    };
   }, [user]);
 
   const handleResync = async (provider: string) => {
+    setSyncing((prev) => ({ ...prev, [provider]: true }));
+
     const res = await fetch("/api/sync-integration", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -118,10 +145,14 @@ export default function IntegrationsPage() {
 
     const text = await res.text();
     toast({
-      title: res.ok ? `✅ Synced ${provider.replace("_", " ")}` : `❌ Sync Failed`,
+      title: res.ok ? `✅ Sync Started: ${provider.replace("_", " ")}` : `❌ Sync Failed`,
       description: text,
       variant: res.ok ? "default" : "destructive",
     });
+
+    if (!res.ok) {
+      setSyncing((prev) => ({ ...prev, [provider]: false }));
+    }
   };
 
   const handleDisconnect = async (provider: string) => {
@@ -146,55 +177,58 @@ export default function IntegrationsPage() {
     const isExpired = oauth?.expires_at
       ? new Date(oauth.expires_at).getTime() < Date.now()
       : false;
-    const lastSync = oauth?.connected_at
-      ? new Date(oauth.connected_at).toLocaleString()
-      : null;
-    const syncLog = syncLogMap[key];
+    const logs = syncLogMap[key] ?? [];
+    const latest = logs[0];
+    const isSyncing = syncing[key];
 
     return (
       <Card key={key} className={cn(!isConnected && "opacity-50")}>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>{label}</CardTitle>
-            {isConnected && !isExpired && (
-              <div className="flex gap-2">
-                <Button variant="secondary" size="sm" onClick={() => handleResync(key)}>
+            <div className="flex gap-2">
+              {isConnected && !isExpired && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleResync(key)}
+                  disabled={isSyncing}
+                >
+                  {isSyncing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   🔄 Re-sync
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDisconnect(key)}>
+              )}
+              {isConnected && isExpired && (
+                <Button variant="default" size="sm">🔁 Reconnect</Button>
+              )}
+              {isConnected && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDisconnect(key)}
+                >
                   ❌ Disconnect
                 </Button>
-              </div>
-            )}
-            {isConnected && isExpired && (
-              <div className="flex gap-2">
-                <Button variant="default" size="sm">
-                  🔁 Reconnect
-                </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDisconnect(key)}>
-                  ❌ Disconnect
-                </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          {syncLog && (
+          {latest && (
             <div className="mt-2 text-sm text-muted-foreground space-y-1">
-              <p>
-                <strong>Status:</strong> {syncLog.status}
-              </p>
-              <p>
-                <strong>Message:</strong> {syncLog.message}
-              </p>
-              <p>
-                <strong>Last Synced:</strong>{" "}
-                {new Date(syncLog.created_at).toLocaleString()}
-              </p>
+              <p><strong>Status:</strong> {latest.status}</p>
+              <p><strong>Message:</strong> {latest.message}</p>
+              <p><strong>Last Sync:</strong> {new Date(latest.created_at).toLocaleString()}</p>
+              {logs.length > 1 && (
+                <button
+                  className="text-xs text-blue-600 hover:underline"
+                  onClick={() =>
+                    setShowHistory((prev) => ({ ...prev, [key]: !prev[key] }))
+                  }
+                >
+                  {showHistory[key] ? "Hide Sync History" : "Show Sync History"}
+                </button>
+              )}
             </div>
-          )}
-
-          {!isConnected && (
-            <p className="text-xs text-muted-foreground mt-2 italic">Not connected</p>
           )}
         </CardHeader>
 
@@ -206,8 +240,21 @@ export default function IntegrationsPage() {
                 {acc.region_code && <span className="text-xs">({acc.region_code})</span>}
               </li>
             ))}
-            {data.length === 0 && <li className="text-xs italic">No synced accounts.</li>}
+            {data.length === 0 && (
+              <li className="text-xs italic">No synced accounts.</li>
+            )}
           </ul>
+
+          {showHistory[key] && (
+            <ul className="mt-4 space-y-2 text-xs text-muted-foreground border-t pt-3">
+              {logs.slice(1).map((log, idx) => (
+                <li key={idx}>
+                  <strong>{new Date(log.created_at).toLocaleString()}:</strong>{" "}
+                  {log.status} — {log.message}
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     );
