@@ -59,16 +59,47 @@ export default function IntegrationsPage() {
     loadAccounts();
   }, [user]);
 
-  const renderList = (accounts: AccountData[]) => (
-    <ul className="text-sm text-muted-foreground space-y-1">
-      {accounts.map((acc) => (
-        <li key={acc.id} className="border-b pb-1">
-          <strong>{acc.display_name || acc.name || acc.id}</strong>{" "}
-          {acc.region_code && <span className="text-xs">({acc.region_code})</span>}
-        </li>
-      ))}
-      {accounts.length === 0 && <li className="text-xs italic">No accounts synced.</li>}
-    </ul>
+  const handleResync = async (provider: string) => {
+    const res = await fetch("/api/sync-integration", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user?.id, provider }),
+    });
+
+    const text = await res.text();
+    alert(res.ok ? `✅ Synced ${provider.replace("_", " ")}: ${text}` : `❌ ${text}`);
+  };
+
+  const renderIntegration = (title: string, data: AccountData[], providerKey: string) => (
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>{title}</CardTitle>
+          {data.length > 0 && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleResync(providerKey)}
+            >
+              🔄 Re-sync
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ul className="text-sm text-muted-foreground space-y-1">
+          {data.map((acc) => (
+            <li key={acc.id} className="border-b pb-1">
+              <strong>{acc.display_name || acc.name || acc.id}</strong>{" "}
+              {acc.region_code && <span className="text-xs">({acc.region_code})</span>}
+            </li>
+          ))}
+          {data.length === 0 && (
+            <li className="text-xs italic">No accounts synced.</li>
+          )}
+        </ul>
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -84,40 +115,11 @@ export default function IntegrationsPage() {
         <p className="text-muted-foreground">Loading integrations...</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Google Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>{renderList(gaAccounts)}</CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Google Ads</CardTitle>
-            </CardHeader>
-            <CardContent>{renderList(googleAds)}</CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Meta Ads (Facebook)</CardTitle>
-            </CardHeader>
-            <CardContent>{renderList(metaAds)}</CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>LinkedIn Ads</CardTitle>
-            </CardHeader>
-            <CardContent>{renderList(linkedinAds)}</CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>TikTok Ads</CardTitle>
-            </CardHeader>
-            <CardContent>{renderList(tiktokAds)}</CardContent>
-          </Card>
+          {renderIntegration("Google Analytics", gaAccounts, "google_analytics")}
+          {renderIntegration("Google Ads", googleAds, "google_ads")}
+          {renderIntegration("Meta Ads", metaAds, "meta_ads")}
+          {renderIntegration("LinkedIn Ads", linkedinAds, "linkedin_ads")}
+          {renderIntegration("TikTok Ads", tiktokAds, "tiktok_ads")}
         </div>
       )}
     </div>
