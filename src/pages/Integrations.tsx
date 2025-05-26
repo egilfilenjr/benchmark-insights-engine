@@ -1,68 +1,142 @@
-// (You already have the top portion with imports and setup)
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useUser } from "@supabase/auth-helpers-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
-  const [oauthMap, setOauthMap] = useState<
-    Record<string, { connected_at: string; expires_at: string | null }>
-  >({});
+interface AccountData {
+  id: string;
+  name?: string;
+  display_name?: string;
+  region_code?: string;
+  connected_at?: string;
+}
+
+interface SyncLog {
+  provider: string;
+  status: string;
+  message: string;
+  created_at: string;
+}
+
+interface IntegrationState {
+  key: string;
+  label: string;
+  table: string;
+  data: AccountData[];
+  setData: React.Dispatch<React.SetStateAction<AccountData[]>>;
+}
+
+export default function IntegrationsPage() {
+  const user = useUser();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const [loading, setLoading] = useState(true);
+  const [gaAccounts, setGaAccounts] = useState<AccountData[]>([]);
+  const [googleAds, setGoogleAds] = useState<AccountData[]>([]);
+  const [metaAds, setMetaAds] = useState<AccountData[]>([]);
+  const [linkedinAds, setLinkedinAds] = useState<AccountData[]>([]);
+  const [tiktokAds, setTiktokAds] = useState<AccountData[]>([]);
+  const [oauthMap, setOauthMap] = useState<Record<string, { connected_at: string; expires_at: string | null }>>({});
+  const [syncLogMap, setSyncLogMap] = useState<Record<string, SyncLog>>({});
+
+  const integrations: IntegrationState[] = [
+    { key: "google_analytics", label: "Google Analytics", table: "ga_accounts", data: gaAccounts, setData: setGaAccounts },
+    { key: "google_ads", label: "Google Ads", table: "google_ads_accounts", data: googleAds, setData: setGoogleAds },
+    { key: "meta_ads", label: "Meta Ads", table: "meta_ads_accounts", data: metaAds, setData: setMetaAds },
+    { key: "linkedin_ads", label: "LinkedIn Ads", table: "linkedin_ads_accounts", data: linkedinAds, setData: setLinkedinAds },
+    { key: "tiktok_ads", label: "TikTok Ads", table: "tiktok_ads_accounts", data: tiktokAds, setData: setTiktokAds },
+  ];
 
   useEffect(() => {
     if (!user) return;
 
-    const loadAccounts = async () => {
+    const loadData = async () => {
       setLoading(true);
 
-      const fetchTable = async (table: string) => {
-        const { data, error } = await supabase
-          .from(table)
-          .select("*")
-          .eq("user_id", user.id);
-        if (error) {
-          toast({ title: `Error loading ${table}`, description: error.message, variant: "destructive" });
-          return [];
-        }
-        return data;
-      };
+      // Load latest sync logs
+      const { data: syncLogs } = await supabase
+        .from("sync_logs")
+        .select("provider, status, message, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
+      const logs = syncLogs?.reduce((acc, log) => {
+        if (!acc[log.provider]) acc[log.provider] = log;
+        return acc;
+      }, {} as Record<string, SyncLog>) ?? {};
+
+      setSyncLogMap(logs);
+
+      // Load connection info
       const { data: oauths } = await supabase
         .from("oauth_accounts")
         .select("provider, connected_at, expires_at")
         .eq("user_id", user.id);
 
-      const map: Record<string, { connected_at: string; expires_at: string | null }> = {};
-      for (const row of oauths || []) {
-        map[row.provider] = {
+      const oauthMap = oauths?.reduce((acc, row) => {
+        acc[row.provider] = {
           connected_at: row.connected_at,
           expires_at: row.expires_at,
         };
-      }
-      setOauthMap(map);
+        return acc;
+      }, {} as Record<string, { connected_at: string; expires_at: string | null }>) ?? {};
 
+      setOauthMap(oauthMap);
+
+      // Load account data for each integration
       await Promise.all(
         integrations.map(async (i) => {
-          const tableData = await fetchTable(i.table);
-          i.setData(tableData);
+          const { data, error } = await supabase
+            .from(i.table)
+            .select("*")
+            .eq("user_id", user.id);
+          if (error) {
+            toast({ title: `Error loading ${i.label}`, description: error.message, variant: "destructive" });
+          } else {
+            i.setData(data ?? []);
+          }
         })
       );
 
       setLoading(false);
     };
 
-    loadAccounts();
+    loadData();
   }, [user]);
 
-  const connectGoogleOAuth = async (scopes: string) => {
-    const redirectTo = window.location.origin + "/oauth/callback";
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        scopes,
-        redirectTo,
-      },
+  const handleResync = async (provider: string) => {
+    const res = await fetch("/api/sync-integration", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user?.id, provider }),
+    });
+
+    const text = await res.text();
+    toast({
+      title: res.ok ? `✅ Synced ${provider.replace("_", " ")}` : `❌ Sync Failed`,
+      description: text,
+      variant: res.ok ? "default" : "destructive",
     });
   };
 
-  const oauthScopes: Record<string, string> = {
-    google_analytics: "https://www.googleapis.com/auth/analytics.readonly",
-    google_ads: "https://www.googleapis.com/auth/adwords",
+  const handleDisconnect = async (provider: string) => {
+    const { error } = await supabase
+      .from("oauth_accounts")
+      .delete()
+      .eq("user_id", user?.id)
+      .eq("provider", provider);
+
+    if (error) {
+      toast({ title: `❌ Disconnect Failed`, description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `✅ Disconnected ${provider.replace("_", " ")}` });
+      location.reload(); // refresh UI state
+    }
   };
 
   const renderIntegration = (integration: IntegrationState) => {
@@ -72,10 +146,10 @@
     const isExpired = oauth?.expires_at
       ? new Date(oauth.expires_at).getTime() < Date.now()
       : false;
-
     const lastSync = oauth?.connected_at
       ? new Date(oauth.connected_at).toLocaleString()
       : null;
+    const syncLog = syncLogMap[key];
 
     return (
       <Card key={key} className={cn(!isConnected && "opacity-50")}>
@@ -84,53 +158,46 @@
             <CardTitle>{label}</CardTitle>
             {isConnected && !isExpired && (
               <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleResync(key)}
-                >
+                <Button variant="secondary" size="sm" onClick={() => handleResync(key)}>
                   🔄 Re-sync
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDisconnect(key)}
-                >
+                <Button variant="destructive" size="sm" onClick={() => handleDisconnect(key)}>
                   ❌ Disconnect
                 </Button>
               </div>
             )}
             {isConnected && isExpired && (
               <div className="flex gap-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => connectGoogleOAuth(oauthScopes[key] || "")}
-                >
+                <Button variant="default" size="sm">
                   🔁 Reconnect
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDisconnect(key)}
-                >
+                <Button variant="destructive" size="sm" onClick={() => handleDisconnect(key)}>
                   ❌ Disconnect
                 </Button>
               </div>
             )}
           </div>
-          {isConnected && lastSync && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Last synced: {lastSync}
-              {isExpired && " (Expired)"}
-            </p>
+
+          {syncLog && (
+            <div className="mt-2 text-sm text-muted-foreground space-y-1">
+              <p>
+                <strong>Status:</strong> {syncLog.status}
+              </p>
+              <p>
+                <strong>Message:</strong> {syncLog.message}
+              </p>
+              <p>
+                <strong>Last Synced:</strong>{" "}
+                {new Date(syncLog.created_at).toLocaleString()}
+              </p>
+            </div>
           )}
+
           {!isConnected && (
-            <p className="text-xs text-muted-foreground mt-1 italic">
-              Not connected
-            </p>
+            <p className="text-xs text-muted-foreground mt-2 italic">Not connected</p>
           )}
         </CardHeader>
+
         <CardContent>
           <ul className="text-sm text-muted-foreground space-y-1">
             {data.map((acc) => (
@@ -139,11 +206,29 @@
                 {acc.region_code && <span className="text-xs">({acc.region_code})</span>}
               </li>
             ))}
-            {data.length === 0 && (
-              <li className="text-xs italic">No synced accounts.</li>
-            )}
+            {data.length === 0 && <li className="text-xs italic">No synced accounts.</li>}
           </ul>
         </CardContent>
       </Card>
     );
   };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-semibold">🔌 Connected Integrations</h1>
+        <Button variant="outline" onClick={() => navigate("/integrations/info")}>
+          View Supported Integrations
+        </Button>
+      </div>
+
+      {loading ? (
+        <p className="text-muted-foreground">Loading integrations...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {integrations.map((integration) => renderIntegration(integration))}
+        </div>
+      )}
+    </div>
+  );
+}
