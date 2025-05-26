@@ -4,18 +4,40 @@ import { supabase } from "@/lib/supabase";
 import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 
-const industries = ["E-commerce", "SaaS", "Healthcare", "Finance", "Education", "Retail", "Nonprofit", "Other"];
-const sizes = ["1–10", "11–50", "51–200", "201–500", "501–1,000", "1,001–5,000", "5,001+"];
-const revenues = ["< $500k", "$500k–$1M", "$1M–$5M", "$5M–$20M", "$20M–$100M", "$100M+"];
-const models = ["B2B", "B2C", "Both", "Marketplace", "Nonprofit", "Franchise"];
-const geo = ["Local", "Regional", "National", "Global"];
-const channels = ["Google Ads", "Meta Ads", "LinkedIn Ads", "TikTok Ads", "Email", "SEO", "Affiliate"];
-const crms = ["HubSpot", "Salesforce", "Klaviyo", "Mailchimp", "Zoho", "Other"];
-const commerce = ["Shopify", "WooCommerce", "Magento", "BigCommerce", "Custom"];
-const spend = ["< $5k", "$5k–$25k", "$25k–$100k", "$100k–$500k", "$500k+"];
-const roles = ["Founder", "CMO", "Marketing Manager", "Media Buyer", "Agency", "Other"];
-const reporting = ["Daily", "Weekly", "Monthly", "Quarterly"];
-const maturity = ["Beginner", "Intermediate", "Advanced", "Enterprise"];
+// Tiered dropdowns
+const industries = [
+  "E-commerce",
+  "SaaS",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "Retail",
+  "Consumer Goods",
+  "Media",
+  "Agency / Consulting",
+  "Nonprofit",
+  "Real Estate",
+  "Legal",
+  "Government",
+  "Other",
+];
+
+const subIndustries: Record<string, string[]> = {
+  "E-commerce": ["Fashion", "Supplements", "Electronics", "Dropshipping", "Home Goods", "Other"],
+  SaaS: ["B2B SaaS", "Productivity", "AI Tools", "Marketing Tools", "Fintech SaaS", "Health SaaS", "Other"],
+  Healthcare: ["Clinics", "Dental", "Telehealth", "Wellness", "Pharma", "Hospitals", "Other"],
+  Finance: ["Banking", "Fintech", "Credit Unions", "Insurance", "Investments", "Other"],
+  Retail: ["Apparel", "Footwear", "Furniture", "Convenience", "Department Store", "Other"],
+  Education: ["K–12", "Higher Ed", "EdTech", "Tutoring", "Online Courses", "Other"],
+};
+
+const companySizes = ["1–10", "11–50", "51–200", "201–500", "501–1,000", "1,001–5,000", "5,001+"];
+const revenueRanges = ["< $500k", "$500k–$1M", "$1M–$5M", "$5M–$20M", "$20M–$100M", "$100M+"];
+const businessModels = ["B2B", "B2C", "Both", "Marketplace", "Franchise", "Nonprofit"];
+const salesMotions = ["Inbound", "Outbound", "Product-led", "Hybrid"];
+const customerTypes = ["Consumers", "Businesses", "Both", "Government", "Schools"];
+const productTypes = ["Physical Goods", "Digital Products", "Subscriptions", "Services", "Other"];
+const geoFocus = ["Local", "Regional", "National", "Multi-national", "Global"];
 
 export default function Onboarding() {
   const user = useUser();
@@ -27,7 +49,9 @@ export default function Onboarding() {
     setValue,
     getValues,
     formState: { errors },
-  } = useForm({ defaultValues: {} });
+  } = useForm();
+
+  const selectedIndustry = watch("industry");
 
   useEffect(() => {
     if (user) {
@@ -49,10 +73,10 @@ export default function Onboarding() {
 
   const saveStep = async () => {
     const values = getValues();
-    await supabase.from("profiles").update({
-      ...values,
-      onboarding_step: step + 1,
-    }).eq("id", user?.id);
+    await supabase
+      .from("profiles")
+      .update({ ...values, onboarding_step: step + 1 })
+      .eq("id", user?.id);
   };
 
   const onNext = async () => {
@@ -64,11 +88,11 @@ export default function Onboarding() {
 
   const onSubmit = async () => {
     const values = getValues();
-    await supabase.from("profiles").update({
-      ...values,
-      onboarding_step: 5,
-    }).eq("id", user?.id);
-    console.log("🎉 Onboarding Complete!");
+    await supabase
+      .from("profiles")
+      .update({ ...values, onboarding_step: 5 })
+      .eq("id", user?.id);
+    console.log("✅ Final onboarding step saved.");
   };
 
   const renderStep = () => {
@@ -76,38 +100,36 @@ export default function Onboarding() {
       case 1:
         return (
           <>
-            <Dropdown label="Industry" options={industries} register={register} name="industry" />
-            <Dropdown label="Company Size" options={sizes} register={register} name="company_size" />
-            <Dropdown label="Revenue" options={revenues} register={register} name="revenue" />
-            <Dropdown label="Business Model" options={models} register={register} name="model" />
-            <Dropdown label="Geo Focus" options={geo} register={register} name="geo" />
+            <Select label="Industry" name="industry" options={industries} register={register} />
+            {selectedIndustry && subIndustries[selectedIndustry] && (
+              <Select
+                label="Sub-Industry"
+                name="sub_industry"
+                options={subIndustries[selectedIndustry]}
+                register={register}
+              />
+            )}
+            <Select label="Company Size" name="company_size" options={companySizes} register={register} />
+            <Select label="Revenue Range" name="revenue_range" options={revenueRanges} register={register} />
+            <Select label="Business Model" name="business_model" options={businessModels} register={register} />
           </>
         );
       case 2:
         return (
           <>
-            <Multi label="Marketing Channels" options={channels} register={register} name="channels" />
-            <Dropdown label="Monthly Ad Spend" options={spend} register={register} name="ad_spend" />
-            <Dropdown label="CRM/CDP" options={crms} register={register} name="crm" />
-            <Dropdown label="Commerce Platform" options={commerce} register={register} name="commerce_platform" />
+            <Select label="Target Customer Type" name="customer_type" options={customerTypes} register={register} />
+            <Select label="Primary Product Type" name="product_type" options={productTypes} register={register} />
+            <Select label="Sales Motion" name="sales_motion" options={salesMotions} register={register} />
+            <Select label="Geographic Focus" name="geo_focus" options={geoFocus} register={register} />
           </>
         );
       case 3:
         return (
-          <>
-            <Dropdown label="Your Role" options={roles} register={register} name="role" />
-            <Dropdown label="Reporting Frequency" options={reporting} register={register} name="reporting_frequency" />
-            <Dropdown label="Analytics Maturity" options={maturity} register={register} name="analytics_maturity" />
-            <Checkbox label="Work with an agency" register={register} name="works_with_agency" />
-            <Checkbox label="Need integration help" register={register} name="needs_help" />
-            <Checkbox label="Join beta access group" register={register} name="join_beta" />
-          </>
-        );
-      case 4:
-        return (
           <div className="text-center space-y-4">
-            <p className="text-lg font-semibold">🎉 All set!</p>
-            <p className="text-sm text-muted-foreground">Click Finish to save your onboarding profile.</p>
+            <p className="text-lg font-semibold">🎉 Almost done!</p>
+            <p className="text-sm text-muted-foreground">
+              Click “Finish” to complete your onboarding. You can update this info anytime in Settings.
+            </p>
           </div>
         );
       default:
@@ -117,7 +139,7 @@ export default function Onboarding() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <ProgressBar step={step} />
+      <ProgressBar step={step} total={3} />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-6">
         {renderStep()}
         <div className="flex justify-between pt-6">
@@ -128,7 +150,7 @@ export default function Onboarding() {
           ) : (
             <span />
           )}
-          {step < 4 ? (
+          {step < 3 ? (
             <Button type="button" onClick={onNext}>
               Next
             </Button>
@@ -141,51 +163,33 @@ export default function Onboarding() {
   );
 }
 
-function ProgressBar({ step }: { step: number }) {
-  const steps = ["Basics", "Marketing", "Preferences", "Done"];
+function ProgressBar({ step, total }: { step: number; total: number }) {
+  const percent = (step / total) * 100;
   return (
-    <div className="flex justify-between text-xs font-medium text-muted-foreground px-1">
-      {steps.map((label, i) => (
-        <span key={label} className={step >= i + 1 ? "text-primary" : ""}>
-          {label}
-        </span>
-      ))}
+    <div className="mb-4">
+      <div className="text-xs font-medium text-muted-foreground mb-1">{`Step ${step} of ${total}`}</div>
+      <div className="w-full h-2 bg-gray-200 rounded-full">
+        <div
+          className="h-full bg-lilac rounded-full transition-all duration-300"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
     </div>
   );
 }
 
-function Dropdown({ label, options, register, name }: any) {
+function Select({ label, name, options, register }: any) {
   return (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
       <select {...register(name)} className="w-full border p-2 rounded">
         <option value="">Select {label}</option>
         {options.map((opt: string) => (
-          <option key={opt} value={opt}>{opt}</option>
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
         ))}
       </select>
-    </div>
-  );
-}
-
-function Multi({ label, options, register, name }: any) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      <select {...register(name)} multiple className="w-full border p-2 rounded h-32">
-        {options.map((opt: string) => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function Checkbox({ label, name, register }: any) {
-  return (
-    <div className="flex items-center space-x-2">
-      <input type="checkbox" {...register(name)} />
-      <label>{label}</label>
     </div>
   );
 }
