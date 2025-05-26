@@ -3,8 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   const supabase = createClient(
-    Deno.env.get("PROJECT_URL")!,               // ✅ use this instead of SUPABASE_URL
-    Deno.env.get("SERVICE_ROLE_KEY")!           // ✅ use this instead of SUPABASE_SERVICE_ROLE_KEY
+    Deno.env.get("PROJECT_URL")!,
+    Deno.env.get("SERVICE_ROLE_KEY")!
   );
 
   try {
@@ -22,6 +22,13 @@ serve(async (req) => {
       .single();
 
     if (tokenError || !oauth?.access_token) {
+      await supabase.from("sync_logs").insert({
+        user_id,
+        provider,
+        status: "error",
+        message: "Missing or invalid OAuth token",
+      });
+
       return new Response("Missing or invalid OAuth token", { status: 401 });
     }
 
@@ -90,32 +97,61 @@ serve(async (req) => {
     }
 
     // Fetch data from provider API
-    const response = await fetch(apiUrl, {
+    const apiRes = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${oauth.access_token}`,
         "Content-Type": "application/json",
       },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!apiRes.ok) {
+      const errorText = await apiRes.text();
+
+      await supabase.from("sync_logs").insert({
+        user_id,
+        provider,
+        status: "error",
+        message: `Failed to fetch API data: ${errorText}`,
+      });
+
       return new Response(`Failed to fetch data: ${errorText}`, { status: 400 });
     }
 
-    const responseData = await response.json();
+    const responseData = await apiRes.json();
     const formattedData = processData(responseData);
 
-    // Insert or update data in Supabase
+    // Insert or update data
     const { error: insertError } = await supabase
       .from(tableName)
       .upsert(formattedData);
 
     if (insertError) {
-      return new Response(`Failed to save data: ${insertError.message}`, { status: 500 });
+      await supabase.from("sync_logs").insert({
+        user_id,
+        provider,
+        status: "error",
+        message: `Failed to save accounts: ${insertError.message}`,
+      });
+
+      return new Response(`Failed to save accounts: ${insertError.message}`, { status: 500 });
     }
+
+    await supabase.from("sync_logs").insert({
+      user_id,
+      provider,
+      status: "success",
+      message: `Synced ${formattedData.length} accounts.`,
+    });
 
     return new Response("Data synced successfully", { status: 200 });
   } catch (error) {
+    await supabase.from("sync_logs").insert({
+      user_id: "unknown",
+      provider: "unknown",
+      status: "error",
+      message: `Unhandled error: ${error.message}`,
+    });
+
     return new Response(`Error: ${error.message}`, { status: 500 });
   }
 });
