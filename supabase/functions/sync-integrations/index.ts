@@ -28,7 +28,6 @@ serve(async (req) => {
         status: "error",
         message: "Missing or invalid OAuth token",
       });
-
       return new Response("Missing or invalid OAuth token", { status: 401 });
     }
 
@@ -111,7 +110,7 @@ serve(async (req) => {
         user_id,
         provider,
         status: "error",
-        message: `Failed to fetch API data: ${errorText}`,
+        message: `Failed API fetch: ${errorText}`,
       });
 
       return new Response(`Failed to fetch data: ${errorText}`, { status: 400 });
@@ -120,7 +119,7 @@ serve(async (req) => {
     const responseData = await apiRes.json();
     const formattedData = processData(responseData);
 
-    // Insert or update data
+    // Insert or update accounts in Supabase
     const { error: insertError } = await supabase
       .from(tableName)
       .upsert(formattedData);
@@ -130,17 +129,18 @@ serve(async (req) => {
         user_id,
         provider,
         status: "error",
-        message: `Failed to save accounts: ${insertError.message}`,
+        message: `Database upsert failed: ${insertError.message}`,
       });
 
       return new Response(`Failed to save accounts: ${insertError.message}`, { status: 500 });
     }
 
+    // Log success
     await supabase.from("sync_logs").insert({
       user_id,
       provider,
       status: "success",
-      message: `Synced ${formattedData.length} accounts.`,
+      message: `Synced ${formattedData.length} accounts successfully.`,
     });
 
     return new Response("Data synced successfully", { status: 200 });
