@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import AppLayout from "@/components/layout/AppLayout";
@@ -9,10 +8,13 @@ import AecrScorePanel from "@/components/dashboard/AecrScorePanel";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
 import DateRangeSelector from "@/components/dashboard/DateRangeSelector";
 import DashboardFilters from "@/components/dashboard/DashboardFilters";
+import { IndustryBadge } from "@/components/ui/industry-badge";
+import { useCompanyIndustry } from "@/hooks/useCompanyIndustry";
 import { DataPoint, Campaign, Alert } from "@/components/dashboard/types";
 import { subDays } from "date-fns";
 
 export default function Dashboard() {
+  const { companyIndustry, loading: industryLoading } = useCompanyIndustry();
   const [dateRange, setDateRange] = useState({
     from: subDays(new Date(), 30),
     to: new Date()
@@ -156,7 +158,19 @@ export default function Dashboard() {
     <AppLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <div>
+            <h1 className="text-2xl font-semibold">Dashboard</h1>
+            {!industryLoading && companyIndustry && (
+              <div className="mt-2">
+                <IndustryBadge
+                  domain={companyIndustry.domain}
+                  category={companyIndustry.category}
+                  subcategory={companyIndustry.subcategory}
+                  detail={companyIndustry.detail}
+                />
+              </div>
+            )}
+          </div>
           <DateRangeSelector 
             onDateRangeChange={setDateRange}
             initialDateRange={dateRange}

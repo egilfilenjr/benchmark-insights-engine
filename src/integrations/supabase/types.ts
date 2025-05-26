@@ -559,6 +559,39 @@ export type Database = {
         }
         Relationships: []
       }
+      company_industry: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string
+          detail: string | null
+          domain: string | null
+          id: string
+          subcategory: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string
+          detail?: string | null
+          domain?: string | null
+          id?: string
+          subcategory?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          detail?: string | null
+          domain?: string | null
+          id?: string
+          subcategory?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_profiles: {
         Row: {
           business_model: string | null
@@ -831,6 +864,66 @@ export type Database = {
           id?: string
           region_code?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      industries: {
+        Row: {
+          active: boolean | null
+          category: string
+          created_at: string | null
+          domain: string
+          id: string
+          microsegment: string | null
+          segment: string | null
+          slug: string | null
+          subcategory: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          category: string
+          created_at?: string | null
+          domain: string
+          id?: string
+          microsegment?: string | null
+          segment?: string | null
+          slug?: string | null
+          subcategory?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          created_at?: string | null
+          domain?: string
+          id?: string
+          microsegment?: string | null
+          segment?: string | null
+          slug?: string | null
+          subcategory?: string | null
+        }
+        Relationships: []
+      }
+      industry_hierarchy: {
+        Row: {
+          category: string | null
+          detail: string | null
+          domain: string
+          id: number
+          subcategory: string | null
+        }
+        Insert: {
+          category?: string | null
+          detail?: string | null
+          domain: string
+          id?: number
+          subcategory?: string | null
+        }
+        Update: {
+          category?: string | null
+          detail?: string | null
+          domain?: string
+          id?: number
+          subcategory?: string | null
         }
         Relationships: []
       }

@@ -6,17 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { IndustrySelector } from "@/components/ui/industry-selector";
+import { useCompanyIndustry } from "@/hooks/useCompanyIndustry";
 import { User } from "@supabase/supabase-js";
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { saveCompanyIndustry } = useCompanyIndustry();
   const [user, setUser] = useState<User | null>(null);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     company_name: "",
-    industry: "",
     company_size: "",
     goals: [] as string[]
+  });
+  const [industrySelection, setIndustrySelection] = useState({
+    domain: undefined as string | undefined,
+    category: undefined as string | undefined,
+    subcategory: undefined as string | undefined,
+    detail: undefined as string | undefined,
   });
 
   useEffect(() => {
@@ -38,6 +46,10 @@ export default function Onboarding() {
     } else {
       // Complete onboarding
       if (user) {
+        // Save industry selection
+        await saveCompanyIndustry(industrySelection);
+        
+        // Update profile with other data
         await supabase
           .from('profiles')
           .update({ 
@@ -52,6 +64,21 @@ export default function Onboarding() {
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const canProceed = () => {
+    switch (step) {
+      case 1:
+        return formData.company_name.length > 0;
+      case 2:
+        return industrySelection.domain !== undefined;
+      case 3:
+        return formData.company_size.length > 0;
+      case 4:
+        return formData.goals.length > 0;
+      default:
+        return false;
+    }
   };
 
   if (!user) {
@@ -83,19 +110,14 @@ export default function Onboarding() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="industry">Industry</Label>
-                <select
-                  id="industry"
-                  className="w-full border rounded px-3 py-2"
-                  value={formData.industry}
-                  onChange={(e) => updateFormData('industry', e.target.value)}
-                >
-                  <option value="">Select industry</option>
-                  <option value="E-commerce">E-commerce</option>
-                  <option value="SaaS">SaaS</option>
-                  <option value="Healthcare">Healthcare</option>
-                  <option value="Finance">Finance</option>
-                </select>
+                <Label>Industry</Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Select your industry to get relevant benchmarks and insights.
+                </p>
+                <IndustrySelector
+                  value={industrySelection}
+                  onChange={setIndustrySelection}
+                />
               </div>
             </div>
           )}
@@ -144,7 +166,11 @@ export default function Onboarding() {
             </div>
           )}
 
-          <Button onClick={handleNext} className="w-full">
+          <Button 
+            onClick={handleNext} 
+            className="w-full"
+            disabled={!canProceed()}
+          >
             {step === 4 ? "Complete Setup" : "Next"}
           </Button>
         </CardContent>

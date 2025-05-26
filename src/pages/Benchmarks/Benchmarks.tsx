@@ -1,12 +1,14 @@
 
 import { useState } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useCompanyIndustry } from "@/hooks/useCompanyIndustry";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BenchmarkFilterBar from "@/components/benchmarks/BenchmarkFilterBar";
 import BenchmarkTable from "@/components/benchmarks/BenchmarkTable";
 import BenchmarkPercentileVisual from "@/components/benchmarks/BenchmarkPercentileVisual";
 import IndustryComparison from "@/components/benchmarks/IndustryComparison";
+import { IndustryBadge } from "@/components/ui/industry-badge";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -16,8 +18,11 @@ import { YOUR_PERFORMANCE } from "@/data/mockBenchmarks";
 
 export default function Benchmarks() {
   const { user, plan } = useUserProfile();
+  const { companyIndustry, loading: industryLoading } = useCompanyIndustry();
+  
+  // Initialize filters based on company industry
   const [filters, setFilters] = useState({
-    industry: "SaaS",
+    industry: companyIndustry?.domain || "All",
     platform: "Google",
     channel: "Search",
     kpi: "CPA", 
@@ -49,6 +54,19 @@ export default function Benchmarks() {
 
   const activeBenchmark = benchmarks.find(b => b.kpi === selectedKPI) || benchmarks[0];
 
+  const getIndustryBreadcrumb = () => {
+    if (!companyIndustry) return "All Industries";
+    
+    const parts = [
+      companyIndustry.domain,
+      companyIndustry.category,
+      companyIndustry.subcategory,
+      companyIndustry.detail
+    ].filter(Boolean);
+    
+    return parts.join(" → ");
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -58,6 +76,17 @@ export default function Benchmarks() {
             <p className="text-muted-foreground">
               Compare your marketing performance to industry standards.
             </p>
+            {!industryLoading && companyIndustry && (
+              <div className="mt-2">
+                <div className="text-sm text-muted-foreground mb-1">Your Benchmarks:</div>
+                <IndustryBadge
+                  domain={companyIndustry.domain}
+                  category={companyIndustry.category}
+                  subcategory={companyIndustry.subcategory}
+                  detail={companyIndustry.detail}
+                />
+              </div>
+            )}
           </div>
           <Button onClick={handleExport} disabled={plan === "free" || plan === "pro"}>
             <Download className="mr-2 h-4 w-4" />
