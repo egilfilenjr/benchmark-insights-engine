@@ -14,7 +14,6 @@ serve(async (req) => {
     return new Response("Missing user_id", { status: 400 });
   }
 
-  // 1. Get Google Analytics token
   const { data: oauth, error: tokenError } = await supabase
     .from("oauth_accounts")
     .select("access_token")
@@ -26,7 +25,6 @@ serve(async (req) => {
     return new Response("Missing Google Analytics token", { status: 401 });
   }
 
-  // 2. Fetch GA accounts
   const gaRes = await fetch("https://analyticsadmin.googleapis.com/v1alpha/accounts", {
     headers: {
       Authorization: `Bearer ${oauth.access_token}`,
@@ -41,7 +39,6 @@ serve(async (req) => {
   const gaData = await gaRes.json();
   const accounts = gaData.accounts || [];
 
-  // 3. Store in ga_accounts table
   const formatted = accounts.map((acc: any) => ({
     id: acc.name.replace("accounts/", ""),
     display_name: acc.displayName,
