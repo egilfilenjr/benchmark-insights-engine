@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { subDays } from "date-fns";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
@@ -12,62 +13,42 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Campaign, Alert, DataPoint } from "@/components/dashboard/types";
 
-type KPI = { value: number; change: number; benchmark: number };
-type KPIData = { [key: string]: KPI };
-
-const industryOptions = ["All", "E-commerce", "SaaS", "Healthcare", "Finance"];
-const sizeOptions = ["All", "1–10", "11–50", "51–200", "201–500", "501+"];
-const maturityOptions = ["All", "Beginner", "Intermediate", "Advanced", "Enterprise"];
-const platformOptions = ["All", "google_ads", "meta_ads", "linkedin_ads", "tiktok_ads", "ga4", "shopify"];
+const industryOptions = ["All", "E-commerce", "SaaS", "Healthcare"];
+const sizeOptions = ["All", "1–10", "11–50", "51–200", "501+"];
+const maturityOptions = ["All", "Beginner", "Intermediate", "Advanced"];
+const platformOptions = ["All", "google_ads", "meta_ads", "linkedin_ads", "tiktok_ads"];
+const trendMetrics = ["roas", "cpa", "ctr"];
 
 export default function Dashboard() {
   const userProfile = useUserProfile();
-  const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState({
-    from: subDays(new Date(), 30),
-    to: new Date(),
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [dateRange, setDateRange] = useState(() => ({
+    from: new Date(searchParams.get("from") || subDays(new Date(), 30)),
+    to: new Date(searchParams.get("to") || new Date()),
+  }));
 
-  // Filters
-  const [industry, setIndustry] = useState("All");
-  const [companySize, setCompanySize] = useState("All");
-  const [maturity, setMaturity] = useState("All");
-  const [integration, setIntegration] = useState("All");
+  const [industry, setIndustry] = useState(searchParams.get("industry") || "All");
+  const [companySize, setCompanySize] = useState(searchParams.get("size") || "All");
+  const [maturity, setMaturity] = useState(searchParams.get("maturity") || "All");
+  const [integration, setIntegration] = useState(searchParams.get("integration") || "All");
+  const [selectedMetric, setSelectedMetric] = useState("roas");
 
-  // Dashboard data
+  const [kpis, setKpis] = useState({});
   const [aecrScore, setAecrScore] = useState({ score: 0, percentile: 0, previousScore: 0 });
-  const [kpis, setKpis] = useState<KPIData>({});
   const [trendData, setTrendData] = useState<DataPoint[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
 
-  const [profileMeta, setProfileMeta] = useState<any>(null);
-
   useEffect(() => {
-    const fetchProfileMeta = async () => {
-      const { data, error } = await supabase
-        .from("public_user_profile_view")
-        .select("*")
-        .eq("id", userProfile?.userId)
-        .single();
-
-      if (error) {
-        console.error("Failed to load profile view:", error);
-        return;
-      }
-
-      setProfileMeta(data);
-      setIndustry(data.industry || "All");
-      setCompanySize(data.company_size || "All");
-      setMaturity(data.analytics_maturity || "All");
-    };
-
-    if (userProfile?.userId) fetchProfileMeta();
-  }, [userProfile?.userId]);
+    searchParams.set("industry", industry);
+    searchParams.set("size", companySize);
+    searchParams.set("maturity", maturity);
+    searchParams.set("integration", integration);
+    setSearchParams(searchParams);
+  }, [industry, companySize, maturity, integration]);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
         const { data, error } = await supabase
           .from("metrics")
@@ -75,83 +56,105 @@ export default function Dashboard() {
           .eq("user_id", userProfile?.userId);
 
         if (error) throw error;
-
-        if (data && data.length > 0) {
+        if (data?.length) {
           const entry = data[0];
-          const kpiData = entry.kpis || {};
-          const aecr = entry.aecr || {};
-
-          setKpis({
-            cpa: formatKpi(kpiData, "cpa"),
-            roas: formatKpi(kpiData, "roas"),
-            ctr: formatKpi(kpiData, "ctr"),
-            spend: formatKpi(kpiData, "spend"),
-            conversions: formatKpi(kpiData, "conversions"),
-          });
-
-          setAecrScore({
-            score: aecr.score || 0,
-            percentile: aecr.percentile || 0,
-            previousScore: aecr.previousScore || 0,
-          });
-
-          setTrendData(parseTrend(entry.trends));
-          setCampaigns(parseCampaigns(entry.campaigns));
-          setAlerts(parseAlerts(entry.alerts));
+          const k = entry.kpis || {};
+          setKpis(k);
+          setAecrScore(entry.aecr || {});
+          setTrendData(entry.trends || []);
+          setCampaigns(entry.campaigns || []);
+          setAlerts(entry.alerts || []);
         }
-      } catch (err: any) {
-        toast({
-          title: "Error loading data",
-          description: err.message || "Unknown error",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+      } catch (e) {
+        toast({ title: "Failed to load dashboard", variant: "destructive" });
       }
     };
 
     if (userProfile?.userId) fetchData();
-  }, [userProfile?.userId, dateRange]);
+  }, [userProfile?.userId]);
+
+  const handleQuickRange = (days: number) => {
+    const to = new Date();
+    const from = subDays(to, days);
+    setDateRange({ from, to });
+    searchParams.set("from", from.toISOString());
+    searchParams.set("to", to.toISOString());
+    setSearchParams(searchParams);
+  };
+
+  const getKpiColor = (value: number, benchmark: number) => {
+    if (value >= benchmark) return "green";
+    if (value >= benchmark * 0.9) return "yellow";
+    return "red";
+  };
 
   const renderKpis = useMemo(() => {
-    return Object.entries(kpis).map(([key, kpi]) => (
-      <KpiTile key={key} title={key.toUpperCase()} {...kpi} />
+    return Object.entries(kpis).map(([key, { value, change, benchmark }]: any) => (
+      <KpiTile
+        key={key}
+        title={key.toUpperCase()}
+        value={value}
+        change={change}
+        benchmark={benchmark}
+        color={getKpiColor(value, benchmark)}
+      />
     ));
   }, [kpis]);
 
-  const clearAlerts = () => {
-    setAlerts([]);
-    toast({ title: "All alerts cleared" });
-  };
-
-  if (loading) return <div className="p-6">Loading dashboard...</div>;
+  const filteredTrend = trendData.map((t: any) => ({
+    date: t.date,
+    value: t[selectedMetric],
+    benchmark: t.benchmark,
+  }));
 
   return (
     <AppLayout>
       <div className="p-6 space-y-6">
         <FilterBar dateRange={dateRange} onDateRangeChange={setDateRange} />
 
-        {/* Filter Dropdowns */}
+        {/* Quick Date Ranges */}
+        <div className="flex gap-2">
+          {[7, 30, 90].map((d) => (
+            <button
+              key={d}
+              onClick={() => handleQuickRange(d)}
+              className="bg-muted px-2 py-1 rounded text-sm"
+            >
+              Last {d}d
+            </button>
+          ))}
+        </div>
+
+        {/* Metadata Filters */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Dropdown label="Industry" value={industry} onChange={setIndustry} options={industryOptions} />
-          <Dropdown label="Company Size" value={companySize} onChange={setCompanySize} options={sizeOptions} />
+          <Dropdown label="Size" value={companySize} onChange={setCompanySize} options={sizeOptions} />
           <Dropdown label="Maturity" value={maturity} onChange={setMaturity} options={maturityOptions} />
           <Dropdown label="Integration" value={integration} onChange={setIntegration} options={platformOptions} />
         </div>
 
-        <AecrScorePanel
-          score={aecrScore.score}
-          percentile={aecrScore.percentile}
-          previousScore={aecrScore.previousScore}
-        />
+        <AecrScorePanel {...aecrScore} />
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{renderKpis}</div>
 
-        <TrendGraph data={trendData} title="Performance Trend" valueLabel="Performance" />
+        {/* Metric Selector */}
+        <div className="flex gap-3">
+          {trendMetrics.map((m) => (
+            <button
+              key={m}
+              onClick={() => setSelectedMetric(m)}
+              className={`text-sm px-2 py-1 rounded ${selectedMetric === m ? "bg-blue-500 text-white" : "bg-muted"}`}
+            >
+              {m.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        <TrendGraph data={filteredTrend} title={`${selectedMetric.toUpperCase()} Trend`} valueLabel={selectedMetric} />
 
         <CampaignTable campaigns={campaigns} onSort={() => {}} dateRange={dateRange} />
 
-        <AlertsPanel alerts={alerts} onClearAll={clearAlerts} />
+        <AlertsPanel alerts={alerts} onClearAll={() => setAlerts([])} />
       </div>
     </AppLayout>
   );
@@ -174,51 +177,4 @@ function Dropdown({ label, value, onChange, options }: any) {
       </select>
     </div>
   );
-}
-
-function formatKpi(data: any, key: string): KPI {
-  return {
-    value: Number(data?.[key]?.value) || 0,
-    change: Number(data?.[key]?.change) || 0,
-    benchmark: Number(data?.[key]?.benchmark) || 0,
-  };
-}
-
-function parseTrend(data: any): DataPoint[] {
-  return Array.isArray(data)
-    ? data.map((t: any) => ({
-        date: t.date,
-        value: Number(t.value) || 0,
-        benchmark: Number(t.benchmark) || 0,
-      }))
-    : [];
-}
-
-function parseCampaigns(data: any): Campaign[] {
-  return Array.isArray(data)
-    ? data.map((c: any) => ({
-        id: c.id || "",
-        name: c.name || "",
-        platform: c.platform || "",
-        spend: Number(c.spend) || 0,
-        conversions: Number(c.conversions) || 0,
-        cpa: Number(c.cpa) || 0,
-        roas: Number(c.roas) || 0,
-        ctr: Number(c.ctr) || 0,
-        vsBenchmark: Number(c.vsBenchmark) || 0,
-      }))
-    : [];
-}
-
-function parseAlerts(data: any): Alert[] {
-  return Array.isArray(data)
-    ? data.map((a: any) => ({
-        id: a.id || "",
-        type: a.type || "info",
-        message: a.message || "",
-        timestamp: new Date(a.timestamp || Date.now()),
-        actionLabel: a.actionLabel,
-        onAction: a.onAction,
-      }))
-    : [];
 }
