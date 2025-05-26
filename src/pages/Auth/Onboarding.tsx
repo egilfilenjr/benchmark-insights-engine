@@ -1,195 +1,154 @@
+
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useUser } from "@supabase/auth-helpers-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-// Tiered dropdowns
-const industries = [
-  "E-commerce",
-  "SaaS",
-  "Healthcare",
-  "Finance",
-  "Education",
-  "Retail",
-  "Consumer Goods",
-  "Media",
-  "Agency / Consulting",
-  "Nonprofit",
-  "Real Estate",
-  "Legal",
-  "Government",
-  "Other",
-];
-
-const subIndustries: Record<string, string[]> = {
-  "E-commerce": ["Fashion", "Supplements", "Electronics", "Dropshipping", "Home Goods", "Other"],
-  SaaS: ["B2B SaaS", "Productivity", "AI Tools", "Marketing Tools", "Fintech SaaS", "Health SaaS", "Other"],
-  Healthcare: ["Clinics", "Dental", "Telehealth", "Wellness", "Pharma", "Hospitals", "Other"],
-  Finance: ["Banking", "Fintech", "Credit Unions", "Insurance", "Investments", "Other"],
-  Retail: ["Apparel", "Footwear", "Furniture", "Convenience", "Department Store", "Other"],
-  Education: ["K–12", "Higher Ed", "EdTech", "Tutoring", "Online Courses", "Other"],
-};
-
-const companySizes = ["1–10", "11–50", "51–200", "201–500", "501–1,000", "1,001–5,000", "5,001+"];
-const revenueRanges = ["< $500k", "$500k–$1M", "$1M–$5M", "$5M–$20M", "$20M–$100M", "$100M+"];
-const businessModels = ["B2B", "B2C", "Both", "Marketplace", "Franchise", "Nonprofit"];
-const salesMotions = ["Inbound", "Outbound", "Product-led", "Hybrid"];
-const customerTypes = ["Consumers", "Businesses", "Both", "Government", "Schools"];
-const productTypes = ["Physical Goods", "Digital Products", "Subscriptions", "Services", "Other"];
-const geoFocus = ["Local", "Regional", "National", "Multi-national", "Global"];
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { User } from "@supabase/supabase-js";
 
 export default function Onboarding() {
-  const user = useUser();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
   const [step, setStep] = useState(1);
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    getValues,
-    formState: { errors },
-  } = useForm();
-
-  const selectedIndustry = watch("industry");
+  const [formData, setFormData] = useState({
+    company_name: "",
+    industry: "",
+    company_size: "",
+    goals: [] as string[]
+  });
 
   useEffect(() => {
-    if (user) {
-      loadProfile();
-    }
-  }, [user]);
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (!user) {
+        navigate('/auth/login');
+      }
+    };
 
-  const loadProfile = async () => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user?.id)
-      .single();
-    if (data) {
-      Object.entries(data).forEach(([key, value]) => setValue(key, value));
-      setStep(data.onboarding_step || 1);
-    }
-  };
+    getCurrentUser();
+  }, [navigate]);
 
-  const saveStep = async () => {
-    const values = getValues();
-    await supabase
-      .from("profiles")
-      .update({ ...values, onboarding_step: step + 1 })
-      .eq("id", user?.id);
-  };
-
-  const onNext = async () => {
-    await saveStep();
-    setStep(step + 1);
-  };
-
-  const onBack = () => setStep(step - 1);
-
-  const onSubmit = async () => {
-    const values = getValues();
-    await supabase
-      .from("profiles")
-      .update({ ...values, onboarding_step: 5 })
-      .eq("id", user?.id);
-    console.log("✅ Final onboarding step saved.");
-  };
-
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return (
-          <>
-            <Select label="Industry" name="industry" options={industries} register={register} />
-            {selectedIndustry && subIndustries[selectedIndustry] && (
-              <Select
-                label="Sub-Industry"
-                name="sub_industry"
-                options={subIndustries[selectedIndustry]}
-                register={register}
-              />
-            )}
-            <Select label="Company Size" name="company_size" options={companySizes} register={register} />
-            <Select label="Revenue Range" name="revenue_range" options={revenueRanges} register={register} />
-            <Select label="Business Model" name="business_model" options={businessModels} register={register} />
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <Select label="Target Customer Type" name="customer_type" options={customerTypes} register={register} />
-            <Select label="Primary Product Type" name="product_type" options={productTypes} register={register} />
-            <Select label="Sales Motion" name="sales_motion" options={salesMotions} register={register} />
-            <Select label="Geographic Focus" name="geo_focus" options={geoFocus} register={register} />
-          </>
-        );
-      case 3:
-        return (
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold">🎉 Almost done!</p>
-            <p className="text-sm text-muted-foreground">
-              Click “Finish” to complete your onboarding. You can update this info anytime in Settings.
-            </p>
-          </div>
-        );
-      default:
-        return null;
+  const handleNext = async () => {
+    if (step < 4) {
+      setStep(step + 1);
+    } else {
+      // Complete onboarding
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ 
+            ...formData,
+            onboarding_step: 5 
+          })
+          .eq('id', user.id);
+      }
+      navigate('/dashboard');
     }
   };
+
+  const updateFormData = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      <ProgressBar step={step} total={3} />
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-6">
-        {renderStep()}
-        <div className="flex justify-between pt-6">
-          {step > 1 ? (
-            <Button type="button" variant="outline" onClick={onBack}>
-              Back
-            </Button>
-          ) : (
-            <span />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Welcome! Let's get started</CardTitle>
+          <p className="text-sm text-muted-foreground">Step {step} of 4</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="company_name">Company Name</Label>
+                <Input
+                  id="company_name"
+                  value={formData.company_name}
+                  onChange={(e) => updateFormData('company_name', e.target.value)}
+                  placeholder="Enter your company name"
+                />
+              </div>
+            </div>
           )}
-          {step < 3 ? (
-            <Button type="button" onClick={onNext}>
-              Next
-            </Button>
-          ) : (
-            <Button type="submit">Finish</Button>
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="industry">Industry</Label>
+                <select
+                  id="industry"
+                  className="w-full border rounded px-3 py-2"
+                  value={formData.industry}
+                  onChange={(e) => updateFormData('industry', e.target.value)}
+                >
+                  <option value="">Select industry</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="SaaS">SaaS</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Finance">Finance</option>
+                </select>
+              </div>
+            </div>
           )}
-        </div>
-      </form>
-    </div>
-  );
-}
 
-function ProgressBar({ step, total }: { step: number; total: number }) {
-  const percent = (step / total) * 100;
-  return (
-    <div className="mb-4">
-      <div className="text-xs font-medium text-muted-foreground mb-1">{`Step ${step} of ${total}`}</div>
-      <div className="w-full h-2 bg-gray-200 rounded-full">
-        <div
-          className="h-full bg-lilac rounded-full transition-all duration-300"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-    </div>
-  );
-}
+          {step === 3 && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="company_size">Company Size</Label>
+                <select
+                  id="company_size"
+                  className="w-full border rounded px-3 py-2"
+                  value={formData.company_size}
+                  onChange={(e) => updateFormData('company_size', e.target.value)}
+                >
+                  <option value="">Select size</option>
+                  <option value="1-10">1-10 employees</option>
+                  <option value="11-50">11-50 employees</option>
+                  <option value="51-200">51-200 employees</option>
+                  <option value="200+">200+ employees</option>
+                </select>
+              </div>
+            </div>
+          )}
 
-function Select({ label, name, options, register }: any) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      <select {...register(name)} className="w-full border p-2 rounded">
-        <option value="">Select {label}</option>
-        {options.map((opt: string) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
+          {step === 4 && (
+            <div className="space-y-4">
+              <Label>What are your main goals?</Label>
+              <div className="space-y-2">
+                {["Reduce CPA", "Increase ROAS", "Scale campaigns", "Improve targeting"].map((goal) => (
+                  <label key={goal} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.goals.includes(goal)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          updateFormData('goals', [...formData.goals, goal]);
+                        } else {
+                          updateFormData('goals', formData.goals.filter(g => g !== goal));
+                        }
+                      }}
+                    />
+                    <span>{goal}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Button onClick={handleNext} className="w-full">
+            {step === 4 ? "Complete Setup" : "Next"}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

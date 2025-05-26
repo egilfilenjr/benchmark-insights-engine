@@ -1,114 +1,158 @@
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { subDays } from "date-fns";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import AppLayout from "@/components/layout/AppLayout";
-import FilterBar from "@/components/dashboard/FilterBar";
-import AecrScorePanel from "@/components/dashboard/AecrScorePanel";
+import DashboardKPIs from "@/components/dashboard/DashboardKPIs";
 import TrendGraph from "@/components/dashboard/TrendGraph";
 import CampaignTable from "@/components/dashboard/CampaignTable";
+import AecrScorePanel from "@/components/dashboard/AecrScorePanel";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
-import DashboardKPIs from "@/components/dashboard/DashboardKPIs";
+import DateRangeSelector from "@/components/dashboard/DateRangeSelector";
 import DashboardFilters from "@/components/dashboard/DashboardFilters";
-import MetricSelector from "@/components/dashboard/MetricSelector";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { Campaign, Alert, DataPoint } from "@/components/dashboard/types";
-
-const trendMetrics = ["roas", "cpa", "ctr"];
+import { DataPoint, Campaign, Alert } from "@/components/dashboard/types";
 
 export default function Dashboard() {
-  const userProfile = useUserProfile();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [dateRange, setDateRange] = useState(() => ({
-    from: new Date(searchParams.get("from") || subDays(new Date(), 30)),
-    to: new Date(searchParams.get("to") || new Date()),
-  }));
+  const [dateRange, setDateRange] = useState("30d");
+  const [selectedMetric, setSelectedMetric] = useState("cpa");
+  const [industry, setIndustry] = useState("All");
+  const [companySize, setCompanySize] = useState("All");
+  const [maturity, setMaturity] = useState("All");
+  const [integration, setIntegration] = useState("All");
 
-  const [industry, setIndustry] = useState(searchParams.get("industry") || "All");
-  const [companySize, setCompanySize] = useState(searchParams.get("size") || "All");
-  const [maturity, setMaturity] = useState(searchParams.get("maturity") || "All");
-  const [integration, setIntegration] = useState(searchParams.get("integration") || "All");
-  const [selectedMetric, setSelectedMetric] = useState("roas");
+  // Data states
+  const [kpis, setKpis] = useState({
+    cpa: { value: 45.23, change: -8.2, benchmark: 52.18 },
+    roas: { value: 4.2, change: 12.5, benchmark: 3.8 },
+    ctr: { value: 2.8, change: 5.1, benchmark: 2.4 },
+    conversions: { value: 1247, change: 18.3, benchmark: 980 },
+    spend: { value: 12450, change: -3.2, benchmark: 15000 }
+  });
 
-  const [kpis, setKpis] = useState({});
-  const [aecrScore, setAecrScore] = useState({ score: 0, percentile: 0, previousScore: 0 });
-  const [trendData, setTrendData] = useState<DataPoint[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [aecrScore, setAecrScore] = useState({
+    score: 85,
+    percentile: 78,
+    previousScore: 82
+  });
+
+  const [trendData, setTrendData] = useState<DataPoint[]>([
+    { date: "2024-01-01", value: 45.2 },
+    { date: "2024-01-02", value: 43.8 },
+    { date: "2024-01-03", value: 46.1 },
+    { date: "2024-01-04", value: 44.5 },
+    { date: "2024-01-05", value: 42.9 }
+  ]);
+
+  const [campaigns, setCampaigns] = useState<Campaign[]>([
+    {
+      id: "1",
+      name: "Summer Sale Campaign",
+      platform: "Google Ads",
+      spend: 2450.00,
+      conversions: 89,
+      cpa: 27.53,
+      roas: 3.8,
+      status: "active"
+    }
+  ]);
+
+  const [alerts, setAlerts] = useState<Alert[]>([
+    {
+      id: "1",
+      type: "performance",
+      message: "CPA increased by 15% in the last 7 days",
+      timestamp: "2024-01-15T10:30:00Z"
+    }
+  ]);
 
   useEffect(() => {
-    searchParams.set("industry", industry);
-    searchParams.set("size", companySize);
-    searchParams.set("maturity", maturity);
-    searchParams.set("integration", integration);
-    setSearchParams(searchParams);
-  }, [industry, companySize, maturity, integration]);
-
-  useEffect(() => {
-    const fetchData = async () => {
+    const loadDashboardData = async () => {
       try {
-        const { data, error } = await supabase
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: metricsData } = await supabase
           .from("metrics")
           .select("*")
-          .eq("user_id", userProfile?.userId);
+          .eq("user_id", user.id)
+          .single();
 
-        if (error) throw error;
-        if (data?.length) {
-          const entry = data[0];
-          const k = entry.kpis || {};
-          setKpis(k);
-          setAecrScore(entry.aecr || { score: 0, percentile: 0, previousScore: 0 });
-          setTrendData(Array.isArray(entry.trends) ? entry.trends : []);
-          
-          // Safely handle campaigns and alerts data
-          const campaignsData = Array.isArray(entry.campaigns) ? entry.campaigns as Campaign[] : [];
-          const alertsData = Array.isArray(entry.alerts) ? entry.alerts as Alert[] : [];
-          
-          setCampaigns(campaignsData);
-          setAlerts(alertsData);
+        if (metricsData) {
+          // Safely parse the JSON data with type assertions
+          if (metricsData.aecr && typeof metricsData.aecr === 'object') {
+            const aecrData = metricsData.aecr as any;
+            if (aecrData.score !== undefined) {
+              setAecrScore({
+                score: Number(aecrData.score),
+                percentile: Number(aecrData.percentile || 0),
+                previousScore: Number(aecrData.previousScore || 0)
+              });
+            }
+          }
+
+          if (metricsData.trends && Array.isArray(metricsData.trends)) {
+            const trendsArray = metricsData.trends as any[];
+            const validTrends = trendsArray.filter(item => 
+              item && typeof item === 'object' && item.date && item.value !== undefined
+            ).map(item => ({
+              date: String(item.date),
+              value: Number(item.value)
+            }));
+            if (validTrends.length > 0) {
+              setTrendData(validTrends);
+            }
+          }
+
+          if (metricsData.campaigns && Array.isArray(metricsData.campaigns)) {
+            const campaignsArray = metricsData.campaigns as any[];
+            const validCampaigns = campaignsArray.filter(item => 
+              item && typeof item === 'object' && item.id && item.name
+            ).map(item => ({
+              id: String(item.id),
+              name: String(item.name),
+              platform: String(item.platform || ''),
+              spend: Number(item.spend || 0),
+              conversions: Number(item.conversions || 0),
+              cpa: Number(item.cpa || 0),
+              roas: Number(item.roas || 0),
+              status: String(item.status || 'active')
+            }));
+            if (validCampaigns.length > 0) {
+              setCampaigns(validCampaigns);
+            }
+          }
+
+          if (metricsData.alerts && Array.isArray(metricsData.alerts)) {
+            const alertsArray = metricsData.alerts as any[];
+            const validAlerts = alertsArray.filter(item => 
+              item && typeof item === 'object' && item.id && item.message
+            ).map(item => ({
+              id: String(item.id),
+              type: String(item.type || 'info'),
+              message: String(item.message),
+              timestamp: String(item.timestamp || new Date().toISOString())
+            }));
+            if (validAlerts.length > 0) {
+              setAlerts(validAlerts);
+            }
+          }
         }
-      } catch (e) {
-        console.error('Dashboard data fetch error:', e);
-        toast({ title: "Failed to load dashboard", variant: "destructive" });
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
       }
     };
 
-    if (userProfile?.userId) fetchData();
-  }, [userProfile?.userId]);
-
-  const handleQuickRange = (days: number) => {
-    const to = new Date();
-    const from = subDays(to, days);
-    setDateRange({ from, to });
-    searchParams.set("from", from.toISOString());
-    searchParams.set("to", to.toISOString());
-    setSearchParams(searchParams);
-  };
-
-  const filteredTrend = trendData.map((t: any) => ({
-    date: t.date,
-    value: t[selectedMetric],
-    benchmark: t.benchmark,
-  }));
+    loadDashboardData();
+  }, [dateRange, industry, companySize, maturity, integration]);
 
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
-        <FilterBar dateRange={dateRange} onDateRangeChange={setDateRange} />
-
-        {/* Quick Date Ranges */}
-        <div className="flex gap-2">
-          {[7, 30, 90].map((d) => (
-            <button
-              key={d}
-              onClick={() => handleQuickRange(d)}
-              className="bg-muted px-2 py-1 rounded text-sm"
-            >
-              Last {d}d
-            </button>
-          ))}
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <DateRangeSelector 
+            value={dateRange}
+            onChange={setDateRange}
+          />
         </div>
 
         <DashboardFilters
@@ -122,25 +166,25 @@ export default function Dashboard() {
           setIntegration={setIntegration}
         />
 
-        <AecrScorePanel 
-          score={aecrScore.score} 
-          percentile={aecrScore.percentile} 
-          previousScore={aecrScore.previousScore} 
-        />
-
         <DashboardKPIs kpis={kpis} />
 
-        <MetricSelector 
-          selectedMetric={selectedMetric}
-          setSelectedMetric={setSelectedMetric}
-          metrics={trendMetrics}
-        />
+        <div className="grid gap-6 md:grid-cols-2">
+          <TrendGraph 
+            data={trendData}
+            selectedMetric={selectedMetric}
+            setSelectedMetric={setSelectedMetric}
+          />
+          <AecrScorePanel 
+            score={aecrScore.score}
+            percentile={aecrScore.percentile}
+            previousScore={aecrScore.previousScore}
+          />
+        </div>
 
-        <TrendGraph data={filteredTrend} title={`${selectedMetric.toUpperCase()} Trend`} valueLabel={selectedMetric} />
-
-        <CampaignTable campaigns={campaigns} onSort={() => {}} dateRange={dateRange} />
-
-        <AlertsPanel alerts={alerts} onClearAll={() => setAlerts([])} />
+        <div className="grid gap-6 md:grid-cols-2">
+          <CampaignTable campaigns={campaigns} />
+          <AlertsPanel alerts={alerts} />
+        </div>
       </div>
     </AppLayout>
   );

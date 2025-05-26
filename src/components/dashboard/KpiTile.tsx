@@ -1,94 +1,70 @@
 
-import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { KpiTileProps } from "./types";
 
-export default function KpiTile({
-  title,
-  value,
-  change,
-  format = "number",
-  tooltipText,
-  loading = false,
-  benchmarkComparison,
-}: KpiTileProps) {
-  const formatValue = (val: number | string): string => {
-    if (typeof val === "string") return val;
-    
-    // Ensure val is a valid number
-    const numVal = Number(val);
-    if (isNaN(numVal)) return "N/A";
-    
-    switch (format) {
-      case "percentage":
-        return `${numVal.toFixed(2)}%`;
-      case "currency":
-        return `$${numVal.toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`;
-      default:
-        return numVal.toLocaleString("en-US", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2,
-        });
+interface KpiTileProps {
+  title: string;
+  value: number;
+  change: number;
+  benchmark: number;
+  color?: string;
+}
+
+export default function KpiTile({ title, value, change, benchmark, color = "gray" }: KpiTileProps) {
+  const formatValue = (val: number) => {
+    if (title.includes("CPA") || title.includes("$")) {
+      return `$${val.toFixed(2)}`;
     }
+    if (title.includes("ROAS")) {
+      return `${val.toFixed(2)}x`;
+    }
+    if (title.includes("CTR") || title.includes("%")) {
+      return `${val.toFixed(2)}%`;
+    }
+    return val.toLocaleString();
   };
 
-  const renderChangeIndicator = () => {
-    const changeNum = Number(change);
-    if (isNaN(changeNum) || changeNum === 0) {
-      return <Minus className="h-4 w-4 text-yellow-500" />;
+  const getTrendIcon = () => {
+    if (change > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
+    if (change < 0) return <TrendingDown className="h-4 w-4 text-red-500" />;
+    return <Minus className="h-4 w-4 text-gray-500" />;
+  };
+
+  const getColorClasses = () => {
+    switch (color) {
+      case "green":
+        return "border-green-200 bg-green-50";
+      case "yellow":
+        return "border-yellow-200 bg-yellow-50";
+      case "red":
+        return "border-red-200 bg-red-50";
+      default:
+        return "border-gray-200 bg-gray-50";
     }
-    
-    const isPositive = changeNum > 0;
-    const Icon = isPositive ? ArrowUpRight : ArrowDownRight;
-    const colorClass = title === "CPA" 
-      ? (isPositive ? "text-red-500" : "text-green-500") 
-      : (isPositive ? "text-green-500" : "text-red-500");
-    
-    return (
-      <div className={`flex items-center ${colorClass}`}>
-        <Icon className="h-4 w-4 mr-1" />
-        <span>{Math.abs(changeNum).toFixed(1)}%</span>
-      </div>
-    );
   };
 
   return (
-    <Card>
+    <Card className={`${getColorClasses()} transition-colors`}>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold">
-            {tooltipText ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="cursor-help">
-                    <span className="border-b border-dotted border-gray-400">{title}</span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">{tooltipText}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              title
-            )}
-          </CardTitle>
-          {!loading && renderChangeIndicator()}
-        </div>
+        <CardTitle className="text-sm font-medium text-gray-600">
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">
-          {loading ? "..." : formatValue(value)}
+        <div className="text-2xl font-bold text-gray-900">
+          {formatValue(value)}
         </div>
-        
-        {benchmarkComparison && !loading && (
-          <div className="text-xs text-muted-foreground mt-1">
-            {benchmarkComparison.label}: {formatValue(benchmarkComparison.value)}
+        <div className="flex items-center justify-between mt-2 text-sm">
+          <div className="flex items-center space-x-1">
+            {getTrendIcon()}
+            <span className={change >= 0 ? "text-green-600" : "text-red-600"}>
+              {change >= 0 ? "+" : ""}{change.toFixed(1)}%
+            </span>
           </div>
-        )}
+          <div className="text-gray-500">
+            vs {formatValue(benchmark)}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

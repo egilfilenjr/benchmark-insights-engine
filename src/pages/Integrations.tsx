@@ -1,12 +1,13 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useUser } from "@supabase/auth-helpers-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 interface AccountData {
   id: string;
@@ -32,10 +33,10 @@ interface IntegrationState {
 }
 
 export default function IntegrationsPage() {
-  const user = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<Record<string, boolean>>({});
   const [gaAccounts, setGaAccounts] = useState<AccountData[]>([]);
@@ -54,6 +55,23 @@ export default function IntegrationsPage() {
     { key: "linkedin_ads", label: "LinkedIn Ads", table: "linkedin_ads_accounts", data: linkedinAds, setData: setLinkedinAds },
     { key: "tiktok_ads", label: "TikTok Ads", table: "tiktok_ads_accounts", data: tiktokAds, setData: setTiktokAds },
   ];
+
+  useEffect(() => {
+    // Get current user
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getCurrentUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -93,15 +111,15 @@ export default function IntegrationsPage() {
         )
         .subscribe();
 
-      // Load auth tokens
+      // Load auth tokens with correct column names
       const { data: oauths } = await supabase
         .from("oauth_accounts")
-        .select("provider, connected_at, expires_at")
+        .select("platform, created_at, expires_at")
         .eq("user_id", user.id);
 
       const oauthMap = oauths?.reduce((acc, row) => {
-        acc[row.provider] = {
-          connected_at: row.connected_at,
+        acc[row.platform] = {
+          connected_at: row.created_at,
           expires_at: row.expires_at,
         };
         return acc;
@@ -109,15 +127,18 @@ export default function IntegrationsPage() {
 
       setOauthMap(oauthMap);
 
-      // Load account data
+      // Load account data for existing tables only
+      const existingTables = ["ga_accounts"]; // Only load tables that exist
+      const validIntegrations = integrations.filter(i => existingTables.includes(i.table));
+      
       await Promise.all(
-        integrations.map(async (i) => {
+        validIntegrations.map(async (i) => {
           const { data, error } = await supabase
-            .from(i.table)
+            .from(i.table as "ga_accounts")
             .select("*")
             .eq("user_id", user.id);
           if (error) {
-            toast({ title: `Error loading ${i.label}`, description: error.message, variant: "destructive" });
+            console.error(`Error loading ${i.label}:`, error.message);
           } else {
             i.setData(data ?? []);
           }
@@ -160,13 +181,13 @@ export default function IntegrationsPage() {
       .from("oauth_accounts")
       .delete()
       .eq("user_id", user?.id)
-      .eq("provider", provider);
+      .eq("platform", provider);
 
     if (error) {
       toast({ title: `❌ Disconnect Failed`, description: error.message, variant: "destructive" });
     } else {
       toast({ title: `✅ Disconnected ${provider.replace("_", " ")}` });
-      location.reload(); // refresh UI state
+      location.reload();
     }
   };
 
@@ -259,6 +280,14 @@ export default function IntegrationsPage() {
       </Card>
     );
   };
+
+  if (!user) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <p className="text-center text-muted-foreground">Please log in to view integrations.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
