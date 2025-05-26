@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,25 @@ export default function Onboarding() {
     Intl.DateTimeFormat().resolvedOptions().timeZone
   );
   const [goals, setGoals] = useState<string[]>([]);
+
+  // Load saved onboarding_step from Supabase on mount
+  useEffect(() => {
+    const fetchStep = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("onboarding_step")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && data?.onboarding_step) {
+        setStep(data.onboarding_step);
+      }
+    };
+
+    fetchStep();
+  }, [user]);
 
   const toggleGoal = (goal: string) => {
     setGoals((prev) =>
@@ -114,69 +133,3 @@ export default function Onboarding() {
               {goalsList.map((goal) => (
                 <label key={goal} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={goals.includes(goal)}
-                    onCheckedChange={() => toggleGoal(goal)}
-                  />
-                  <span>{goal}</span>
-                </label>
-              ))}
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-4">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => alert("TODO: Connect Google Analytics")}
-              >
-                Connect Google Analytics
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => alert("TODO: Connect Google Ads")}
-              >
-                Connect Google Ads
-              </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                We’ll fetch your campaigns, KPIs, and performance data automatically.
-              </p>
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="space-y-4 text-center">
-              <p className="text-green-600 font-medium">🎉 Onboarding Complete!</p>
-              <p className="text-sm text-gray-600">
-                You’re ready to explore your performance insights.
-              </p>
-              <ul className="text-sm text-left text-gray-600 space-y-1 pt-4">
-                <li>
-                  <strong>Company:</strong> {companyName}
-                </li>
-                <li>
-                  <strong>Industry:</strong> {industry}
-                </li>
-                <li>
-                  <strong>Timezone:</strong> {timezone}
-                </li>
-                <li>
-                  <strong>Goals:</strong>{" "}
-                  {goals.length > 0 ? goals.join(", ") : "None selected"}
-                </li>
-              </ul>
-            </div>
-          )}
-
-          <div className="flex justify-between pt-4">
-            <Button variant="ghost" disabled={step === 1} onClick={prevStep}>
-              Back
-            </Button>
-            {step < 5 && <Button onClick={nextStep}>{step === 4 ? "Finish" : "Next"}</Button>}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
