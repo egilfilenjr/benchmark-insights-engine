@@ -1,5 +1,3 @@
-// Full Onboarding.tsx with all OAuth integrations (Google, Meta, LinkedIn, TikTok)
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@supabase/auth-helpers-react";
@@ -25,18 +23,31 @@ export default function Onboarding() {
     Intl.DateTimeFormat().resolvedOptions().timeZone
   );
   const [goals, setGoals] = useState<string[]>([]);
+  const [connected, setConnected] = useState<string[]>([]); // provider slugs
 
   useEffect(() => {
-    const fetchStep = async () => {
+    const fetchStepAndConnections = async () => {
       if (!user) return;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("onboarding_step")
-        .eq("id", user.id)
-        .single();
-      if (!error && data?.onboarding_step) setStep(data.onboarding_step);
+
+      const [{ data: profile }, { data: integrations }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("onboarding_step")
+          .eq("id", user.id)
+          .single(),
+        supabase
+          .from("oauth_accounts")
+          .select("provider")
+          .eq("user_id", user.id),
+      ]);
+
+      if (profile?.onboarding_step) setStep(profile.onboarding_step);
+      if (integrations?.length) {
+        setConnected(integrations.map((i: any) => i.provider));
+      }
     };
-    fetchStep();
+
+    fetchStepAndConnections();
   }, [user]);
 
   const toggleGoal = (goal: string) => {
@@ -47,7 +58,7 @@ export default function Onboarding() {
 
   const saveToSupabase = async () => {
     if (!user) return;
-    const { error } = await supabase
+    await supabase
       .from("profiles")
       .update({
         company_name: companyName,
@@ -57,7 +68,6 @@ export default function Onboarding() {
         goals,
       })
       .eq("id", user.id);
-    if (error) console.error("❌ Error saving onboarding data:", error.message);
   };
 
   const nextStep = async () => {
@@ -77,6 +87,22 @@ export default function Onboarding() {
 
   const placeholderOAuth = (platform: string) => {
     alert(`TODO: Connect ${platform}. Requires external OAuth setup or token input.`);
+  };
+
+  const renderIntegration = (
+    label: string,
+    key: string,
+    handler: () => void
+  ) => {
+    return connected.includes(key) ? (
+      <Button variant="outline" className="w-full text-green-600" disabled>
+        ✅ {label} Connected
+      </Button>
+    ) : (
+      <Button variant="outline" className="w-full" onClick={handler}>
+        Connect {label}
+      </Button>
+    );
   };
 
   return (
@@ -144,49 +170,35 @@ export default function Onboarding() {
 
           {step === 4 && (
             <div className="space-y-4">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() =>
-                  connectGoogleOAuth("https://www.googleapis.com/auth/analytics.readonly")
-                }
-              >
-                Connect Google Analytics
-              </Button>
+              {renderIntegration(
+                "Google Analytics",
+                "google_analytics",
+                () =>
+                  connectGoogleOAuth(
+                    "https://www.googleapis.com/auth/analytics.readonly"
+                  )
+              )}
 
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() =>
-                  connectGoogleOAuth("https://www.googleapis.com/auth/adwords")
-                }
-              >
-                Connect Google Ads
-              </Button>
+              {renderIntegration(
+                "Google Ads",
+                "google_ads",
+                () =>
+                  connectGoogleOAuth(
+                    "https://www.googleapis.com/auth/adwords"
+                  )
+              )}
 
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => placeholderOAuth("Meta Ads")}
-              >
-                Connect Meta Ads (Facebook)
-              </Button>
+              {renderIntegration("Meta Ads", "meta_ads", () =>
+                placeholderOAuth("Meta Ads")
+              )}
 
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => placeholderOAuth("LinkedIn Ads")}
-              >
-                Connect LinkedIn Ads
-              </Button>
+              {renderIntegration("LinkedIn Ads", "linkedin_ads", () =>
+                placeholderOAuth("LinkedIn Ads")
+              )}
 
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => placeholderOAuth("TikTok Ads")}
-              >
-                Connect TikTok Ads
-              </Button>
+              {renderIntegration("TikTok Ads", "tiktok_ads", () =>
+                placeholderOAuth("TikTok Ads")
+              )}
 
               <p className="text-sm text-muted-foreground text-center">
                 More integrations coming soon.
@@ -222,7 +234,11 @@ export default function Onboarding() {
             <Button variant="ghost" disabled={step === 1} onClick={prevStep}>
               Back
             </Button>
-            {step < 5 && <Button onClick={nextStep}>{step === 4 ? "Finish" : "Next"}</Button>}
+            {step < 5 && (
+              <Button onClick={nextStep}>
+                {step === 4 ? "Finish" : "Next"}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
