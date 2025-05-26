@@ -1,84 +1,125 @@
-import MainLayout from "@/components/layout/MainLayout";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useUser } from "@supabase/auth-helpers-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
-const integrations = [
-  {
-    name: "Google Ads",
-    metrics: ["CPA", "ROAS", "CTR", "Spend", "Conversions"],
-    sync: "Every 24h",
-  },
-  {
-    name: "Meta Ads",
-    metrics: ["CPA", "ROAS", "CTR", "Spend", "Impressions"],
-    sync: "Every 12h",
-  },
-  {
-    name: "TikTok Ads",
-    metrics: ["CPA", "CTR", "Spend"],
-    sync: "Every 24h",
-  },
-  {
-    name: "LinkedIn Ads",
-    metrics: ["Lead CPA", "CTR", "Spend"],
-    sync: "Every 48h",
-  },
-  {
-    name: "HubSpot",
-    metrics: ["Conversions", "Lifecycle Stage", "Source"],
-    sync: "Every 24h",
-  },
-  {
-    name: "Shopify",
-    metrics: ["Orders", "Conversion Rate", "Revenue", "LTV"],
-    sync: "Real-time (via webhook)",
-  },
-  {
-    name: "GA4",
-    metrics: ["Sessions", "Bounce Rate", "Goal Completions"],
-    sync: "Every 6h",
-  },
-];
+interface AccountData {
+  id: string;
+  name?: string;
+  display_name?: string;
+  region_code?: string;
+}
 
-export default function Integrations() {
+export default function IntegrationsPage() {
+  const user = useUser();
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [gaAccounts, setGaAccounts] = useState<AccountData[]>([]);
+  const [googleAds, setGoogleAds] = useState<AccountData[]>([]);
+  const [metaAds, setMetaAds] = useState<AccountData[]>([]);
+  const [linkedinAds, setLinkedinAds] = useState<AccountData[]>([]);
+  const [tiktokAds, setTiktokAds] = useState<AccountData[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadAccounts = async () => {
+      setLoading(true);
+      const fetchTable = async (table: string) => {
+        const { data, error } = await supabase
+          .from(table)
+          .select("*")
+          .eq("user_id", user.id);
+        if (error) {
+          console.error(`Error loading ${table}:`, error.message);
+          return [];
+        }
+        return data;
+      };
+
+      const [ga, ads, meta, linkedin, tiktok] = await Promise.all([
+        fetchTable("ga_accounts"),
+        fetchTable("google_ads_accounts"),
+        fetchTable("meta_ads_accounts"),
+        fetchTable("linkedin_ads_accounts"),
+        fetchTable("tiktok_ads_accounts"),
+      ]);
+
+      setGaAccounts(ga);
+      setGoogleAds(ads);
+      setMetaAds(meta);
+      setLinkedinAds(linkedin);
+      setTiktokAds(tiktok);
+      setLoading(false);
+    };
+
+    loadAccounts();
+  }, [user]);
+
+  const renderList = (accounts: AccountData[]) => (
+    <ul className="text-sm text-muted-foreground space-y-1">
+      {accounts.map((acc) => (
+        <li key={acc.id} className="border-b pb-1">
+          <strong>{acc.display_name || acc.name || acc.id}</strong>{" "}
+          {acc.region_code && <span className="text-xs">({acc.region_code})</span>}
+        </li>
+      ))}
+      {accounts.length === 0 && <li className="text-xs italic">No accounts synced.</li>}
+    </ul>
+  );
+
   return (
-    <MainLayout>
-      <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-        {/* Header */}
-        <section className="text-center space-y-3">
-          <h1 className="text-4xl font-bold">Supported Integrations</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Benchmarketing connects directly with your favorite platforms. Read-only. No creative or billing access.
-          </p>
-        </section>
-
-        {/* Integration Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {integrations.map((i, idx) => (
-            <Card key={idx} className="h-full">
-              <CardContent className="p-4 space-y-2">
-                <CardTitle>{i.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  <strong>Metrics:</strong> {i.metrics.join(", ")}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  <strong>Sync Frequency:</strong> {i.sync}
-                </p>
-                <p className="text-xs text-muted-foreground italic mt-2">
-                  OAuth-scoped to read-only data. No write or billing permissions.
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Trust Section */}
-        <section className="text-center mt-16 space-y-3">
-          <h2 className="text-xl font-semibold">Privacy & Data Security</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
-            We never access creative, targeting, or billing data. OAuth is limited to performance metrics. All data is encrypted at rest.
-          </p>
-        </section>
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-semibold">🔌 Connected Integrations</h1>
+        <Button variant="outline" onClick={() => navigate("/integrations/info")}>
+          View Supported Integrations
+        </Button>
       </div>
-    </MainLayout>
+
+      {loading ? (
+        <p className="text-muted-foreground">Loading integrations...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Google Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>{renderList(gaAccounts)}</CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Google Ads</CardTitle>
+            </CardHeader>
+            <CardContent>{renderList(googleAds)}</CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Meta Ads (Facebook)</CardTitle>
+            </CardHeader>
+            <CardContent>{renderList(metaAds)}</CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>LinkedIn Ads</CardTitle>
+            </CardHeader>
+            <CardContent>{renderList(linkedinAds)}</CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>TikTok Ads</CardTitle>
+            </CardHeader>
+            <CardContent>{renderList(tiktokAds)}</CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 }
