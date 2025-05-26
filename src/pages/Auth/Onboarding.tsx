@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,6 +14,8 @@ const goalsList = [
 ];
 
 export default function Onboarding() {
+  const user = useUser();
+
   const [step, setStep] = useState(1);
   const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
@@ -26,12 +30,38 @@ export default function Onboarding() {
     );
   };
 
-  const nextStep = () => setStep((s) => s + 1);
+  const saveToSupabase = async () => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        company_name: companyName,
+        industry,
+        timezone,
+        onboarding_step: step,
+        goals,
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("❌ Error saving onboarding data:", error.message);
+    } else {
+      console.log("✅ Onboarding data saved to Supabase");
+    }
+  };
+
+  const nextStep = async () => {
+    if (step === 4) {
+      await saveToSupabase();
+    }
+    setStep((s) => s + 1);
+  };
+
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 sm:px-6 py-12">
-      {/* Progress Bar */}
       <div className="flex justify-between text-xs font-medium text-muted-foreground px-2 mb-4">
         <span className={step >= 1 ? "text-primary" : ""}>👋 Welcome</span>
         <span className={step >= 2 ? "text-primary" : ""}>🏢 Company</span>
@@ -143,11 +173,7 @@ export default function Onboarding() {
             <Button variant="ghost" disabled={step === 1} onClick={prevStep}>
               Back
             </Button>
-            {step < 5 ? (
-              <Button onClick={nextStep}>
-                {step === 4 ? "Finish" : "Next"}
-              </Button>
-            ) : null}
+            {step < 5 && <Button onClick={nextStep}>{step === 4 ? "Finish" : "Next"}</Button>}
           </div>
         </CardContent>
       </Card>
