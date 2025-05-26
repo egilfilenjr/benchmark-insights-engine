@@ -10,6 +10,13 @@ import { IndustrySelector } from "@/components/ui/industry-selector";
 import { useCompanyIndustry } from "@/hooks/useCompanyIndustry";
 import { User } from "@supabase/supabase-js";
 
+interface IndustrySelection {
+  domain?: string;
+  category?: string;
+  subcategory?: string;
+  detail?: string;
+}
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { saveCompanyIndustry } = useCompanyIndustry();
@@ -20,11 +27,11 @@ export default function Onboarding() {
     company_size: "",
     goals: [] as string[]
   });
-  const [industrySelection, setIndustrySelection] = useState({
-    domain: undefined as string | undefined,
-    category: undefined as string | undefined,
-    subcategory: undefined as string | undefined,
-    detail: undefined as string | undefined,
+  const [industrySelection, setIndustrySelection] = useState<IndustrySelection>({
+    domain: undefined,
+    category: undefined,
+    subcategory: undefined,
+    detail: undefined,
   });
 
   useEffect(() => {
@@ -64,6 +71,10 @@ export default function Onboarding() {
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleIndustryChange = (selection: IndustrySelection) => {
+    setIndustrySelection(selection);
   };
 
   const canProceed = () => {
@@ -116,7 +127,7 @@ export default function Onboarding() {
                 </p>
                 <IndustrySelector
                   value={industrySelection}
-                  onChange={setIndustrySelection}
+                  onChange={handleIndustryChange}
                 />
               </div>
             </div>

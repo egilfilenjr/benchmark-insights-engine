@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import GA4IntegrationPanel from "@/components/integrations/GA4IntegrationPanel";
+import AppLayout from "@/components/layout/AppLayout";
 
 interface AccountData {
   id: string;
@@ -48,7 +50,6 @@ export default function IntegrationsPage() {
   const [showHistory, setShowHistory] = useState<Record<string, boolean>>({});
 
   const integrations: IntegrationState[] = [
-    { key: "google_analytics", label: "Google Analytics", table: "ga_accounts", data: gaAccounts, setData: setGaAccounts },
     { key: "google_ads", label: "Google Ads", table: "google_ads_accounts", data: googleAds, setData: setGoogleAds },
     { key: "meta_ads", label: "Meta Ads", table: "meta_ads_accounts", data: metaAds, setData: setMetaAds },
     { key: "linkedin_ads", label: "LinkedIn Ads", table: "linkedin_ads_accounts", data: linkedinAds, setData: setLinkedinAds },
@@ -282,28 +283,44 @@ export default function IntegrationsPage() {
 
   if (!user) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-muted-foreground">Please log in to view integrations.</p>
-      </div>
+      <AppLayout>
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <p className="text-center text-muted-foreground">Please log in to view integrations.</p>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-semibold">🔌 Connected Integrations</h1>
-        <Button variant="outline" onClick={() => navigate("/integrations/info")}>
-          View Supported Integrations
-        </Button>
-      </div>
-
-      {loading ? (
-        <p className="text-muted-foreground">Loading integrations...</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {integrations.map((integration) => renderIntegration(integration))}
+    <AppLayout>
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-semibold">🔌 Connected Integrations</h1>
+          <Button variant="outline" onClick={() => navigate("/integrations/info")}>
+            View Supported Integrations
+          </Button>
         </div>
-      )}
-    </div>
+
+        {loading ? (
+          <p className="text-muted-foreground">Loading integrations...</p>
+        ) : (
+          <div className="space-y-6">
+            {/* GA4 Integration - Featured */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Website Analytics</h2>
+              <GA4IntegrationPanel />
+            </div>
+
+            {/* Other Integrations */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Advertising Platforms</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {integrations.map((integration) => renderIntegration(integration))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </AppLayout>
   );
 }
