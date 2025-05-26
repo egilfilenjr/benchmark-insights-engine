@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          company_name: string | null
+          created_at: string | null
+          goals: string[] | null
+          id: string
+          industry: string | null
+          onboarding_step: number | null
+          owner_id: string | null
+          timezone: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string | null
+          goals?: string[] | null
+          id?: string
+          industry?: string | null
+          onboarding_step?: number | null
+          owner_id?: string | null
+          timezone?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string | null
+          goals?: string[] | null
+          id?: string
+          industry?: string | null
+          onboarding_step?: number | null
+          owner_id?: string | null
+          timezone?: string | null
+        }
+        Relationships: []
+      }
       activity_log: {
         Row: {
           created_at: string | null
@@ -526,6 +559,76 @@ export type Database = {
         }
         Relationships: []
       }
+      company_profiles: {
+        Row: {
+          business_model: string | null
+          company_size: string | null
+          created_at: string | null
+          customer_type: string | null
+          geo_focus: string | null
+          id: string
+          industry: string | null
+          onboarding_step: number | null
+          product_type: string | null
+          revenue_range: string | null
+          sales_motion: string | null
+          sub_industry: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          business_model?: string | null
+          company_size?: string | null
+          created_at?: string | null
+          customer_type?: string | null
+          geo_focus?: string | null
+          id: string
+          industry?: string | null
+          onboarding_step?: number | null
+          product_type?: string | null
+          revenue_range?: string | null
+          sales_motion?: string | null
+          sub_industry?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          business_model?: string | null
+          company_size?: string | null
+          created_at?: string | null
+          customer_type?: string | null
+          geo_focus?: string | null
+          id?: string
+          industry?: string | null
+          onboarding_step?: number | null
+          product_type?: string | null
+          revenue_range?: string | null
+          sales_motion?: string | null
+          sub_industry?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "public_user_profile_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversion_types: {
         Row: {
           id: string
@@ -707,6 +810,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ga_accounts: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          id: string
+          region_code: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string | null
+          id: string
+          region_code?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          region_code?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       kpis: {
         Row: {
           id: string
@@ -776,6 +903,7 @@ export type Database = {
           account_id: string | null
           account_name: string | null
           created_at: string | null
+          expires_at: string | null
           id: string
           last_synced_at: string | null
           platform: string
@@ -790,6 +918,7 @@ export type Database = {
           account_id?: string | null
           account_name?: string | null
           created_at?: string | null
+          expires_at?: string | null
           id?: string
           last_synced_at?: string | null
           platform: string
@@ -804,6 +933,7 @@ export type Database = {
           account_id?: string | null
           account_name?: string | null
           created_at?: string | null
+          expires_at?: string | null
           id?: string
           last_synced_at?: string | null
           platform?: string
@@ -835,6 +965,60 @@ export type Database = {
         Update: {
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          business_model: string | null
+          company_name: string | null
+          company_size: string | null
+          created_at: string | null
+          customer_type: string | null
+          geo_focus: string | null
+          goals: string[] | null
+          id: string
+          industry: string | null
+          onboarding_step: number | null
+          product_type: string | null
+          revenue_range: string | null
+          sales_motion: string | null
+          sub_industry: string | null
+          timezone: string | null
+        }
+        Insert: {
+          business_model?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          created_at?: string | null
+          customer_type?: string | null
+          geo_focus?: string | null
+          goals?: string[] | null
+          id: string
+          industry?: string | null
+          onboarding_step?: number | null
+          product_type?: string | null
+          revenue_range?: string | null
+          sales_motion?: string | null
+          sub_industry?: string | null
+          timezone?: string | null
+        }
+        Update: {
+          business_model?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          created_at?: string | null
+          customer_type?: string | null
+          geo_focus?: string | null
+          goals?: string[] | null
+          id?: string
+          industry?: string | null
+          onboarding_step?: number | null
+          product_type?: string | null
+          revenue_range?: string | null
+          sales_motion?: string | null
+          sub_industry?: string | null
+          timezone?: string | null
         }
         Relationships: []
       }
@@ -1044,6 +1228,33 @@ export type Database = {
           },
         ]
       }
+      sync_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          provider: string
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          provider: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          provider?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       team_invitations: {
         Row: {
           created_at: string | null
@@ -1237,6 +1448,49 @@ export type Database = {
         }
         Relationships: []
       }
+      user_goals: {
+        Row: {
+          created_at: string | null
+          goals: string[] | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          goals?: string[] | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          goals?: string[] | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_goals_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_goals_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_goals_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "public_user_profile_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_metadata: {
         Row: {
           custom_preferences: Json | null
@@ -1290,6 +1544,110 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          needs_help: boolean | null
+          reporting_frequency: string | null
+          updated_at: string | null
+          wants_beta: boolean | null
+          works_with_agency: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          needs_help?: boolean | null
+          reporting_frequency?: string | null
+          updated_at?: string | null
+          wants_beta?: boolean | null
+          works_with_agency?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          needs_help?: boolean | null
+          reporting_frequency?: string | null
+          updated_at?: string | null
+          wants_beta?: boolean | null
+          works_with_agency?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_preferences_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_preferences_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "public_user_profile_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_recommendations: {
+        Row: {
+          ai_cluster: string | null
+          created_at: string | null
+          custom_tip: string | null
+          id: string
+          recommended_tools: string[] | null
+          top_priority: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_cluster?: string | null
+          created_at?: string | null
+          custom_tip?: string | null
+          id: string
+          recommended_tools?: string[] | null
+          top_priority?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_cluster?: string | null
+          created_at?: string | null
+          custom_tip?: string | null
+          id?: string
+          recommended_tools?: string[] | null
+          top_priority?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_recommendations_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "admin_user_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_recommendations_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_recommendations_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "public_user_profile_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_sessions: {
         Row: {
@@ -1361,7 +1719,59 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_user_overview: {
+        Row: {
+          company_size: string | null
+          geo_focus: string | null
+          goals: string[] | null
+          id: string | null
+          industry: string | null
+          reporting_frequency: string | null
+          revenue_range: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
+      public_user_profile_view: {
+        Row: {
+          ai_cluster: string | null
+          business_model: string | null
+          company_size: string | null
+          company_updated_at: string | null
+          connected_integrations: string[] | null
+          custom_tip: string | null
+          customer_type: string | null
+          geo_focus: string | null
+          goals: string[] | null
+          goals_updated_at: string | null
+          id: string | null
+          industry: string | null
+          joined_at: string | null
+          last_connected_at: string | null
+          needs_help: boolean | null
+          onboarding_step: number | null
+          preferences_updated_at: string | null
+          product_type: string | null
+          recommendations_updated_at: string | null
+          recommended_tools: string[] | null
+          reporting_frequency: string | null
+          revenue_range: string | null
+          sales_motion: string | null
+          sub_industry: string | null
+          top_priority: string | null
+          wants_beta: boolean | null
+          works_with_agency: boolean | null
+        }
+        Relationships: []
+      }
+      user_integrations_summary: {
+        Row: {
+          connected_integrations: string[] | null
+          id: string | null
+          last_connected_at: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       uid: {

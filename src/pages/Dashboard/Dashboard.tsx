@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { subDays } from "date-fns";
@@ -5,18 +6,16 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import AppLayout from "@/components/layout/AppLayout";
 import FilterBar from "@/components/dashboard/FilterBar";
 import AecrScorePanel from "@/components/dashboard/AecrScorePanel";
-import KpiTile from "@/components/dashboard/KpiTile";
 import TrendGraph from "@/components/dashboard/TrendGraph";
 import CampaignTable from "@/components/dashboard/CampaignTable";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
+import DashboardKPIs from "@/components/dashboard/DashboardKPIs";
+import DashboardFilters from "@/components/dashboard/DashboardFilters";
+import MetricSelector from "@/components/dashboard/MetricSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Campaign, Alert, DataPoint } from "@/components/dashboard/types";
 
-const industryOptions = ["All", "E-commerce", "SaaS", "Healthcare"];
-const sizeOptions = ["All", "1–10", "11–50", "51–200", "501+"];
-const maturityOptions = ["All", "Beginner", "Intermediate", "Advanced"];
-const platformOptions = ["All", "google_ads", "meta_ads", "linkedin_ads", "tiktok_ads"];
 const trendMetrics = ["roas", "cpa", "ctr"];
 
 export default function Dashboard() {
@@ -60,12 +59,18 @@ export default function Dashboard() {
           const entry = data[0];
           const k = entry.kpis || {};
           setKpis(k);
-          setAecrScore(entry.aecr || {});
-          setTrendData(entry.trends || []);
-          setCampaigns(entry.campaigns || []);
-          setAlerts(entry.alerts || []);
+          setAecrScore(entry.aecr || { score: 0, percentile: 0, previousScore: 0 });
+          setTrendData(Array.isArray(entry.trends) ? entry.trends : []);
+          
+          // Safely handle campaigns and alerts data
+          const campaignsData = Array.isArray(entry.campaigns) ? entry.campaigns as Campaign[] : [];
+          const alertsData = Array.isArray(entry.alerts) ? entry.alerts as Alert[] : [];
+          
+          setCampaigns(campaignsData);
+          setAlerts(alertsData);
         }
       } catch (e) {
+        console.error('Dashboard data fetch error:', e);
         toast({ title: "Failed to load dashboard", variant: "destructive" });
       }
     };
@@ -81,25 +86,6 @@ export default function Dashboard() {
     searchParams.set("to", to.toISOString());
     setSearchParams(searchParams);
   };
-
-  const getKpiColor = (value: number, benchmark: number) => {
-    if (value >= benchmark) return "green";
-    if (value >= benchmark * 0.9) return "yellow";
-    return "red";
-  };
-
-  const renderKpis = useMemo(() => {
-    return Object.entries(kpis).map(([key, { value, change, benchmark }]: any) => (
-      <KpiTile
-        key={key}
-        title={key.toUpperCase()}
-        value={value}
-        change={change}
-        benchmark={benchmark}
-        color={getKpiColor(value, benchmark)}
-      />
-    ));
-  }, [kpis]);
 
   const filteredTrend = trendData.map((t: any) => ({
     date: t.date,
@@ -125,30 +111,30 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Metadata Filters */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Dropdown label="Industry" value={industry} onChange={setIndustry} options={industryOptions} />
-          <Dropdown label="Size" value={companySize} onChange={setCompanySize} options={sizeOptions} />
-          <Dropdown label="Maturity" value={maturity} onChange={setMaturity} options={maturityOptions} />
-          <Dropdown label="Integration" value={integration} onChange={setIntegration} options={platformOptions} />
-        </div>
+        <DashboardFilters
+          industry={industry}
+          setIndustry={setIndustry}
+          companySize={companySize}
+          setCompanySize={setCompanySize}
+          maturity={maturity}
+          setMaturity={setMaturity}
+          integration={integration}
+          setIntegration={setIntegration}
+        />
 
-        <AecrScorePanel {...aecrScore} />
+        <AecrScorePanel 
+          score={aecrScore.score} 
+          percentile={aecrScore.percentile} 
+          previousScore={aecrScore.previousScore} 
+        />
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{renderKpis}</div>
+        <DashboardKPIs kpis={kpis} />
 
-        {/* Metric Selector */}
-        <div className="flex gap-3">
-          {trendMetrics.map((m) => (
-            <button
-              key={m}
-              onClick={() => setSelectedMetric(m)}
-              className={`text-sm px-2 py-1 rounded ${selectedMetric === m ? "bg-blue-500 text-white" : "bg-muted"}`}
-            >
-              {m.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        <MetricSelector 
+          selectedMetric={selectedMetric}
+          setSelectedMetric={setSelectedMetric}
+          metrics={trendMetrics}
+        />
 
         <TrendGraph data={filteredTrend} title={`${selectedMetric.toUpperCase()} Trend`} valueLabel={selectedMetric} />
 
@@ -157,24 +143,5 @@ export default function Dashboard() {
         <AlertsPanel alerts={alerts} onClearAll={() => setAlerts([])} />
       </div>
     </AppLayout>
-  );
-}
-
-function Dropdown({ label, value, onChange, options }: any) {
-  return (
-    <div>
-      <label className="text-xs font-medium block mb-1">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full border px-2 py-1 rounded text-sm"
-      >
-        {options.map((opt: string) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-    </div>
   );
 }
