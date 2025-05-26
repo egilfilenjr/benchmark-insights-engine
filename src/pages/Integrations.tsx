@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AccountData {
   id: string;
@@ -25,6 +26,8 @@ interface IntegrationState {
 export default function IntegrationsPage() {
   const user = useUser();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
   const [loading, setLoading] = useState(true);
 
   const [gaAccounts, setGaAccounts] = useState<AccountData[]>([]);
@@ -33,6 +36,8 @@ export default function IntegrationsPage() {
   const [linkedinAds, setLinkedinAds] = useState<AccountData[]>([]);
   const [tiktokAds, setTiktokAds] = useState<AccountData[]>([]);
 
+  const [oauthMap, setOauthMap] = useState<Record<string, string | null>>({});
+
   const integrations: IntegrationState[] = [
     { key: "google_analytics", label: "Google Analytics", table: "ga_accounts", data: gaAccounts, setData: setGaAccounts },
     { key: "google_ads", label: "Google Ads", table: "google_ads_accounts", data: googleAds, setData: setGoogleAds },
@@ -40,8 +45,6 @@ export default function IntegrationsPage() {
     { key: "linkedin_ads", label: "LinkedIn Ads", table: "linkedin_ads_accounts", data: linkedinAds, setData: setLinkedinAds },
     { key: "tiktok_ads", label: "TikTok Ads", table: "tiktok_ads_accounts", data: tiktokAds, setData: setTiktokAds },
   ];
-
-  const [oauthMap, setOauthMap] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -55,7 +58,7 @@ export default function IntegrationsPage() {
           .select("*")
           .eq("user_id", user.id);
         if (error) {
-          console.error(`Error loading ${table}:`, error.message);
+          toast({ title: `Error loading ${table}`, description: error.message, variant: "destructive" });
           return [];
         }
         return data;
@@ -93,8 +96,12 @@ export default function IntegrationsPage() {
       body: JSON.stringify({ user_id: user?.id, provider }),
     });
 
-    const msg = await res.text();
-    alert(res.ok ? `✅ Synced ${provider.replace("_", " ")}: ${msg}` : `❌ ${msg}`);
+    const text = await res.text();
+    toast({
+      title: res.ok ? `✅ Synced ${provider.replace("_", " ")}` : `❌ Sync Failed`,
+      description: text,
+      variant: res.ok ? "default" : "destructive",
+    });
   };
 
   const handleDisconnect = async (provider: string) => {
@@ -105,10 +112,10 @@ export default function IntegrationsPage() {
       .eq("provider", provider);
 
     if (error) {
-      alert(`❌ Failed to disconnect ${provider}: ${error.message}`);
+      toast({ title: `❌ Disconnect Failed`, description: error.message, variant: "destructive" });
     } else {
-      alert(`✅ Disconnected ${provider}`);
-      location.reload(); // simple hard refresh
+      toast({ title: `✅ Disconnected ${provider.replace("_", " ")}` });
+      location.reload(); // refresh UI state
     }
   };
 
