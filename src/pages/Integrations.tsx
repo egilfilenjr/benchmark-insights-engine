@@ -3,14 +3,60 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AppLayout from "@/components/layout/AppLayout";
 import IntegrationManager from "@/components/integrations/IntegrationManager";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { toast } from "@/hooks/use-toast";
 
 export default function IntegrationsPage() {
   const navigate = useNavigate();
   const { user } = useUserProfile();
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Handle OAuth callback results
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
+
+    if (success === 'ga4_connected') {
+      toast({
+        title: "Google Analytics 4 Connected",
+        description: "Successfully connected your GA4 property. Data sync will begin shortly.",
+      });
+      // Clean up URL
+      navigate('/integrations', { replace: true });
+    } else if (error) {
+      let errorMessage = "Failed to connect integration";
+      switch (error) {
+        case 'access_denied':
+          errorMessage = "Access denied. Please try again and grant the necessary permissions.";
+          break;
+        case 'missing_params':
+          errorMessage = "Invalid callback parameters. Please try connecting again.";
+          break;
+        case 'token_exchange_failed':
+          errorMessage = "Failed to exchange authorization code. Please try again.";
+          break;
+        case 'database_error':
+          errorMessage = "Failed to save connection. Please try again.";
+          break;
+        case 'callback_failed':
+          errorMessage = "Connection callback failed. Please try again.";
+          break;
+        default:
+          errorMessage = `Connection failed: ${error}`;
+      }
+      
+      toast({
+        title: "Connection Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      // Clean up URL
+      navigate('/integrations', { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   useEffect(() => {
     // Simple loading check

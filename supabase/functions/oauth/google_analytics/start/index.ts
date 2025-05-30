@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     // GA4 OAuth 2.0 parameters
     const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-    const siteUrl = Deno.env.get('SITE_URL');
+    const siteUrl = Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com';
     
     console.log('Environment check:', {
       hasClientId: !!clientId,
@@ -39,14 +39,6 @@ Deno.serve(async (req) => {
       console.error('❌ GOOGLE_CLIENT_ID not configured');
       return new Response(
         JSON.stringify({ error: 'Google OAuth not configured - missing GOOGLE_CLIENT_ID' }),
-        { status: 500, headers: corsHeaders }
-      );
-    }
-
-    if (!siteUrl) {
-      console.error('❌ SITE_URL not configured');
-      return new Response(
-        JSON.stringify({ error: 'Site URL not configured' }),
         { status: 500, headers: corsHeaders }
       );
     }

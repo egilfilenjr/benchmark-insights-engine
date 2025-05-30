@@ -84,7 +84,6 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/resources" element={<Resources />} />
-            <Route path="/integrations" element={<Integrations />} />
             <Route path="/definitions" element={<Definitions />} />
             <Route path="/guides" element={<Guides />} />
             
@@ -125,6 +124,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/toolbox/app" element={<Toolbox />} />
               <Route path="/sync-history" element={<SyncHistory />} />
+              <Route path="/integrations" element={<Integrations />} />
             </Route>
 
             {/* Catch-all route */}
