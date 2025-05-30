@@ -1,8 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { ArrowRight } from 'lucide-react';
 
 const HeroSection = () => {
   return (
@@ -22,24 +21,10 @@ const HeroSection = () => {
               Compare your marketing metrics against industry benchmarks and get AI-powered recommendations.
             </p>
             
-            <div className="bg-white p-2 rounded-lg shadow-lg flex flex-col sm:flex-row items-center mb-8 relative">
-              <div className="flex items-center w-full">
-                <Search className="w-5 h-5 text-gray-400 absolute left-4 sm:relative sm:left-0" />
-                <Input 
-                  type="text" 
-                  placeholder="Enter your website or domain..." 
-                  className="border-0 shadow-none pl-10 sm:pl-2 flex-grow focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-              </div>
-              <Button size="lg" className="bg-lilac hover:bg-lilac-700 text-white font-semibold px-8 text-base rounded-lg w-full sm:w-auto mt-2 sm:mt-0">
-                Analyze Now
-              </Button>
-            </div>
-            
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link to="/signup">
                 <Button size="lg" className="bg-lilac hover:bg-lilac-700 text-white font-semibold px-8 py-6 text-base rounded-lg w-full sm:w-auto">
-                  See Your Score
+                  Compare Your Performance
                 </Button>
               </Link>
               <Link to="/benchmarks">
@@ -53,8 +38,8 @@ const HeroSection = () => {
           <div className="relative">
             <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden max-w-lg mx-auto animate-scale-in">
               <img 
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1000" 
-                alt="Marketing dashboard" 
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1000" 
+                alt="Marketing dashboard analytics" 
                 className="w-full h-auto"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-navy-900/10 to-transparent"></div>

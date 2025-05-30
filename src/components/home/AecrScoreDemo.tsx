@@ -11,10 +11,10 @@ export function AecrScoreDemo() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-navy-900 mb-4">
-            Your marketing, measured in seconds
+            Your CECR Score™
           </h2>
           <p className="text-lg text-navy-600 max-w-2xl mx-auto">
-            See how your campaigns perform with our AECR Score™ — a comprehensive benchmark of your marketing efficiency.
+            See how your campaigns perform with our CECR Score™ — a comprehensive benchmark across Creative, Engagement, Conversion, and Revenue.
           </p>
         </div>
         
@@ -22,82 +22,102 @@ export function AecrScoreDemo() {
           <Card className="shadow-xl border-0 overflow-hidden">
             <CardContent className="p-0">
               <div className="grid grid-cols-1 md:grid-cols-3">
-                {/* AECR Score Panel */}
+                {/* CECR Score Panel */}
                 <div className="bg-gradient-to-br from-lilac to-lilac-700 text-white p-8 flex flex-col items-center justify-center">
-                  <h3 className="text-lg font-medium mb-3 opacity-90">Your AECR Score™</h3>
+                  <h3 className="text-lg font-medium mb-3 opacity-90">Your CECR Score™</h3>
                   <div className="relative mb-4">
-                    <div className="text-6xl font-bold">78</div>
+                    <div className="text-6xl font-bold">82</div>
                     <div className="text-xl">/100</div>
                     <div className="absolute -right-4 -top-2">
                       <span className="bg-white text-lilac-700 text-xs px-2 py-1 rounded-full font-medium flex items-center">
-                        <ArrowUpCircle size={12} className="mr-1" /> +4
+                        <ArrowUpCircle size={12} className="mr-1" /> +6
                       </span>
                     </div>
                   </div>
                   <p className="text-sm opacity-90 text-center">
-                    Better than 68% of companies in your industry
+                    Better than 74% of companies in your industry
                   </p>
                 </div>
                 
-                {/* KPI Comparisons */}
+                {/* CECR Metrics */}
                 <div className="p-8 bg-white col-span-2">
                   <div className="space-y-6">
-                    {/* CPA Comparison */}
+                    {/* Creative - CTR */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <div className="font-medium">Your CPA</div>
+                        <div className="font-medium">Creative (CTR)</div>
                         <div className="flex items-center">
-                          <span className="font-medium text-navy-900">$42.80</span>
-                          <span className="ml-2 text-success text-sm font-medium">-12% vs industry</span>
+                          <span className="font-medium text-navy-900">2.4%</span>
+                          <span className="ml-2 text-success text-sm font-medium">+15% vs industry</span>
                         </div>
                       </div>
                       <div className="relative pt-4">
-                        <Progress value={42} className="h-2 bg-gray-200" />
-                        <div className="absolute h-4 w-0.5 bg-navy-900 top-3 left-[68%]"></div>
+                        <Progress value={75} className="h-2 bg-gray-200" />
+                        <div className="absolute h-4 w-0.5 bg-navy-900 top-3 left-[60%]"></div>
                         <div className="flex justify-between text-xs text-navy-600 mt-1">
-                          <span>$0</span>
-                          <span className="text-navy-900 text-xs font-medium">Industry avg: $48.90</span>
-                          <span>$100</span>
+                          <span>0%</span>
+                          <span className="text-navy-900 text-xs font-medium">Industry avg: 2.1%</span>
+                          <span>4%+</span>
                         </div>
                       </div>
                     </div>
                     
-                    {/* ROAS Percentile */}
+                    {/* Engagement - Bounce Rate */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <div className="font-medium">ROAS Percentile</div>
+                        <div className="font-medium">Engagement (Bounce Rate)</div>
                         <div className="flex items-center">
-                          <span className="font-medium text-navy-900">3.2x</span>
-                          <span className="ml-2 text-success text-sm font-medium">Top 15%</span>
+                          <span className="font-medium text-navy-900">32%</span>
+                          <span className="ml-2 text-success text-sm font-medium">-18% vs industry</span>
+                        </div>
+                      </div>
+                      <div className="relative pt-4">
+                        <Progress value={68} className="h-2 bg-gray-200" />
+                        <div className="absolute h-4 w-0.5 bg-navy-900 top-3 left-[50%]"></div>
+                        <div className="flex justify-between text-xs text-navy-600 mt-1">
+                          <span>0%</span>
+                          <span className="text-navy-900 text-xs font-medium">Industry avg: 39%</span>
+                          <span>80%+</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Conversion - CVR */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="font-medium">Conversion (CVR)</div>
+                        <div className="flex items-center">
+                          <span className="font-medium text-navy-900">4.2%</span>
+                          <span className="ml-2 text-success text-sm font-medium">Top 20%</span>
+                        </div>
+                      </div>
+                      <div className="relative pt-4">
+                        <Progress value={80} className="h-2 bg-gray-200" />
+                        <div className="absolute h-4 w-0.5 bg-navy-900 top-3 left-[45%]"></div>
+                        <div className="flex justify-between text-xs text-navy-600 mt-1">
+                          <span>0%</span>
+                          <span className="text-navy-900 text-xs font-medium">Industry avg: 3.1%</span>
+                          <span>8%+</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Revenue - ROAS */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="font-medium">Revenue (ROAS)</div>
+                        <div className="flex items-center">
+                          <span className="font-medium text-navy-900">3.8x</span>
+                          <span className="ml-2 text-success text-sm font-medium">+42% vs industry</span>
                         </div>
                       </div>
                       <div className="relative pt-4">
                         <Progress value={85} className="h-2 bg-gray-200" />
-                        <div className="absolute h-4 w-0.5 bg-navy-900 top-3 left-[50%]"></div>
+                        <div className="absolute h-4 w-0.5 bg-navy-900 top-3 left-[45%]"></div>
                         <div className="flex justify-between text-xs text-navy-600 mt-1">
                           <span>0x</span>
-                          <span className="text-navy-900 text-xs font-medium">Industry avg: 2.1x</span>
-                          <span>5x+</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* CTR Gap */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="font-medium">CTR Gap</div>
-                        <div className="flex items-center">
-                          <span className="font-medium text-navy-900">1.8%</span>
-                          <span className="ml-2 text-alert text-sm font-medium">-0.4% vs benchmark</span>
-                        </div>
-                      </div>
-                      <div className="relative pt-4">
-                        <Progress value={60} className="h-2 bg-gray-200" />
-                        <div className="absolute h-4 w-0.5 bg-navy-900 top-3 left-[73%]"></div>
-                        <div className="flex justify-between text-xs text-navy-600 mt-1">
-                          <span>0%</span>
-                          <span className="text-navy-900 text-xs font-medium">Industry avg: 2.2%</span>
-                          <span>3%+</span>
+                          <span className="text-navy-900 text-xs font-medium">Industry avg: 2.7x</span>
+                          <span>6x+</span>
                         </div>
                       </div>
                     </div>
@@ -106,7 +126,7 @@ export function AecrScoreDemo() {
                   <div className="mt-8">
                     <Link to="/signup">
                       <Button className="w-full bg-lilac hover:bg-lilac-700 text-white py-6">
-                        See Your Score
+                        See Your CECR Score
                       </Button>
                     </Link>
                   </div>
