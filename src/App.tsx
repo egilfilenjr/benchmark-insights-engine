@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,17 +36,11 @@ import FAQ from "./pages/FAQ";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 
-// New pages
-import CompScoreOverview from "./pages/CompScoreOverview";
-import AecrAlgorithm from "./pages/AecrAlgorithm";
-import CompScoreExamples from "./pages/CompScoreExamples";
-import Testimonials from "./pages/Testimonials";
-import TrustCenter from "./pages/TrustCenter";
-import Blog from "./pages/Blog";
-import ApiDocs from "./pages/ApiDocs";
-import Status from "./pages/Status";
-import Changelog from "./pages/Changelog";
-import Glossary from "./pages/Glossary";
+// SEO-focused pages
+import MarketingBenchmarks from "./pages/seo/MarketingBenchmarks";
+import CecrScoreGuide from "./pages/seo/CecrScoreGuide";
+import MarketingAnalytics from "./pages/seo/MarketingAnalytics";
+import AdPerformanceTracker from "./pages/seo/AdPerformanceTracker";
 
 // Platform benchmark pages
 import MetaBenchmarks from "./pages/benchmarks/platform/Meta";
@@ -148,6 +141,12 @@ const App = () => (
             <Route path="/resources" element={<Resources />} />
             <Route path="/definitions" element={<Definitions />} />
             <Route path="/guides" element={<Guides />} />
+            
+            {/* SEO-focused pages */}
+            <Route path="/marketing-benchmarks" element={<MarketingBenchmarks />} />
+            <Route path="/cecr-score-guide" element={<CecrScoreGuide />} />
+            <Route path="/marketing-analytics" element={<MarketingAnalytics />} />
+            <Route path="/ad-performance-tracker" element={<AdPerformanceTracker />} />
             
             {/* New pages */}
             <Route path="/compscore-overview" element={<CompScoreOverview />} />
