@@ -41,6 +41,10 @@ import MarketingBenchmarks from "./pages/seo/MarketingBenchmarks";
 import CecrScoreGuide from "./pages/seo/CecrScoreGuide";
 import MarketingAnalytics from "./pages/seo/MarketingAnalytics";
 import AdPerformanceTracker from "./pages/seo/AdPerformanceTracker";
+import DigitalMarketingRoiGuide from "./pages/seo/DigitalMarketingRoiGuide";
+import ConversionRateOptimization from "./pages/seo/ConversionRateOptimization";
+import CustomerAcquisitionCostGuide from "./pages/seo/CustomerAcquisitionCostGuide";
+import MarketingAttributionGuide from "./pages/seo/MarketingAttributionGuide";
 
 // New pages that need to be imported
 import CompScoreOverview from "./pages/CompScoreOverview";
@@ -159,6 +163,10 @@ const App = () => (
             <Route path="/cecr-score-guide" element={<CecrScoreGuide />} />
             <Route path="/marketing-analytics" element={<MarketingAnalytics />} />
             <Route path="/ad-performance-tracker" element={<AdPerformanceTracker />} />
+            <Route path="/digital-marketing-roi-guide" element={<DigitalMarketingRoiGuide />} />
+            <Route path="/conversion-rate-optimization" element={<ConversionRateOptimization />} />
+            <Route path="/customer-acquisition-cost-guide" element={<CustomerAcquisitionCostGuide />} />
+            <Route path="/marketing-attribution-guide" element={<MarketingAttributionGuide />} />
             
             {/* New pages */}
             <Route path="/compscore-overview" element={<CompScoreOverview />} />
