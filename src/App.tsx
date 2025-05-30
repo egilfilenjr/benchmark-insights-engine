@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,6 +40,10 @@ import Toolbox from "./pages/Toolbox/Toolbox";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
+// Add new imports for benchmark pages
+import BenchmarksIndustry from "./pages/BenchmarksIndustry";
+import BenchmarksChannel from "./pages/BenchmarksChannel";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -58,8 +61,13 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/benchmarks" element={<BenchmarksLibrary />} />
-            <Route path="/toolbox" element={<ToolboxIndex />} /> {/* Updated toolbox route */}
-            <Route path="/toolbox/:toolName" element={<ToolboxLanding />} /> {/* Individual tools */}
+            
+            {/* New benchmark category routes */}
+            <Route path="/benchmarks/industry" element={<BenchmarksIndustry />} />
+            <Route path="/benchmarks/channel" element={<BenchmarksChannel />} />
+            
+            <Route path="/toolbox" element={<ToolboxIndex />} />
+            <Route path="/toolbox/:toolName" element={<ToolboxLanding />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/industries" element={<Industries />} />
             <Route path="/use-cases" element={<UseCases />} />
