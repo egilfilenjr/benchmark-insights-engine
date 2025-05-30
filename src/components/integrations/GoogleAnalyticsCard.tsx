@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,9 +56,6 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
     console.log('🔗 Starting GA4 connection for user:', user.id);
     
     try {
-      // Debug: Log the supabase instance
-      console.log('Supabase URL:', supabase.supabaseUrl);
-      
       // Call the GA4 OAuth start edge function
       console.log('📡 Calling GA4 OAuth start function...');
       
