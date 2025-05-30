@@ -58,6 +58,7 @@ export default function OAuthCallback() {
             user_id: userId,
             team_id: teamId,
             platform: provider,
+            provider: provider, // Now required by the schema
             access_token: providerAccessToken,
             refresh_token: providerRefreshToken,
             expires_at: expiresAt,

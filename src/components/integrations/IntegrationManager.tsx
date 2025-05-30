@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { toast } from '@/hooks/use-toast';
+import GoogleAnalyticsCard from './GoogleAnalyticsCard';
 import { 
   RefreshCw, 
   CheckCircle, 
@@ -136,7 +136,7 @@ export default function IntegrationManager() {
       const transformedData: Integration[] = (data || []).map(item => ({
         id: item.id,
         platform: item.platform,
-        provider: item.provider || item.platform, // Fallback to platform if provider is null
+        provider: item.provider || item.platform,
         status: (['active', 'error', 'pending'].includes(item.status) ? item.status : 'pending') as 'active' | 'error' | 'pending',
         access_token: item.access_token,
         last_synced_at: item.last_synced_at,
@@ -296,10 +296,20 @@ export default function IntegrationManager() {
     );
   }
 
+  // Get GA4 integration specifically
+  const ga4Integration = integrations.find(i => i.provider === 'google_analytics' || i.platform === 'google_analytics');
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(INTEGRATION_CONFIGS).map(([platform, config]) => {
+        {/* Special GA4 Card */}
+        <GoogleAnalyticsCard 
+          integration={ga4Integration}
+          onRefresh={loadIntegrations}
+        />
+
+        {/* Other integration cards */}
+        {Object.entries(INTEGRATION_CONFIGS).filter(([platform]) => platform !== 'google_analytics').map(([platform, config]) => {
           const integration = integrations.find(i => i.provider === platform || i.platform === platform);
           const isConnected = !!integration;
           const isSyncing = syncing[platform];
