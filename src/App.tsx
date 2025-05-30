@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,6 +35,13 @@ import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+
+// New pages
+import CompScoreOverview from "./pages/CompScoreOverview";
+import AecrAlgorithm from "./pages/AecrAlgorithm";
+import CompScoreExamples from "./pages/CompScoreExamples";
+import Testimonials from "./pages/Testimonials";
+import TrustCenter from "./pages/TrustCenter";
 
 // Protected app pages
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -86,6 +92,13 @@ const App = () => (
             <Route path="/resources" element={<Resources />} />
             <Route path="/definitions" element={<Definitions />} />
             <Route path="/guides" element={<Guides />} />
+            
+            {/* New pages */}
+            <Route path="/compscore-overview" element={<CompScoreOverview />} />
+            <Route path="/AECRscore/algorithm" element={<AecrAlgorithm />} />
+            <Route path="/compscore/examples" element={<CompScoreExamples />} />
+            <Route path="/testimonials" element={<Testimonials />} />
+            <Route path="/trust-center" element={<TrustCenter />} />
             
             {/* Industries and Use Cases */}
             <Route path="/industries" element={<Industries />} />
