@@ -20,7 +20,10 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  User
+  User,
+  Search,
+  RefreshCw,
+  Zap
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -46,9 +49,10 @@ const sidebarItems: SidebarItem[] = [
       { title: 'TikTok Ads', path: '/dashboard/tiktok' },
     ]
   },
-  { title: 'Benchmarks', path: '/benchmarks', icon: BarChart },
+  { title: 'Benchmark Explorer', path: '/benchmark-explorer', icon: Search },
+  { title: 'Benchmarks', path: '/benchmarks/app', icon: BarChart },
   { title: 'Recommendations', path: '/recommendations', icon: Lightbulb, planRequired: 'pro_plus' },
-  { title: 'Opportunities', path: '/opportunities', icon: Lightbulb },
+  { title: 'Opportunities', path: '/opportunities', icon: Zap },
   { title: 'Trends', path: '/trends', icon: TrendingUp },
   { title: 'Media Mix', path: '/media-mix', icon: PieChart },
   { title: 'My Data', path: '/my-data', icon: Database },
@@ -56,9 +60,10 @@ const sidebarItems: SidebarItem[] = [
   { title: 'Saved Views', path: '/saved-views', icon: Bookmark },
   { title: 'Alerts', path: '/alerts', icon: Bell, planRequired: 'pro_plus' },
   { title: 'Experiments', path: '/experiments', icon: FlaskConical },
+  { title: 'Sync History', path: '/sync-history', icon: RefreshCw },
   { title: 'Team Access', path: '/team-access', icon: Users },
   { title: 'Settings', path: '/settings', icon: Settings },
-  { title: 'Toolbox', path: '/toolbox', icon: Wrench },
+  { title: 'Toolbox', path: '/toolbox/app', icon: Wrench },
 ];
 
 const AppSidebar = () => {
