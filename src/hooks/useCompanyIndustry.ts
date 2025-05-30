@@ -103,12 +103,24 @@ export function useCompanyIndustry() {
     return parts.join(' → ');
   };
 
+  const getShortIndustryName = (): string => {
+    if (!companyIndustry) return 'Not Set';
+    
+    // Return the most specific available level
+    return companyIndustry.detail || 
+           companyIndustry.subcategory || 
+           companyIndustry.category || 
+           companyIndustry.domain || 
+           'Not Set';
+  };
+
   return {
     companyIndustry,
     loading,
     saving,
     saveCompanyIndustry,
     getIndustryBreadcrumb,
+    getShortIndustryName,
     refetch: loadCompanyIndustry
   };
 }
