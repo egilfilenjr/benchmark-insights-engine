@@ -127,7 +127,20 @@ export default function IntegrationManager() {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      setIntegrations(data || []);
+      
+      // Transform the data to match our Integration interface
+      const transformedData: Integration[] = (data || []).map(item => ({
+        id: item.id,
+        platform: item.platform,
+        status: (['active', 'error', 'pending'].includes(item.status) ? item.status : 'pending') as 'active' | 'error' | 'pending',
+        access_token: item.access_token,
+        last_synced_at: item.last_synced_at,
+        expires_at: item.expires_at,
+        account_id: item.account_id,
+        account_name: item.account_name
+      }));
+      
+      setIntegrations(transformedData);
     } catch (error) {
       console.error('Error loading integrations:', error);
       toast({
@@ -184,14 +197,16 @@ export default function IntegrationManager() {
     try {
       const testData = config.testDataGenerator();
       
-      // Store test data in metrics table
+      // Store test data in metrics table using the correct schema
       const { error } = await supabase
         .from('metrics')
         .upsert({
           user_id: user.id,
-          platform,
-          data: testData,
-          last_updated: new Date().toISOString()
+          kpis: testData,
+          campaigns: [],
+          alerts: [],
+          aecr: { score: 85, percentile: 78 },
+          trends: [{ date: new Date().toISOString(), value: Math.random() * 100 }]
         });
 
       if (error) throw error;

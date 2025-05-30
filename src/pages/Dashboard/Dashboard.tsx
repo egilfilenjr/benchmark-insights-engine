@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import AppLayout from "@/components/layout/AppLayout";
@@ -101,17 +102,17 @@ export default function Dashboard() {
         if (metricsData && metricsData.length > 0) {
           const latestMetrics = metricsData[0];
           
-          if (latestMetrics.data && typeof latestMetrics.data === 'object') {
-            const data = latestMetrics.data as any;
+          // Update KPIs based on integration data
+          if (latestMetrics.kpis && typeof latestMetrics.kpis === 'object') {
+            const kpisData = latestMetrics.kpis as any;
             
-            // Update KPIs based on integration data
             const updatedKpis = { ...kpis };
             
-            if (data.spend) updatedKpis.spend.value = data.spend;
-            if (data.conversions) updatedKpis.conversions.value = data.conversions;
-            if (data.ctr) updatedKpis.ctr.value = parseFloat(data.ctr);
-            if (data.clicks && data.spend) {
-              updatedKpis.cpa.value = data.spend / (data.conversions || 1);
+            if (kpisData.spend) updatedKpis.spend.value = Number(kpisData.spend);
+            if (kpisData.conversions) updatedKpis.conversions.value = Number(kpisData.conversions);
+            if (kpisData.ctr) updatedKpis.ctr.value = parseFloat(kpisData.ctr);
+            if (kpisData.clicks && kpisData.spend) {
+              updatedKpis.cpa.value = Number(kpisData.spend) / (Number(kpisData.conversions) || 1);
             }
             
             setKpis(updatedKpis);
@@ -119,15 +120,15 @@ export default function Dashboard() {
 
           // Update campaigns with real platform data
           if (connectionsData && connectionsData.length > 0) {
-            const updatedCampaigns = connectionsData.map((conn, index) => ({
+            const updatedCampaigns: Campaign[] = connectionsData.map((conn, index) => ({
               id: `${conn.platform}-${index}`,
               name: `${conn.platform.replace('_', ' ')} Campaign`,
               platform: conn.platform.replace('_', ' '),
               spend: Math.floor(Math.random() * 5000) + 1000,
               conversions: Math.floor(Math.random() * 100) + 20,
               cpa: Math.floor(Math.random() * 50) + 15,
-              roas: (Math.random() * 3 + 2).toFixed(1),
-              ctr: (Math.random() * 0.05 + 0.01).toFixed(3),
+              roas: parseFloat((Math.random() * 3 + 2).toFixed(1)),
+              ctr: parseFloat((Math.random() * 0.05 + 0.01).toFixed(3)),
               vsBenchmark: Math.floor(Math.random() * 40) - 20,
               status: conn.status as "active" | "paused" | "error"
             }));
