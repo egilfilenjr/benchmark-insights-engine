@@ -1,10 +1,9 @@
-
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
-  Industry, 
+  Factory, 
   TrendingUp, 
   Target, 
   Building, 
@@ -18,7 +17,7 @@ import {
 
 const categoryCards = [
   {
-    icon: Industry,
+    icon: Factory,
     title: "By Industry",
     subtitle: "Deep performance metrics by vertical & subvertical",
     path: "/benchmarks/industry",
