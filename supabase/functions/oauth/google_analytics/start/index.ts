@@ -2,15 +2,23 @@
 import { corsHeaders } from '../../../_shared/cors.ts';
 
 Deno.serve(async (req) => {
+  console.log('🚀 GA4 OAuth start function called');
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('🔄 Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('📥 Reading request body...');
     const { company_id, user_id } = await req.json();
+    console.log('Request data:', { company_id, user_id });
 
     if (!company_id || !user_id) {
+      console.error('❌ Missing required parameters');
       return new Response(
         JSON.stringify({ error: 'Missing company_id or user_id' }),
         { status: 400, headers: corsHeaders }
@@ -19,14 +27,32 @@ Deno.serve(async (req) => {
 
     // GA4 OAuth 2.0 parameters
     const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-    const redirectUri = `${Deno.env.get('SITE_URL')}/oauth/google_analytics/callback`;
+    const siteUrl = Deno.env.get('SITE_URL');
+    
+    console.log('Environment check:', {
+      hasClientId: !!clientId,
+      hasSiteUrl: !!siteUrl,
+      siteUrl
+    });
     
     if (!clientId) {
+      console.error('❌ GOOGLE_CLIENT_ID not configured');
       return new Response(
-        JSON.stringify({ error: 'Google OAuth not configured' }),
+        JSON.stringify({ error: 'Google OAuth not configured - missing GOOGLE_CLIENT_ID' }),
         { status: 500, headers: corsHeaders }
       );
     }
+
+    if (!siteUrl) {
+      console.error('❌ SITE_URL not configured');
+      return new Response(
+        JSON.stringify({ error: 'Site URL not configured' }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    const redirectUri = `${siteUrl}/functions/v1/oauth/google_analytics/callback`;
+    console.log('Redirect URI:', redirectUri);
 
     const scope = 'https://www.googleapis.com/auth/analytics.readonly';
     const state = btoa(JSON.stringify({ company_id, user_id, provider: 'google_analytics' }));
@@ -40,7 +66,8 @@ Deno.serve(async (req) => {
     authUrl.searchParams.set('access_type', 'offline');
     authUrl.searchParams.set('prompt', 'consent');
 
-    console.log('Generated GA4 OAuth URL for company:', company_id);
+    console.log('✅ Generated GA4 OAuth URL for company:', company_id);
+    console.log('Auth URL:', authUrl.toString());
 
     return new Response(
       JSON.stringify({ auth_url: authUrl.toString() }),
@@ -48,9 +75,12 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('GA4 OAuth start error:', error);
+    console.error('❌ GA4 OAuth start error:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to generate OAuth URL' }),
+      JSON.stringify({ 
+        error: 'Failed to generate OAuth URL',
+        details: error.message 
+      }),
       { status: 500, headers: corsHeaders }
     );
   }

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,11 +42,25 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
   const isExpired = integration?.expires_at && new Date(integration.expires_at) < new Date();
 
   const handleConnect = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please make sure you're logged in",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setConnecting(true);
+    console.log('🔗 Starting GA4 connection for user:', user.id);
+    
     try {
+      // Debug: Log the supabase instance
+      console.log('Supabase URL:', supabase.supabaseUrl);
+      
       // Call the GA4 OAuth start edge function
+      console.log('📡 Calling GA4 OAuth start function...');
+      
       const { data, error } = await supabase.functions.invoke('oauth/google_analytics/start', {
         body: { 
           company_id: user.id, // Using user.id as company_id for now
@@ -55,18 +68,34 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
         }
       });
 
-      if (error) throw error;
+      console.log('📡 Function response:', { data, error });
+
+      if (error) {
+        console.error('❌ Function invoke error:', error);
+        throw error;
+      }
 
       if (data?.auth_url) {
+        console.log('✅ Redirecting to Google OAuth...');
         window.location.href = data.auth_url;
       } else {
-        throw new Error('No auth URL returned');
+        console.error('❌ No auth URL in response:', data);
+        throw new Error('No auth URL returned from function');
       }
     } catch (error) {
-      console.error('GA4 connection error:', error);
+      console.error('❌ GA4 connection error:', error);
+      
+      // More specific error messages
+      let errorMessage = "Failed to start Google Analytics 4 connection";
+      if (error.message?.includes('Failed to fetch')) {
+        errorMessage = "Network error: Unable to reach authentication service. Please try again.";
+      } else if (error.message?.includes('Function not found')) {
+        errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+      }
+      
       toast({
         title: "Connection Failed",
-        description: "Failed to start Google Analytics 4 connection",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
