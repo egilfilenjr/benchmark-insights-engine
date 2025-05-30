@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,6 +48,56 @@ import ApiDocs from "./pages/ApiDocs";
 import Status from "./pages/Status";
 import Changelog from "./pages/Changelog";
 import Glossary from "./pages/Glossary";
+
+// Platform benchmark pages
+import MetaBenchmarks from "./pages/benchmarks/platform/Meta";
+import GoogleBenchmarks from "./pages/benchmarks/platform/Google";
+import TikTokBenchmarks from "./pages/benchmarks/platform/TikTok";
+import YouTubeBenchmarks from "./pages/benchmarks/platform/YouTube";
+import PinterestBenchmarks from "./pages/benchmarks/platform/Pinterest";
+import RedditBenchmarks from "./pages/benchmarks/platform/Reddit";
+
+// Industry benchmark pages
+import ConsumerProductsBenchmarks from "./pages/benchmarks/industry/ConsumerProducts";
+import PersonalServicesBenchmarks from "./pages/benchmarks/industry/PersonalServices";
+import B2BSoftwareServicesBenchmarks from "./pages/benchmarks/industry/B2BSoftwareServices";
+import EcommerceRetailBenchmarks from "./pages/benchmarks/industry/EcommerceRetail";
+import CultureMediaCreatorsBenchmarks from "./pages/benchmarks/industry/CultureMediaCreators";
+import FinanceInsuranceLegalBenchmarks from "./pages/benchmarks/industry/FinanceInsuranceLegal";
+import ScienceIndustryInfrastructureBenchmarks from "./pages/benchmarks/industry/ScienceIndustryInfrastructure";
+import PublicNonprofitIdentityBenchmarks from "./pages/benchmarks/industry/PublicNonprofitIdentity";
+
+// Funnel stage benchmark pages
+import TopOfFunnelBenchmarks from "./pages/benchmarks/funnel/TopOfFunnel";
+import MidFunnelBenchmarks from "./pages/benchmarks/funnel/MidFunnel";
+import BottomOfFunnelBenchmarks from "./pages/benchmarks/funnel/BottomOfFunnel";
+
+// Placement benchmark pages
+import StoriesBenchmarks from "./pages/benchmarks/placement/Stories";
+import ReelsBenchmarks from "./pages/benchmarks/placement/Reels";
+import FeedBenchmarks from "./pages/benchmarks/placement/Feed";
+
+// Ad type benchmark pages
+import VideoBenchmarks from "./pages/benchmarks/ad-type/Video";
+import StaticBenchmarks from "./pages/benchmarks/ad-type/Static";
+import CarouselBenchmarks from "./pages/benchmarks/ad-type/Carousel";
+
+// Audience benchmark pages
+import LookalikeBenchmarks from "./pages/benchmarks/audience/Lookalike";
+import CustomBenchmarks from "./pages/benchmarks/audience/Custom";
+import InterestBenchmarks from "./pages/benchmarks/audience/Interest";
+
+// Specific metric benchmark pages
+import RoasByChannelBenchmarks from "./pages/benchmarks/metrics/RoasByChannel";
+import CtrByChannelBenchmarks from "./pages/benchmarks/metrics/CtrByChannel";
+import CpcByChannelBenchmarks from "./pages/benchmarks/metrics/CpcByChannel";
+import ConversionByPlatformBenchmarks from "./pages/benchmarks/metrics/ConversionByPlatform";
+import DayOfWeekBenchmarks from "./pages/benchmarks/metrics/DayOfWeek";
+import HourOfDayBenchmarks from "./pages/benchmarks/metrics/HourOfDay";
+import FrequencyVsFatigueBenchmarks from "./pages/benchmarks/metrics/FrequencyVsFatigue";
+import YoyRoasTrendsBenchmarks from "./pages/benchmarks/metrics/YoyRoasTrends";
+import CostPerLeadVsLtvBenchmarks from "./pages/benchmarks/metrics/CostPerLeadVsLtv";
+import IFunnelBenchmarks from "./pages/benchmarks/metrics/IFunnel";
 
 // Protected app pages
 import Dashboard from "./pages/Dashboard/Dashboard";
