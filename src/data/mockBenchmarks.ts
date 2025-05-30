@@ -1,4 +1,3 @@
-
 export interface BenchmarkData {
   id: string;
   industry: string;
@@ -256,6 +255,17 @@ export const MOCK_BENCHMARKS: BenchmarkData[] = [
     last_updated: "2024-01-15"
   }
 ];
+
+// Mock data representing user's performance for comparison
+export const YOUR_PERFORMANCE = {
+  CPA: 18.50,
+  ROAS: 3.8,
+  CTR: 2.1,
+  CPC: 1.25,
+  CPM: 8.90,
+  CVR: 2.8,
+  AOV: 95.40
+};
 
 // Helper function to get unique values for filters
 export const getUniqueIndustries = () => [...new Set(MOCK_BENCHMARKS.map(b => b.industry))];
