@@ -2,71 +2,48 @@
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 
 export default function Status() {
-  const currentStatus = {
-    overall: "operational",
-    lastUpdated: "2 minutes ago"
-  };
-
   const services = [
     {
-      name: "API Gateway",
+      name: "Core Platform",
       status: "operational",
       uptime: "99.98%",
-      responseTime: "245ms"
+      description: "Main application and dashboard"
     },
     {
-      name: "Benchmark Database",
+      name: "Data Processing",
       status: "operational", 
-      uptime: "99.99%",
-      responseTime: "12ms"
+      uptime: "99.95%",
+      description: "Benchmark calculations and CECR Score™"
     },
     {
-      name: "CompScore Calculator",
+      name: "API Services",
       status: "operational",
       uptime: "99.97%",
-      responseTime: "89ms"
+      description: "REST API and integrations"
     },
     {
-      name: "OAuth Integration",
-      status: "degraded",
-      uptime: "99.85%",
-      responseTime: "1.2s"
-    },
-    {
-      name: "Data Sync Services",
-      status: "operational",
-      uptime: "99.96%",
-      responseTime: "156ms"
-    },
-    {
-      name: "Web Application",
+      name: "Authentication",
       status: "operational",
       uptime: "99.99%",
-      responseTime: "178ms"
+      description: "User login and security"
     }
   ];
 
   const incidents = [
     {
-      title: "OAuth Service Degraded Performance",
-      status: "investigating",
-      time: "15 minutes ago",
-      description: "We're investigating slower than usual response times for OAuth authentication."
+      date: "2024-03-10",
+      title: "Brief API Latency",
+      status: "resolved",
+      description: "Temporary increased response times resolved within 15 minutes"
     },
     {
-      title: "Scheduled Maintenance Complete",
-      status: "resolved",
-      time: "2 hours ago", 
-      description: "Database optimization maintenance has been completed successfully."
-    },
-    {
-      title: "API Rate Limiting Issue",
-      status: "resolved",
-      time: "1 day ago",
-      description: "Resolved an issue where some users experienced unexpected rate limiting."
+      date: "2024-02-28", 
+      title: "Scheduled Maintenance",
+      status: "completed",
+      description: "Database optimization completed successfully"
     }
   ];
 
@@ -74,84 +51,65 @@ export default function Status() {
     switch (status) {
       case 'operational':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'degraded':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-      case 'outage':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      case 'investigating':
-        return <Clock className="h-5 w-5 text-blue-500" />;
+      case 'maintenance':
+        return <Clock className="h-5 w-5 text-yellow-500" />;
       default:
-        return <CheckCircle className="h-5 w-5 text-gray-500" />;
+        return <AlertTriangle className="h-5 w-5 text-red-500" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'operational':
-        return <Badge className="bg-green-100 text-green-800">Operational</Badge>;
-      case 'degraded':
-        return <Badge className="bg-yellow-100 text-yellow-800">Degraded</Badge>;
-      case 'outage':
-        return <Badge className="bg-red-100 text-red-800">Outage</Badge>;
-      case 'investigating':
-        return <Badge className="bg-blue-100 text-blue-800">Investigating</Badge>;
-      case 'resolved':
-        return <Badge className="bg-gray-100 text-gray-800">Resolved</Badge>;
+        return <Badge className="bg-green-500">Operational</Badge>;
+      case 'maintenance':
+        return <Badge className="bg-yellow-500">Maintenance</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge className="bg-red-500">Issues</Badge>;
     }
   };
 
   return (
     <MainLayout>
       <div className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
+        <div className="max-w-7xl mx-auto">
+          {/* Hero Section */}
           <div className="text-center mb-16">
-            <Badge className="mb-4" variant="outline">System Status</Badge>
+            <Badge className="mb-4 bg-green-500">All Systems Operational</Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-navy-900 mb-6">
               System <span className="gradient-text">Status</span>
             </h1>
-            <p className="text-xl text-navy-600 mb-8">
-              Real-time status and performance metrics for all Benchmarketing services.
+            <p className="text-xl text-navy-600 max-w-3xl mx-auto mb-8">
+              Real-time status of all Benchmarketing services and infrastructure.
             </p>
           </div>
 
           {/* Overall Status */}
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {getStatusIcon(currentStatus.overall)}
-                  <CardTitle className="text-2xl">All Systems Operational</CardTitle>
-                </div>
-                {getStatusBadge(currentStatus.overall)}
-              </div>
-              <CardDescription>
-                Last updated {currentStatus.lastUpdated}
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 mb-16 text-center">
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-navy-900 mb-2">All Systems Operational</h2>
+            <p className="text-navy-600">All services are running normally with no known issues.</p>
+          </div>
 
-          {/* Services Status */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-navy-900 mb-6">Service Status</h2>
+          {/* Service Status */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">Service Status</h2>
             <div className="space-y-4">
               {services.map((service, index) => (
                 <Card key={index}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         {getStatusIcon(service.status)}
                         <div>
-                          <h3 className="font-semibold text-navy-900">{service.name}</h3>
-                          <div className="flex gap-4 text-sm text-navy-600">
-                            <span>Uptime: {service.uptime}</span>
-                            <span>Response: {service.responseTime}</span>
-                          </div>
+                          <h3 className="text-lg font-semibold text-navy-900">{service.name}</h3>
+                          <p className="text-navy-600 text-sm">{service.description}</p>
                         </div>
                       </div>
-                      {getStatusBadge(service.status)}
+                      <div className="text-right">
+                        {getStatusBadge(service.status)}
+                        <div className="text-navy-600 text-sm mt-1">{service.uptime} uptime</div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -159,44 +117,38 @@ export default function Status() {
             </div>
           </div>
 
-          {/* Incidents */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-navy-900 mb-6">Recent Incidents</h2>
+          {/* Recent Incidents */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">Recent Incidents</h2>
             <div className="space-y-4">
               {incidents.map((incident, index) => (
                 <Card key={index}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{incident.title}</CardTitle>
-                      {getStatusBadge(incident.status)}
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{incident.status}</Badge>
+                        <span className="text-navy-600 text-sm">{incident.date}</span>
+                      </div>
                     </div>
-                    <CardDescription>{incident.time}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-navy-600">{incident.description}</p>
+                    <CardDescription className="text-base">{incident.description}</CardDescription>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </div>
 
-          {/* Uptime Stats */}
-          <div className="bg-gradient-to-br from-lilac-50 to-aqua-50 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-navy-900 mb-6 text-center">30-Day Uptime</h2>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
-                <div className="text-3xl font-bold text-success mb-2">99.98%</div>
-                <div className="text-navy-700 font-semibold">Overall Uptime</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-lilac mb-2">245ms</div>
-                <div className="text-navy-700 font-semibold">Avg Response Time</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-aqua mb-2">2</div>
-                <div className="text-navy-700 font-semibold">Incidents</div>
-              </div>
-            </div>
+          {/* Subscribe to Updates */}
+          <div className="text-center bg-navy-50 rounded-2xl p-8">
+            <h2 className="text-3xl font-bold text-navy-900 mb-4">Stay Informed</h2>
+            <p className="text-navy-600 mb-8 max-w-2xl mx-auto">
+              Subscribe to status updates and get notified about any service disruptions or maintenance windows.
+            </p>
+            <Badge variant="outline" className="cursor-pointer hover:bg-navy-100">
+              Subscribe to Status Updates
+            </Badge>
           </div>
         </div>
       </div>

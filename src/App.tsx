@@ -42,6 +42,18 @@ import CecrScoreGuide from "./pages/seo/CecrScoreGuide";
 import MarketingAnalytics from "./pages/seo/MarketingAnalytics";
 import AdPerformanceTracker from "./pages/seo/AdPerformanceTracker";
 
+// New pages that need to be imported
+import CompScoreOverview from "./pages/CompScoreOverview";
+import AecrAlgorithm from "./pages/AecrAlgorithm";
+import CompScoreExamples from "./pages/CompScoreExamples";
+import Testimonials from "./pages/Testimonials";
+import TrustCenter from "./pages/TrustCenter";
+import Blog from "./pages/Blog";
+import ApiDocs from "./pages/ApiDocs";
+import Status from "./pages/Status";
+import Changelog from "./pages/Changelog";
+import Glossary from "./pages/Glossary";
+
 // Platform benchmark pages
 import MetaBenchmarks from "./pages/benchmarks/platform/Meta";
 import GoogleBenchmarks from "./pages/benchmarks/platform/Google";
