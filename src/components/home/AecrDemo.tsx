@@ -1,13 +1,13 @@
 
 import { Progress } from '@/components/ui/progress';
 
-const AecrDemo = () => {
+const CecrDemo = () => {
   return (
     <section className="py-20 bg-white relative overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-navy-900 mb-4">
-            Your AECR Score™ at a Glance
+            Your CECR Score™ at a Glance
           </h2>
           <p className="text-lg text-navy-600 max-w-2xl mx-auto">
             One simple score to understand your marketing performance against industry benchmarks.
@@ -20,7 +20,7 @@ const AecrDemo = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
               <div>
                 <span className="text-sm font-medium text-navy-500">Marketing Benchmark</span>
-                <h3 className="text-2xl font-bold text-navy-900">AECR Score™</h3>
+                <h3 className="text-2xl font-bold text-navy-900">CECR Score™</h3>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="bg-softgray-100 text-navy-700 text-sm py-1 px-3 rounded-full">
@@ -139,4 +139,4 @@ const AecrDemo = () => {
   );
 };
 
-export default AecrDemo;
+export default CecrDemo;

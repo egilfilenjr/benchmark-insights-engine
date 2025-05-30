@@ -1,10 +1,11 @@
+
 import MainLayout from "@/components/layout/MainLayout";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export default function AecrChange() {
+export default function CecrChange() {
   const [before, setBefore] = useState("");
   const [after, setAfter] = useState("");
 
@@ -17,23 +18,23 @@ export default function AecrChange() {
     <MainLayout>
       <div className="max-w-xl mx-auto px-6 py-12 space-y-6">
         <header className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">AECR Change Calculator</h1>
+          <h1 className="text-3xl font-bold">CECR Change Calculator</h1>
           <p className="text-muted-foreground text-lg">
-            Measure performance delta between two AECR periods.
+            Measure performance delta between two CECR periods.
           </p>
         </header>
 
         <Card>
           <CardHeader>
-            <CardTitle>Compare Two AECR Scores</CardTitle>
+            <CardTitle>Compare Two CECR Scores</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Previous AECR</Label>
+              <Label>Previous CECR</Label>
               <Input value={before} onChange={(e) => setBefore(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Current AECR</Label>
+              <Label>Current CECR</Label>
               <Input value={after} onChange={(e) => setAfter(e.target.value)} />
             </div>
           </CardContent>
@@ -42,7 +43,7 @@ export default function AecrChange() {
         {change && (
           <div className="text-center mt-6">
             <p className="text-lg">
-              AECR Change: <span className="font-semibold">{change}%</span>
+              CECR Change: <span className="font-semibold">{change}%</span>
             </p>
           </div>
         )}

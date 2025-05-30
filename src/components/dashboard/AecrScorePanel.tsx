@@ -4,19 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface AecrScorePanelProps {
+interface CecrScorePanelProps {
   score: number;
   percentile: number;
   previousScore?: number;
   loading?: boolean;
 }
 
-export default function AecrScorePanel({
+export default function CecrScorePanel({
   score,
   percentile,
   previousScore,
   loading = false,
-}: AecrScorePanelProps) {
+}: CecrScorePanelProps) {
   const scoreChange = previousScore ? score - previousScore : 0;
   const isPositive = scoreChange > 0;
   const changeText = scoreChange === 0 
@@ -28,7 +28,7 @@ export default function AecrScorePanel({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold flex items-center">
-            AECR Score™ 
+            CECR Score™ 
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
@@ -36,8 +36,8 @@ export default function AecrScorePanel({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
-                    The Ad Efficiency & Conversion Rate (AECR) Score measures your overall 
-                    marketing performance as a single metric from 0-100, combining CPA, ROAS, and CTR.
+                    The Creative, Engagement, Conversion & Revenue (CECR) Score measures your overall 
+                    marketing performance as a single metric from 0-100, combining CTR, Bounce Rate, CVR, and ROAS.
                   </p>
                 </TooltipContent>
               </Tooltip>

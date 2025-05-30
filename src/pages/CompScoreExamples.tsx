@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-export default function CompScoreExamples() {
+export default function CecrScoreExamples() {
   const examples = [
     {
       company: "DTC Fashion Brand",
@@ -17,10 +17,10 @@ export default function CompScoreExamples() {
       color: "text-green-600",
       bgColor: "bg-green-50",
       metrics: {
-        roas: { value: "4.2x", percentile: 95, trend: "up" },
         ctr: { value: "2.8%", percentile: 88, trend: "up" },
-        cpa: { value: "$18", percentile: 92, trend: "down" },
-        cvr: { value: "3.1%", percentile: 89, trend: "up" }
+        bounceRate: { value: "32%", percentile: 85, trend: "down" },
+        cvr: { value: "3.1%", percentile: 89, trend: "up" },
+        roas: { value: "4.2x", percentile: 95, trend: "up" }
       },
       insight: "Exceptional performance across all metrics. Strong creative resonance with target audience."
     },
@@ -33,12 +33,12 @@ export default function CompScoreExamples() {
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
       metrics: {
-        roas: { value: "2.1x", percentile: 65, trend: "down" },
         ctr: { value: "1.2%", percentile: 72, trend: "up" },
-        cpa: { value: "$89", percentile: 58, trend: "up" },
-        cvr: { value: "4.2%", percentile: 78, trend: "up" }
+        bounceRate: { value: "45%", percentile: 58, trend: "up" },
+        cvr: { value: "4.2%", percentile: 78, trend: "up" },
+        roas: { value: "2.1x", percentile: 65, trend: "down" }
       },
-      insight: "Strong conversion rates but ROAS needs improvement. Consider optimizing targeting and bid strategy."
+      insight: "Strong conversion rates but engagement needs improvement. Consider optimizing landing pages and targeting."
     },
     {
       company: "Local Restaurant Chain",
@@ -49,12 +49,12 @@ export default function CompScoreExamples() {
       color: "text-orange-600",
       bgColor: "bg-orange-50",
       metrics: {
-        roas: { value: "1.8x", percentile: 35, trend: "down" },
         ctr: { value: "0.9%", percentile: 28, trend: "down" },
-        cpa: { value: "$12", percentile: 67, trend: "stable" },
-        cvr: { value: "1.8%", percentile: 42, trend: "up" }
+        bounceRate: { value: "68%", percentile: 25, trend: "up" },
+        cvr: { value: "1.8%", percentile: 42, trend: "up" },
+        roas: { value: "1.8x", percentile: 35, trend: "down" }
       },
-      insight: "Low engagement suggests creative and targeting optimization needed. CPA is competitive for industry."
+      insight: "Low engagement suggests creative and targeting optimization needed. High bounce rate indicates poor user experience."
     }
   ];
 
@@ -74,14 +74,14 @@ export default function CompScoreExamples() {
           <div className="text-center mb-16">
             <Badge className="mb-4" variant="outline">Real Examples</Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-navy-900 mb-6">
-              CompScore <span className="gradient-text">Use Cases</span>
+              CECR Score <span className="gradient-text">Use Cases</span>
             </h1>
             <p className="text-xl text-navy-600 max-w-3xl mx-auto mb-8">
               See how different companies across various industries and platforms 
-              use CompScore to understand and improve their marketing performance.
+              use CECR Score to understand and improve their marketing performance.
             </p>
             <Button size="lg" asChild>
-              <Link to="/compscore-overview">Learn About CompScore</Link>
+              <Link to="/cecrScore-overview">Learn About CECR Score</Link>
             </Button>
           </div>
 
@@ -100,7 +100,7 @@ export default function CompScoreExamples() {
                     <div className="flex items-center gap-4">
                       <div className="text-center">
                         <div className={`text-4xl font-bold ${example.color}`}>{example.score}</div>
-                        <div className="text-sm font-semibold text-navy-700">CompScore</div>
+                        <div className="text-sm font-semibold text-navy-700">CECR Score</div>
                       </div>
                       <Badge variant="outline" className={`${example.color} border-current`}>
                         {example.status}
@@ -117,7 +117,9 @@ export default function CompScoreExamples() {
                           <span className="text-2xl font-bold text-navy-900">{metric.value}</span>
                           {getTrendIcon(metric.trend)}
                         </div>
-                        <div className="text-sm font-semibold text-navy-700 uppercase">{key}</div>
+                        <div className="text-sm font-semibold text-navy-700 uppercase">
+                          {key === 'ctr' ? 'CTR' : key === 'bounceRate' ? 'Bounce Rate' : key === 'cvr' ? 'CVR' : 'ROAS'}
+                        </div>
                         <div className="text-xs text-navy-500">{metric.percentile}th percentile</div>
                       </div>
                     ))}
@@ -134,7 +136,7 @@ export default function CompScoreExamples() {
 
           {/* Industry Breakdown */}
           <div className="bg-gradient-to-br from-lilac-50 to-aqua-50 rounded-2xl p-8 mb-16">
-            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">CompScore by Industry</h2>
+            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">CECR Score by Industry</h2>
             
             <div className="grid md:grid-cols-3 gap-6">
               <Card>
@@ -165,7 +167,7 @@ export default function CompScoreExamples() {
 
           {/* How to Improve */}
           <div className="mb-16">
-            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">How to Improve Your CompScore</h2>
+            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">How to Improve Your CECR Score</h2>
             
             <div className="grid md:grid-cols-2 gap-8">
               <Card>
@@ -200,17 +202,17 @@ export default function CompScoreExamples() {
 
           {/* CTA Section */}
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-navy-900 mb-4">Ready to Calculate Your CompScore?</h2>
+            <h2 className="text-3xl font-bold text-navy-900 mb-4">Ready to Calculate Your CECR Score?</h2>
             <p className="text-navy-600 mb-8 max-w-2xl mx-auto">
               See exactly how your campaigns compare to these examples and get personalized 
               recommendations to improve your performance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link to="/signup">Get My CompScore</Link>
+                <Link to="/signup">Get My CECR Score</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link to="/AECRscore/algorithm">Learn the Algorithm <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/cecrScore/algorithm">Learn the Algorithm <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
           </div>

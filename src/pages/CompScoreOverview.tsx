@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, TrendingUp, Zap, CheckCircle } from 'lucide-react';
 
-export default function CompScoreOverview() {
+export default function CecrScoreOverview() {
   const benefits = [
     {
       icon: Target,
@@ -21,7 +21,7 @@ export default function CompScoreOverview() {
     {
       icon: Zap,
       title: "Instant Analysis",
-      description: "Get your CompScore in seconds with real-time benchmark comparisons"
+      description: "Get your CECR Score in seconds with real-time benchmark comparisons"
     }
   ];
 
@@ -39,20 +39,20 @@ export default function CompScoreOverview() {
         <div className="max-w-7xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <Badge className="mb-4" variant="outline">CompScore Overview</Badge>
+            <Badge className="mb-4" variant="outline">CECR Score Overview</Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-navy-900 mb-6">
-              What is <span className="gradient-text">CompScore</span>?
+              What is <span className="gradient-text">CECR Score</span>?
             </h1>
             <p className="text-xl text-navy-600 max-w-3xl mx-auto mb-8">
-              CompScore is your marketing performance score from 0-100, showing exactly how your campaigns 
-              compare to industry benchmarks across key metrics like ROAS, CTR, and CPA.
+              CECR Score is your marketing performance score from 0-100, showing exactly how your campaigns 
+              compare to industry benchmarks across Creative, Engagement, Conversion, and Revenue metrics.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link to="/demo">See CompScore in Action</Link>
+                <Link to="/demo">See CECR Score in Action</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link to="/AECRscore/algorithm">View Algorithm <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/cecrScore/algorithm">View Algorithm <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function CompScoreOverview() {
                 <div className="w-48 h-48 rounded-full bg-white shadow-lg flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-5xl font-bold gradient-text">87</div>
-                    <div className="text-navy-600 font-semibold">CompScore</div>
+                    <div className="text-navy-600 font-semibold">CECR Score</div>
                     <div className="text-sm text-navy-500">Strong Performance</div>
                   </div>
                 </div>
@@ -93,9 +93,9 @@ export default function CompScoreOverview() {
           {/* How It Works */}
           <div className="mb-16">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-navy-900 mb-4">How CompScore Works</h2>
+              <h2 className="text-3xl font-bold text-navy-900 mb-4">How CECR Score Works</h2>
               <p className="text-navy-600 max-w-2xl mx-auto">
-                CompScore analyzes your campaign performance across multiple dimensions and compares it 
+                CECR Score analyzes your campaign performance across multiple dimensions and compares it 
                 to our database of 50,000+ campaigns in your industry.
               </p>
             </div>
@@ -115,15 +115,15 @@ export default function CompScoreOverview() {
             </div>
           </div>
 
-          {/* What CompScore Measures */}
+          {/* What CECR Score Measures */}
           <div className="bg-navy-50 rounded-2xl p-8 mb-16">
-            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">What CompScore Measures</h2>
+            <h2 className="text-3xl font-bold text-navy-900 mb-8 text-center">What CECR Score Measures</h2>
             
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="text-xl font-semibold text-navy-900 mb-4">Core Metrics</h3>
                 <div className="space-y-3">
-                  {['ROAS (Return on Ad Spend)', 'CTR (Click-Through Rate)', 'CPA (Cost Per Acquisition)', 'CVR (Conversion Rate)'].map((metric) => (
+                  {['CTR (Click-Through Rate)', 'Bounce Rate', 'CVR (Conversion Rate)', 'ROAS (Return on Ad Spend)'].map((metric) => (
                     <div key={metric} className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-success mr-3" />
                       <span className="text-navy-700">{metric}</span>
@@ -148,16 +148,16 @@ export default function CompScoreOverview() {
 
           {/* CTA Section */}
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-navy-900 mb-4">Ready to See Your CompScore?</h2>
+            <h2 className="text-3xl font-bold text-navy-900 mb-4">Ready to See Your CECR Score?</h2>
             <p className="text-navy-600 mb-8 max-w-2xl mx-auto">
-              Connect your marketing accounts and get your CompScore in under 2 minutes.
+              Connect your marketing accounts and get your CECR Score in under 2 minutes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link to="/signup">Get My CompScore Free</Link>
+                <Link to="/signup">Get My CECR Score Free</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link to="/compscore/examples">View Examples</Link>
+                <Link to="/cecrScore/examples">View Examples</Link>
               </Button>
             </div>
           </div>
