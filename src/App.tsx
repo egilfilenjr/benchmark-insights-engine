@@ -42,6 +42,11 @@ import AecrAlgorithm from "./pages/AecrAlgorithm";
 import CompScoreExamples from "./pages/CompScoreExamples";
 import Testimonials from "./pages/Testimonials";
 import TrustCenter from "./pages/TrustCenter";
+import Blog from "./pages/Blog";
+import ApiDocs from "./pages/ApiDocs";
+import Status from "./pages/Status";
+import Changelog from "./pages/Changelog";
+import Glossary from "./pages/Glossary";
 
 // Protected app pages
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -99,6 +104,11 @@ const App = () => (
             <Route path="/compscore/examples" element={<CompScoreExamples />} />
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/trust-center" element={<TrustCenter />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/api-docs" element={<ApiDocs />} />
+            <Route path="/status" element={<Status />} />
+            <Route path="/changelog" element={<Changelog />} />
+            <Route path="/glossary" element={<Glossary />} />
             
             {/* Industries and Use Cases */}
             <Route path="/industries" element={<Industries />} />
