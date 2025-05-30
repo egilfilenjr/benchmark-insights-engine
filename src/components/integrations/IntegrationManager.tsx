@@ -12,19 +12,23 @@ import {
   CheckCircle, 
   XCircle, 
   AlertTriangle,
-  ExternalLink 
+  ExternalLink,
+  Clock,
+  Database
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Integration {
   id: string;
   platform: string;
+  provider: string;
   status: 'active' | 'error' | 'pending';
   access_token?: string;
   last_synced_at?: string;
   expires_at?: string;
   account_id?: string;
   account_name?: string;
+  connected_at?: string;
 }
 
 interface IntegrationConfig {
@@ -132,12 +136,14 @@ export default function IntegrationManager() {
       const transformedData: Integration[] = (data || []).map(item => ({
         id: item.id,
         platform: item.platform,
+        provider: item.provider || item.platform, // Fallback to platform if provider is null
         status: (['active', 'error', 'pending'].includes(item.status) ? item.status : 'pending') as 'active' | 'error' | 'pending',
         access_token: item.access_token,
         last_synced_at: item.last_synced_at,
         expires_at: item.expires_at,
         account_id: item.account_id,
-        account_name: item.account_name
+        account_name: item.account_name,
+        connected_at: item.connected_at
       }));
       
       setIntegrations(transformedData);
@@ -175,6 +181,15 @@ export default function IntegrationManager() {
           title: "Sync Started",
           description: `${INTEGRATION_CONFIGS[platform]?.name} data sync initiated`,
         });
+
+        // Update the last_synced_at timestamp
+        await supabase
+          .from('oauth_accounts')
+          .update({ last_synced_at: new Date().toISOString() })
+          .eq('user_id', user?.id)
+          .eq('provider', platform);
+
+        loadIntegrations();
       } else {
         throw new Error('Sync failed');
       }
@@ -273,19 +288,24 @@ export default function IntegrationManager() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading integrations...</div>;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+        <span>Loading integrations...</span>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {Object.entries(INTEGRATION_CONFIGS).map(([platform, config]) => {
-          const integration = integrations.find(i => i.platform === platform);
+          const integration = integrations.find(i => i.provider === platform || i.platform === platform);
           const isConnected = !!integration;
           const isSyncing = syncing[platform];
 
           return (
-            <Card key={platform} className={!isConnected ? "opacity-75" : ""}>
+            <Card key={platform} className={`hover:shadow-md transition-shadow ${!isConnected ? "opacity-75" : ""}`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -306,8 +326,16 @@ export default function IntegrationManager() {
                       </div>
                     )}
                     
+                    {integration.connected_at && (
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        Connected: {formatDistanceToNow(new Date(integration.connected_at), { addSuffix: true })}
+                      </div>
+                    )}
+
                     {integration.last_synced_at && (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Database className="w-3 h-3" />
                         Last synced: {formatDistanceToNow(new Date(integration.last_synced_at), { addSuffix: true })}
                       </div>
                     )}
@@ -344,7 +372,7 @@ export default function IntegrationManager() {
                   <div className="space-y-3">
                     <Alert>
                       <AlertDescription>
-                        Connect your {config.name} account to sync performance data
+                        Connect your {config.name} account to sync performance data and access real-time insights.
                       </AlertDescription>
                     </Alert>
                     
@@ -371,6 +399,20 @@ export default function IntegrationManager() {
           );
         })}
       </div>
+
+      {integrations.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Integration Status</h3>
+          <div className="text-sm text-muted-foreground">
+            You have {integrations.filter(i => i.status === 'active').length} active integration(s) connected.
+            {integrations.some(i => i.expires_at && new Date(i.expires_at) < new Date()) && (
+              <span className="text-orange-600 ml-2">
+                Some integrations may need re-authorization.
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

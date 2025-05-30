@@ -927,6 +927,48 @@ export type Database = {
         }
         Relationships: []
       }
+      integrations: {
+        Row: {
+          config_json: Json | null
+          connected_by: string | null
+          created_at: string | null
+          id: string
+          initial_sync_completed_at: string | null
+          last_sync_at: string | null
+          provider: string
+          scope_json: Json | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config_json?: Json | null
+          connected_by?: string | null
+          created_at?: string | null
+          id?: string
+          initial_sync_completed_at?: string | null
+          last_sync_at?: string | null
+          provider: string
+          scope_json?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config_json?: Json | null
+          connected_by?: string | null
+          created_at?: string | null
+          id?: string
+          initial_sync_completed_at?: string | null
+          last_sync_at?: string | null
+          provider?: string
+          scope_json?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       kpis: {
         Row: {
           id: string
@@ -995,12 +1037,15 @@ export type Database = {
           access_token: string | null
           account_id: string | null
           account_name: string | null
+          connected_at: string | null
           created_at: string | null
           expires_at: string | null
           id: string
           last_synced_at: string | null
           platform: string
+          provider: string
           refresh_token: string | null
+          scope_json: Json | null
           status: string | null
           sync_error: string | null
           team_id: string
@@ -1010,12 +1055,15 @@ export type Database = {
           access_token?: string | null
           account_id?: string | null
           account_name?: string | null
+          connected_at?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
           last_synced_at?: string | null
           platform: string
+          provider: string
           refresh_token?: string | null
+          scope_json?: Json | null
           status?: string | null
           sync_error?: string | null
           team_id: string
@@ -1025,12 +1073,15 @@ export type Database = {
           access_token?: string | null
           account_id?: string | null
           account_name?: string | null
+          connected_at?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
           last_synced_at?: string | null
           platform?: string
+          provider?: string
           refresh_token?: string | null
+          scope_json?: Json | null
           status?: string | null
           sync_error?: string | null
           team_id?: string
@@ -1153,6 +1204,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rate_limits: {
+        Row: {
+          calls_used_today: number | null
+          created_at: string | null
+          daily_calls_allowed: number | null
+          id: string
+          last_reset_date: string | null
+          provider: string
+          user_id: string
+        }
+        Insert: {
+          calls_used_today?: number | null
+          created_at?: string | null
+          daily_calls_allowed?: number | null
+          id?: string
+          last_reset_date?: string | null
+          provider: string
+          user_id: string
+        }
+        Update: {
+          calls_used_today?: number | null
+          created_at?: string | null
+          daily_calls_allowed?: number | null
+          id?: string
+          last_reset_date?: string | null
+          provider?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       recommendations: {
         Row: {
