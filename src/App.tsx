@@ -29,6 +29,13 @@ import Resources from "./pages/Resources";
 import Integrations from "./pages/Integrations";
 import Definitions from "./pages/Definitions";
 import Guides from "./pages/Guides";
+import Features from "./pages/Features";
+import CaseStudies from "./pages/CaseStudies";
+import Demo from "./pages/Demo";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 // Protected app pages
 import Dashboard from "./pages/Dashboard/Dashboard";
