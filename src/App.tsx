@@ -129,6 +129,26 @@ import OAuthCallback from "./pages/oauth/callback";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
+// Import the newly created dashboard tab pages and router wrapper
+import DashboardGoogleAnalytics from "./pages/Dashboard/GoogleAnalyticsDashboard";
+import DashboardGoogleAds from "./pages/Dashboard/GoogleAdsDashboard";
+import DashboardMetaAds from "./pages/Dashboard/MetaAdsDashboard";
+import DashboardLinkedInAds from "./pages/Dashboard/LinkedInAdsDashboard";
+import DashboardShopify from "./pages/Dashboard/ShopifyDashboard";
+
+// Each integration's tab pages
+import GoogleAnalyticsOverview from "./pages/Dashboard/tabs/GoogleAnalyticsOverview";
+import GoogleAnalyticsFunnel from "./pages/Dashboard/tabs/GoogleAnalyticsFunnel";
+import GoogleAnalyticsTrends from "./pages/Dashboard/tabs/GoogleAnalyticsTrends";
+import GoogleAnalyticsAlerts from "./pages/Dashboard/tabs/GoogleAnalyticsAlerts";
+
+// (similarly for others -- only stubs needed for now)
+import GoogleAdsOverview from "./pages/Dashboard/tabs/GoogleAdsOverview";
+import GoogleAdsMediaMix from "./pages/Dashboard/tabs/GoogleAdsMediaMix";
+import GoogleAdsTrends from "./pages/Dashboard/tabs/GoogleAdsTrends";
+import GoogleAdsEfficiency from "./pages/Dashboard/tabs/GoogleAdsEfficiency";
+import GoogleAdsAlerts from "./pages/Dashboard/tabs/GoogleAdsAlerts";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -198,26 +218,25 @@ const App = () => (
             {/* OAuth callback */}
             <Route path="/oauth/callback" element={<OAuthCallback />} />
 
-            {/* Protected app routes */}
+            {/* Dashboard container route */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/:platform" element={<Dashboard />} />
-              <Route path="/benchmark-explorer" element={<BenchmarkExplorer />} />
-              <Route path="/benchmarks/app" element={<Benchmarks />} />
-              <Route path="/recommendations" element={<Recommendations />} />
-              <Route path="/opportunities" element={<Opportunities />} />
-              <Route path="/trends" element={<Trends />} />
-              <Route path="/media-mix" element={<MediaMix />} />
-              <Route path="/my-data" element={<MyData />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/saved-views" element={<SavedViews />} />
-              <Route path="/alerts" element={<Alerts />} />
-              <Route path="/experiments" element={<Experiments />} />
-              <Route path="/team-access" element={<TeamAccess />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/toolbox/app" element={<Toolbox />} />
-              <Route path="/sync-history" element={<SyncHistory />} />
-              <Route path="/integrations" element={<Integrations />} />
+              {/* Google Analytics tabs */}
+              <Route path="/dashboard/googleanalytics" element={<DashboardGoogleAnalytics />}>
+                <Route path="overview" element={<GoogleAnalyticsOverview />} />
+                <Route path="funnel" element={<GoogleAnalyticsFunnel />} />
+                <Route path="trends" element={<GoogleAnalyticsTrends />} />
+                <Route path="alerts" element={<GoogleAnalyticsAlerts />} />
+              </Route>
+              {/* Google Ads tabs */}
+              <Route path="/dashboard/googleads" element={<DashboardGoogleAds />}>
+                <Route path="overview" element={<GoogleAdsOverview />} />
+                <Route path="media-mix" element={<GoogleAdsMediaMix />} />
+                <Route path="trends" element={<GoogleAdsTrends />} />
+                <Route path="efficiency" element={<GoogleAdsEfficiency />} />
+                <Route path="alerts" element={<GoogleAdsAlerts />} />
+              </Route>
+              {/* Add similar for Meta Ads, LinkedIn Ads, Shopify with their sub-routes... */}
             </Route>
 
             {/* Catch-all route */}
