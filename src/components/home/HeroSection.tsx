@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -7,7 +8,7 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
             <div className="mb-4">
-              <span className="inline-block px-3 py-1 text-sm font-medium bg-lilac-100 text-lilac rounded-full mb-2">The #1 Marketing Performance Copilot</span>
+              <span className="inline-block px-3 py-1 text-sm font-medium bg-lilac-100 text-lilac rounded-full mb-2">The #1 Marketing Comparison Tool</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 leading-tight mb-6">
               Marketing performance <span className="gradient-text">insights</span> that drive growth
