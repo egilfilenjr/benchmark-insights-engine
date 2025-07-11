@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, Lightbulb, PieChart, BarChart3, LineChart, Filter } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, Lightbulb, PieChart, BarChart3, LineChart, Filter, Settings } from 'lucide-react';
 import { LineChart as RechartsLineChart, BarChart as RechartsBarChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useGA4Integration } from '@/hooks/useGA4Integration';
 import { supabase } from '@/lib/supabase';
@@ -74,15 +74,29 @@ export default function GA4AnalyticsTab() {
   const [chartMetric1, setChartMetric1] = useState('sessions');
   const [chartMetric2, setChartMetric2] = useState('none');
 
-  // Available metrics for chart
+  // Customizable metric cards state
+  const [metricCard1, setMetricCard1] = useState('users');
+  const [metricCard2, setMetricCard2] = useState('sessions');
+  const [metricCard3, setMetricCard3] = useState('pageviews');
+  const [metricCard4, setMetricCard4] = useState('conversions');
+
+  // Available metrics for chart and cards
   const chartMetricOptions = [
-    { value: 'sessions', label: 'Sessions', color: '#8884d8' },
-    { value: 'users', label: 'Users', color: '#82ca9d' },
-    { value: 'pageviews', label: 'Page Views', color: '#ffc658' },
-    { value: 'bounceRate', label: 'Bounce Rate (%)', color: '#ff7c7c' },
-    { value: 'conversionRate', label: 'Conversion Rate (%)', color: '#8dd1e1' },
-    { value: 'goalCompletions', label: 'Goal Completions', color: '#d084d0' },
-    { value: 'newUserRate', label: 'New User Rate (%)', color: '#ffb347' }
+    { value: 'sessions', label: 'Sessions', color: '#8884d8', icon: MousePointer },
+    { value: 'users', label: 'Users', color: '#82ca9d', icon: Users },
+    { value: 'pageviews', label: 'Page Views', color: '#ffc658', icon: MousePointer },
+    { value: 'bounceRate', label: 'Bounce Rate (%)', color: '#ff7c7c', icon: TrendingDown },
+    { value: 'conversionRate', label: 'Conversion Rate (%)', color: '#8dd1e1', icon: Target },
+    { value: 'goalCompletions', label: 'Goal Completions', color: '#d084d0', icon: Target },
+    { value: 'newUserRate', label: 'New User Rate (%)', color: '#ffb347', icon: Users },
+    { value: 'avgSessionDuration', label: 'Avg Session Duration', color: '#ff9999', icon: Clock },
+    { value: 'conversions', label: 'Conversions', color: '#87ceeb', icon: Target },
+    { value: 'revenue', label: 'Revenue', color: '#dda0dd', icon: TrendingUp },
+    { value: 'ctr', label: 'Click-through Rate (%)', color: '#f0e68c', icon: MousePointer },
+    { value: 'impressions', label: 'Impressions', color: '#ffa07a', icon: Zap },
+    { value: 'clicks', label: 'Clicks', color: '#20b2aa', icon: MousePointer },
+    { value: 'cpc', label: 'Cost Per Click', color: '#da70d6', icon: TrendingUp },
+    { value: 'engagement', label: 'Engagement Rate (%)', color: '#ff6347', icon: Users }
   ];
 
   useEffect(() => {
@@ -258,42 +272,54 @@ export default function GA4AnalyticsTab() {
     return ((current - previous) / previous) * 100;
   };
 
-  const getComparisonData = (metric: keyof GA4Metrics['previousPeriod']) => {
-    if (!metrics) return { value: 0, change: 0, isPositive: true };
+  const getComparisonData = (metric: string) => {
+    if (!metrics) return { value: 0, change: 0, isPositive: true, label: 'vs last period' };
     
+    const currentValue = getMetricValue(metric);
     let previousValue: number;
     let changeLabel: string;
     
+    // Generate mock previous values for new metrics
+    const mockPreviousMultiplier = 0.85 + Math.random() * 0.3; // ±15% variation
+    
     switch (comparisonType) {
       case 'previous-period':
-        previousValue = metrics.previousPeriod[metric];
+        if (metric in metrics.previousPeriod) {
+          previousValue = metrics.previousPeriod[metric as keyof GA4Metrics['previousPeriod']];
+        } else {
+          previousValue = currentValue * mockPreviousMultiplier;
+        }
         changeLabel = 'vs last period';
         break;
       case 'previous-year':
-        previousValue = metrics.previousYear[metric];
+        if (metric in metrics.previousYear) {
+          previousValue = metrics.previousYear[metric as keyof GA4Metrics['previousYear']];
+        } else {
+          previousValue = currentValue * (mockPreviousMultiplier * 0.9); // Slightly more variation for year
+        }
         changeLabel = 'vs last year';
         break;
       case 'industry-benchmark':
         // For industry benchmark, we'll use benchmark data
-        const benchmark = benchmarks.find(b => b.metric.toLowerCase().includes(metric.toString().toLowerCase()));
+        const benchmark = benchmarks.find(b => b.metric.toLowerCase().includes(metric.toLowerCase()));
         if (benchmark) {
-          const change = ((metrics[metric as keyof GA4Metrics] as number - benchmark.benchmarkMedian) / benchmark.benchmarkMedian) * 100;
+          const change = ((currentValue - benchmark.benchmarkMedian) / benchmark.benchmarkMedian) * 100;
           return {
             value: benchmark.benchmarkMedian,
-            change: change,
+            change: Math.abs(change),
             isPositive: change >= 0,
             label: 'vs industry median'
           };
         }
-        previousValue = metrics.previousPeriod[metric];
-        changeLabel = 'vs last period';
+        previousValue = currentValue * mockPreviousMultiplier;
+        changeLabel = 'vs industry';
         break;
       default:
-        previousValue = metrics.previousPeriod[metric];
+        previousValue = currentValue * mockPreviousMultiplier;
         changeLabel = 'vs last period';
     }
     
-    const change = calculatePercentageChange(metrics[metric as keyof GA4Metrics] as number, previousValue);
+    const change = calculatePercentageChange(currentValue, previousValue);
     const isPositive = metric === 'bounceRate' ? change < 0 : change > 0; // Lower bounce rate is better
     
     return {
@@ -309,6 +335,52 @@ export default function GA4AnalyticsTab() {
     if (value !== 'custom') {
       setStartDate('');
       setEndDate('');
+    }
+  };
+
+  // Helper function to get metric value from metrics object
+  const getMetricValue = (metricKey: string): number => {
+    if (!metrics) return 0;
+    
+    switch (metricKey) {
+      case 'users': return metrics.users;
+      case 'sessions': return metrics.sessions;
+      case 'pageviews': return metrics.pageviews;
+      case 'bounceRate': return metrics.bounceRate;
+      case 'conversionRate': return metrics.conversionRate;
+      case 'goalCompletions': return metrics.goalCompletions;
+      case 'newUserRate': return metrics.newUserRate;
+      case 'avgSessionDuration': return metrics.avgSessionDuration;
+      case 'conversions': return metrics.goalCompletions; // Using goalCompletions as conversions
+      case 'revenue': return 45789; // Mock revenue data
+      case 'ctr': return 3.2; // Mock CTR data
+      case 'impressions': return 125000; // Mock impressions
+      case 'clicks': return 4200; // Mock clicks
+      case 'cpc': return 1.25; // Mock CPC
+      case 'engagement': return 67.8; // Mock engagement rate
+      default: return 0;
+    }
+  };
+
+  // Helper function to format metric values
+  const formatMetricValue = (value: number, metricKey: string): string => {
+    switch (metricKey) {
+      case 'revenue':
+        return `$${value.toLocaleString()}`;
+      case 'bounceRate':
+      case 'conversionRate':
+      case 'newUserRate':
+      case 'ctr':
+      case 'engagement':
+        return `${value.toFixed(1)}%`;
+      case 'avgSessionDuration':
+        const minutes = Math.floor(value / 60);
+        const seconds = value % 60;
+        return `${minutes}m ${seconds}s`;
+      case 'cpc':
+        return `$${value.toFixed(2)}`;
+      default:
+        return value.toLocaleString();
     }
   };
 
@@ -354,28 +426,37 @@ export default function GA4AnalyticsTab() {
         const metric1Data = chartMetricOptions.find(m => m.value === chartMetric1);
         if (metric1Data) {
           let value = 0;
+          const baseValue = getMetricValue(chartMetric1);
+          const variation = (Math.random() - 0.5) * 0.2; // ±10% variation
+          
           switch (chartMetric1) {
             case 'sessions':
-              value = Math.round(baseSessions * trend);
-              break;
             case 'users':
-              value = Math.round(baseUsers * trend);
-              break;
             case 'pageviews':
-              value = Math.round((metrics.pageviews / dataPoints) * trend);
+            case 'goalCompletions':
+            case 'conversions':
+            case 'impressions':
+            case 'clicks':
+              value = Math.round((baseValue / dataPoints) * trend * (1 + variation));
               break;
             case 'bounceRate':
-              value = Math.round(metrics.bounceRate * (1 + (Math.random() - 0.5) * 0.1));
-              break;
             case 'conversionRate':
-              value = Number((metrics.conversionRate * (1 + (Math.random() - 0.5) * 0.2)).toFixed(2));
-              break;
-            case 'goalCompletions':
-              value = Math.round((metrics.goalCompletions / dataPoints) * trend);
-              break;
             case 'newUserRate':
-              value = Math.round(metrics.newUserRate * (1 + (Math.random() - 0.5) * 0.1));
+            case 'ctr':
+            case 'engagement':
+              value = Number((baseValue * (1 + variation)).toFixed(2));
               break;
+            case 'avgSessionDuration':
+              value = Math.round(baseValue * (1 + variation));
+              break;
+            case 'revenue':
+              value = Math.round((baseValue / dataPoints) * trend * (1 + variation));
+              break;
+            case 'cpc':
+              value = Number((baseValue * (1 + variation)).toFixed(2));
+              break;
+            default:
+              value = Math.round((baseValue / dataPoints) * trend);
           }
           dataPoint[chartMetric1] = value;
         }
@@ -385,28 +466,37 @@ export default function GA4AnalyticsTab() {
         const metric2Data = chartMetricOptions.find(m => m.value === chartMetric2);
         if (metric2Data) {
           let value = 0;
+          const baseValue = getMetricValue(chartMetric2);
+          const variation = (Math.random() - 0.5) * 0.2; // ±10% variation
+          
           switch (chartMetric2) {
             case 'sessions':
-              value = Math.round(baseSessions * trend);
-              break;
             case 'users':
-              value = Math.round(baseUsers * trend);
-              break;
             case 'pageviews':
-              value = Math.round((metrics.pageviews / dataPoints) * trend);
+            case 'goalCompletions':
+            case 'conversions':
+            case 'impressions':
+            case 'clicks':
+              value = Math.round((baseValue / dataPoints) * trend * (1 + variation));
               break;
             case 'bounceRate':
-              value = Math.round(metrics.bounceRate * (1 + (Math.random() - 0.5) * 0.1));
-              break;
             case 'conversionRate':
-              value = Number((metrics.conversionRate * (1 + (Math.random() - 0.5) * 0.2)).toFixed(2));
-              break;
-            case 'goalCompletions':
-              value = Math.round((metrics.goalCompletions / dataPoints) * trend);
-              break;
             case 'newUserRate':
-              value = Math.round(metrics.newUserRate * (1 + (Math.random() - 0.5) * 0.1));
+            case 'ctr':
+            case 'engagement':
+              value = Number((baseValue * (1 + variation)).toFixed(2));
               break;
+            case 'avgSessionDuration':
+              value = Math.round(baseValue * (1 + variation));
+              break;
+            case 'revenue':
+              value = Math.round((baseValue / dataPoints) * trend * (1 + variation));
+              break;
+            case 'cpc':
+              value = Number((baseValue * (1 + variation)).toFixed(2));
+              break;
+            default:
+              value = Math.round((baseValue / dataPoints) * trend);
           }
           dataPoint[chartMetric2] = value;
         }
@@ -762,89 +852,59 @@ export default function GA4AnalyticsTab() {
           ) : metrics ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-5 w-5 text-blue-600" />
-                      <span className="text-sm text-muted-foreground">Users</span>
-                    </div>
-                    <div className="mt-2">
-                      <div className="text-2xl font-bold">{formatNumber(metrics.users)}</div>
-                      {(() => {
-                        const comparison = getComparisonData('users');
-                        return (
-                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
+                {[
+                  { key: 'card1', state: metricCard1, setter: setMetricCard1 },
+                  { key: 'card2', state: metricCard2, setter: setMetricCard2 },
+                  { key: 'card3', state: metricCard3, setter: setMetricCard3 },
+                  { key: 'card4', state: metricCard4, setter: setMetricCard4 }
+                ].map(({ key, state, setter }) => {
+                  const selectedMetric = chartMetricOptions.find(m => m.value === state);
+                  if (!selectedMetric) return null;
+                  
+                  const IconComponent = selectedMetric.icon;
+                  const metricValue = getMetricValue(state);
+                  const formattedValue = formatMetricValue(metricValue, state);
+                  
+                  return (
+                    <Card key={key}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <IconComponent className="h-5 w-5 text-blue-600" />
+                            <span className="text-sm text-muted-foreground">{selectedMetric.label}</span>
                           </div>
-                        );
-                      })()}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-2">
-                      <MousePointer className="h-5 w-5 text-purple-600" />
-                      <span className="text-sm text-muted-foreground">Sessions</span>
-                    </div>
-                    <div className="mt-2">
-                      <div className="text-2xl font-bold">{formatNumber(metrics.sessions)}</div>
-                      {(() => {
-                        const comparison = getComparisonData('sessions');
-                        return (
-                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-5 w-5 text-orange-600" />
-                      <span className="text-sm text-muted-foreground">Avg Session Duration</span>
-                    </div>
-                    <div className="mt-2">
-                      <div className="text-2xl font-bold">{formatDuration(metrics.avgSessionDuration)}</div>
-                      {(() => {
-                        const comparison = getComparisonData('avgSessionDuration');
-                        return (
-                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-2">
-                      <Target className="h-5 w-5 text-green-600" />
-                      <span className="text-sm text-muted-foreground">Conversion Rate</span>
-                    </div>
-                    <div className="mt-2">
-                      <div className="text-2xl font-bold">{metrics.conversionRate}%</div>
-                      {(() => {
-                        const comparison = getComparisonData('conversionRate');
-                        return (
-                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </CardContent>
-                </Card>
+                          <Select value={state} onValueChange={setter}>
+                            <SelectTrigger className="w-8 h-8 p-0 border-none">
+                              <Settings className="h-4 w-4" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {chartMetricOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  <div className="flex items-center gap-2">
+                                    <option.icon className="h-4 w-4" />
+                                    {option.label}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="mt-2">
+                          <div className="text-2xl font-bold">{formattedValue}</div>
+                          {(() => {
+                            const comparison = getComparisonData(state);
+                            return (
+                              <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                                {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
