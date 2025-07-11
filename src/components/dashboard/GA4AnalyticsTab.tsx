@@ -292,6 +292,48 @@ export default function GA4AnalyticsTab() {
     return Math.ceil(data.length / pivotRowsPerPage);
   };
 
+  // Load mock data on component mount
+  useEffect(() => {
+    if (!integrationLoading && integration) {
+      // Simulate loading time
+      setTimeout(() => {
+        setMetrics({
+          sessions: 125846,
+          users: 89432,
+          pageviews: 324567,
+          bounceRate: 42.5,
+          avgSessionDuration: 156,
+          conversionRate: 3.8,
+          ecommerceConversionRate: 2.1,
+          revenue: 45789,
+          goalCompletions: 4785,
+          newUserRate: 67.2,
+          previousPeriod: {
+            sessions: 118642,
+            users: 84219,
+            pageviews: 298432,
+            bounceRate: 45.1,
+            avgSessionDuration: 142,
+            conversionRate: 3.4,
+            goalCompletions: 4234,
+            newUserRate: 63.8
+          },
+          previousYear: {
+            sessions: 98456,
+            users: 72134,
+            pageviews: 256789,
+            bounceRate: 48.3,
+            avgSessionDuration: 128,
+            conversionRate: 2.9,
+            goalCompletions: 3567,
+            newUserRate: 58.4
+          }
+        });
+        setLoading(false);
+      }, 1000);
+    }
+  }, [integration, integrationLoading]);
+
   if (!metrics) {
     return (
       <Card>
