@@ -121,17 +121,24 @@ export function useGA4Integration() {
 
     setSyncing(true);
     try {
-      // Mock sync for now since the edge function doesn't exist
-      // In a real implementation, this would call a Supabase edge function
       console.log('Syncing GA4 data for user:', user.id);
       
-      // Simulate sync delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Trigger GA4 sync job
+      await supabase.functions.invoke('jobs/sync_ga4', {
+        body: { 
+          user_id: user.id,
+          job_type: 'manual_sync',
+          date_range: 'last_30_days'
+        }
+      });
       
       // Update last sync time
       await supabase
         .from('oauth_accounts')
-        .update({ last_synced_at: new Date().toISOString() })
+        .update({ 
+          last_synced_at: new Date().toISOString(),
+          status: 'active'
+        })
         .eq('user_id', user.id)
         .eq('platform', 'google_analytics');
       

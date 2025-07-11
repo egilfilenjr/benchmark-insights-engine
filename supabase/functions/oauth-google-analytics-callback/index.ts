@@ -84,9 +84,21 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
+    // First, delete any existing Google Analytics connection for this user
+    const { error: deleteError } = await supabase
+      .from('oauth_accounts')
+      .delete()
+      .eq('user_id', user_id)
+      .eq('provider', 'google_analytics');
+    
+    if (deleteError) {
+      console.warn('⚠️ Warning deleting old connection:', deleteError);
+    }
+    
+    // Insert new connection
     const { error: insertError } = await supabase
       .from('oauth_accounts')
-      .upsert({
+      .insert({
         user_id,
         team_id: company_id,
         provider: 'google_analytics',
@@ -96,9 +108,9 @@ Deno.serve(async (req) => {
         expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
         status: 'active',
         connected_at: new Date().toISOString(),
+        account_id: properties.length > 0 ? properties[0].name : 'unknown',
+        account_name: properties.length > 0 ? properties[0].displayName : 'GA4 Property',
         scope_json: { properties: properties.map((p: any) => ({ id: p.name, displayName: p.displayName })) }
-      }, {
-        onConflict: 'user_id,provider'
       });
 
     if (insertError) {
@@ -108,18 +120,22 @@ Deno.serve(async (req) => {
 
     console.log('✅ OAuth account stored successfully');
 
-    // Trigger initial sync
+    // Trigger initial GA4 sync
     try {
-      await supabase.functions.invoke('sync-campaign-data', {
-        body: { user_id, provider: 'google_analytics' }
+      await supabase.functions.invoke('jobs/sync_ga4', {
+        body: { 
+          user_id, 
+          job_type: 'full_sync',
+          date_range: 'last_30_days'
+        }
       });
-      console.log('✅ Initial sync triggered');
+      console.log('✅ Initial GA4 sync triggered');
     } catch (syncError) {
       console.warn('⚠️ Initial sync failed, but OAuth connection was successful:', syncError);
     }
 
     // Redirect back to integrations page with success
-    return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?success=google_analytics_connected`, 302);
+    return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?success=ga4_connected`, 302);
 
   } catch (error) {
     console.error('❌ GA4 OAuth callback error:', error);

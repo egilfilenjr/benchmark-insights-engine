@@ -169,8 +169,8 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
       const { error } = await supabase.functions.invoke('jobs/sync_ga4', {
         body: { 
           user_id: user.id,
-          company_id: user.id,
-          job_type: 'daily_delta'
+          job_type: 'manual_sync',
+          date_range: 'last_30_days'
         }
       });
 

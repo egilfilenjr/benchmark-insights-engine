@@ -19,7 +19,7 @@ export default function IntegrationsPage() {
     const success = searchParams.get('success');
     const error = searchParams.get('error');
 
-    if (success === 'ga4_connected') {
+    if (success === 'ga4_connected' || success === 'google_analytics_connected') {
       toast({
         title: "Google Analytics 4 Connected",
         description: "Successfully connected your GA4 property. Data sync will begin shortly.",

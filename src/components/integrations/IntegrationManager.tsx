@@ -175,7 +175,7 @@ export default function IntegrationManager() {
       let functionName = '';
       switch (platform) {
         case 'google_analytics':
-          functionName = 'oauth/google_analytics/start';
+          functionName = 'oauth-google-analytics-start';
           break;
         case 'google_ads':
           functionName = 'oauth/google_ads/start';
