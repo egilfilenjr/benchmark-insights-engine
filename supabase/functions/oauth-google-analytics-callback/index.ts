@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
         client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
         client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
         code,
-        redirect_uri: `${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/functions/v1/oauth-google-analytics-callback`,
+        redirect_uri: `https://wirxvaxlqdbivfhovrnc.supabase.co/functions/v1/oauth-google-analytics-callback`,
       }),
     });
 
