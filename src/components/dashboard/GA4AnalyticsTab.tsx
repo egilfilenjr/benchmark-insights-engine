@@ -607,6 +607,7 @@ export default function GA4AnalyticsTab() {
 
   // Generate pivot table data
   const generatePivotData = () => {
+    console.log('generatePivotData called', { metrics, pivotDimension, pivotMetric1, pivotMetric2 });
     if (!metrics) return [];
     
     const dimensionData = {
@@ -1951,7 +1952,7 @@ export default function GA4AnalyticsTab() {
                             </tr>
                           </thead>
                           <tbody>
-                            {generatePivotData().map((row, index) => {
+                            {(typeof generatePivotData === 'function' ? generatePivotData() : []).map((row, index) => {
                               const comparisonData = getComparisonData(pivotMetric1);
                               return (
                                 <tr key={index} className="border-b hover:bg-muted/25">
