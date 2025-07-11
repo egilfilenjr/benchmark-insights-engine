@@ -84,6 +84,7 @@ export default function GA4AnalyticsTab() {
 
   // Pivot table state
   const [pivotDimension, setPivotDimension] = useState('source');
+  const [pivotDimension2, setPivotDimension2] = useState('none');
   const [pivotMetric1, setPivotMetric1] = useState('sessions');
   const [pivotMetric2, setPivotMetric2] = useState('none');
   const [pivotCurrentPage, setPivotCurrentPage] = useState(1);
@@ -614,70 +615,99 @@ export default function GA4AnalyticsTab() {
     
     const dimensionData = {
       source: [
-        { dimension: 'Google', sessions: 45820, users: 32150 },
-        { dimension: 'Direct', sessions: 28440, users: 21890 },
-        { dimension: 'Facebook', sessions: 18650, users: 14200 },
-        { dimension: 'LinkedIn', sessions: 12340, users: 9870 },
-        { dimension: 'Twitter', sessions: 8920, users: 7410 },
-        { dimension: 'Email', sessions: 6780, users: 5920 }
+        { dimension: 'Google', dimension2: 'Organic Search', sessions: 45820, users: 32150 },
+        { dimension: 'Direct', dimension2: 'Direct', sessions: 28440, users: 21890 },
+        { dimension: 'Facebook', dimension2: 'Social', sessions: 18650, users: 14200 },
+        { dimension: 'LinkedIn', dimension2: 'Social', sessions: 12340, users: 9870 },
+        { dimension: 'Twitter', dimension2: 'Social', sessions: 8920, users: 7410 },
+        { dimension: 'Email', dimension2: 'Email', sessions: 6780, users: 5920 },
+        { dimension: 'Bing', dimension2: 'Organic Search', sessions: 5420, users: 4320 },
+        { dimension: 'YouTube', dimension2: 'Social', sessions: 4850, users: 3890 }
       ],
       medium: [
-        { dimension: 'Organic Search', sessions: 48920, users: 35640 },
-        { dimension: 'Paid Search', sessions: 22340, users: 17890 },
-        { dimension: 'Social', sessions: 18650, users: 14200 },
-        { dimension: 'Email', sessions: 12450, users: 10230 },
-        { dimension: 'Direct', sessions: 28440, users: 21890 },
-        { dimension: 'Referral', sessions: 8920, users: 7410 }
+        { dimension: 'Organic Search', dimension2: 'Desktop', sessions: 48920, users: 35640 },
+        { dimension: 'Paid Search', dimension2: 'Desktop', sessions: 22340, users: 17890 },
+        { dimension: 'Social', dimension2: 'Mobile', sessions: 18650, users: 14200 },
+        { dimension: 'Email', dimension2: 'Desktop', sessions: 12450, users: 10230 },
+        { dimension: 'Direct', dimension2: 'Mobile', sessions: 28440, users: 21890 },
+        { dimension: 'Referral', dimension2: 'Desktop', sessions: 8920, users: 7410 },
+        { dimension: 'Display', dimension2: 'Mobile', sessions: 6780, users: 5200 },
+        { dimension: 'Video', dimension2: 'Mobile', sessions: 4320, users: 3450 }
       ],
       deviceCategory: [
-        { dimension: 'Desktop', sessions: 68420, users: 48900 },
-        { dimension: 'Mobile', sessions: 52380, users: 39750 },
-        { dimension: 'Tablet', sessions: 18920, users: 14800 }
+        { dimension: 'Desktop', dimension2: 'Windows', sessions: 68420, users: 48900 },
+        { dimension: 'Mobile', dimension2: 'iOS', sessions: 32380, users: 24750 },
+        { dimension: 'Mobile', dimension2: 'Android', sessions: 20000, users: 15000 },
+        { dimension: 'Tablet', dimension2: 'iOS', sessions: 12920, users: 9800 },
+        { dimension: 'Tablet', dimension2: 'Android', sessions: 6000, users: 5000 },
+        { dimension: 'Desktop', dimension2: 'macOS', sessions: 15420, users: 12340 }
       ],
       country: [
-        { dimension: 'United States', sessions: 58420, users: 42380 },
-        { dimension: 'United Kingdom', sessions: 22340, users: 17650 },
-        { dimension: 'Canada', sessions: 18920, users: 14800 },
-        { dimension: 'Australia', sessions: 12450, users: 9870 },
-        { dimension: 'Germany', sessions: 10320, users: 8250 }
+        { dimension: 'United States', dimension2: 'English', sessions: 58420, users: 42380 },
+        { dimension: 'United Kingdom', dimension2: 'English', sessions: 22340, users: 17650 },
+        { dimension: 'Canada', dimension2: 'English', sessions: 18920, users: 14800 },
+        { dimension: 'Australia', dimension2: 'English', sessions: 12450, users: 9870 },
+        { dimension: 'Germany', dimension2: 'German', sessions: 10320, users: 8250 },
+        { dimension: 'France', dimension2: 'French', sessions: 8950, users: 7120 },
+        { dimension: 'Spain', dimension2: 'Spanish', sessions: 6780, users: 5340 },
+        { dimension: 'Netherlands', dimension2: 'Dutch', sessions: 4230, users: 3450 }
       ],
       browser: [
-        { dimension: 'Chrome', sessions: 89420, users: 64200 },
-        { dimension: 'Safari', sessions: 32580, users: 25890 },
-        { dimension: 'Firefox', sessions: 12450, users: 9870 },
-        { dimension: 'Edge', sessions: 8920, users: 7410 }
+        { dimension: 'Chrome', dimension2: 'Desktop', sessions: 69420, users: 49200 },
+        { dimension: 'Chrome', dimension2: 'Mobile', sessions: 20000, users: 15000 },
+        { dimension: 'Safari', dimension2: 'Desktop', sessions: 22580, users: 17890 },
+        { dimension: 'Safari', dimension2: 'Mobile', sessions: 10000, users: 8000 },
+        { dimension: 'Firefox', dimension2: 'Desktop', sessions: 12450, users: 9870 },
+        { dimension: 'Edge', dimension2: 'Desktop', sessions: 8920, users: 7410 }
       ],
       operatingSystem: [
-        { dimension: 'Windows', sessions: 62380, users: 45200 },
-        { dimension: 'macOS', sessions: 38920, users: 29750 },
-        { dimension: 'iOS', sessions: 28440, users: 21890 },
-        { dimension: 'Android', sessions: 18650, users: 14200 }
+        { dimension: 'Windows', dimension2: '10', sessions: 42380, users: 30200 },
+        { dimension: 'Windows', dimension2: '11', sessions: 20000, users: 15000 },
+        { dimension: 'macOS', dimension2: 'Monterey', sessions: 28920, users: 21750 },
+        { dimension: 'macOS', dimension2: 'Big Sur', sessions: 10000, users: 8000 },
+        { dimension: 'iOS', dimension2: '16', sessions: 20440, users: 16890 },
+        { dimension: 'iOS', dimension2: '15', sessions: 8000, users: 6000 },
+        { dimension: 'Android', dimension2: '12', sessions: 12650, users: 9200 },
+        { dimension: 'Android', dimension2: '11', sessions: 6000, users: 5000 }
       ],
       landingPage: [
-        { dimension: '/', sessions: 38920, users: 29750 },
-        { dimension: '/pricing', sessions: 22340, users: 17890 },
-        { dimension: '/features', sessions: 18650, users: 14200 },
-        { dimension: '/about', sessions: 12450, users: 10230 },
-        { dimension: '/contact', sessions: 8920, users: 7410 }
+        { dimension: '/', dimension2: 'Organic Search', sessions: 28920, users: 21750 },
+        { dimension: '/', dimension2: 'Direct', sessions: 10000, users: 8000 },
+        { dimension: '/pricing', dimension2: 'Paid Search', sessions: 15340, users: 12890 },
+        { dimension: '/pricing', dimension2: 'Social', sessions: 7000, users: 6000 },
+        { dimension: '/features', dimension2: 'Organic Search', sessions: 12650, users: 9200 },
+        { dimension: '/features', dimension2: 'Referral', sessions: 6000, users: 5000 },
+        { dimension: '/about', dimension2: 'Direct', sessions: 8450, users: 6230 },
+        { dimension: '/contact', dimension2: 'Email', sessions: 4920, users: 3410 }
       ],
       campaign: [
-        { dimension: 'Summer Sale 2024', sessions: 22340, users: 17890 },
-        { dimension: 'Brand Awareness Q3', sessions: 18650, users: 14200 },
-        { dimension: 'Product Launch', sessions: 15420, users: 12350 },
-        { dimension: 'Holiday Special', sessions: 12450, users: 10230 },
-        { dimension: 'Retargeting Campaign', sessions: 8920, users: 7410 }
+        { dimension: 'Summer Sale 2024', dimension2: 'Google Ads', sessions: 15340, users: 12890 },
+        { dimension: 'Summer Sale 2024', dimension2: 'Facebook Ads', sessions: 7000, users: 6000 },
+        { dimension: 'Brand Awareness Q3', dimension2: 'Google Ads', sessions: 12650, users: 9200 },
+        { dimension: 'Brand Awareness Q3', dimension2: 'LinkedIn Ads', sessions: 6000, users: 5000 },
+        { dimension: 'Product Launch', dimension2: 'Google Ads', sessions: 10420, users: 8350 },
+        { dimension: 'Product Launch', dimension2: 'Twitter Ads', sessions: 5000, users: 4000 },
+        { dimension: 'Holiday Special', dimension2: 'Facebook Ads', sessions: 8450, users: 6230 },
+        { dimension: 'Retargeting Campaign', dimension2: 'Google Ads', sessions: 4920, users: 3410 }
       ],
       ageGroup: [
-        { dimension: '25-34', sessions: 45820, users: 32150 },
-        { dimension: '35-44', sessions: 32340, users: 25890 },
-        { dimension: '45-54', sessions: 22450, users: 18200 },
-        { dimension: '18-24', sessions: 18650, users: 14800 },
-        { dimension: '55-64', sessions: 12450, users: 9870 }
+        { dimension: '25-34', dimension2: 'Male', sessions: 25820, users: 18150 },
+        { dimension: '25-34', dimension2: 'Female', sessions: 20000, users: 14000 },
+        { dimension: '35-44', dimension2: 'Male', sessions: 18340, users: 14890 },
+        { dimension: '35-44', dimension2: 'Female', sessions: 14000, users: 11000 },
+        { dimension: '45-54', dimension2: 'Male', sessions: 12450, users: 9200 },
+        { dimension: '45-54', dimension2: 'Female', sessions: 10000, users: 9000 },
+        { dimension: '18-24', dimension2: 'Male', sessions: 10650, users: 8800 },
+        { dimension: '18-24', dimension2: 'Female', sessions: 8000, users: 6000 }
       ],
       gender: [
-        { dimension: 'Male', sessions: 68420, users: 48900 },
-        { dimension: 'Female', sessions: 62380, users: 45200 },
-        { dimension: 'Unknown', sessions: 8920, users: 7410 }
+        { dimension: 'Male', dimension2: '25-34', sessions: 38420, users: 27900 },
+        { dimension: 'Male', dimension2: '35-44', sessions: 20000, users: 15000 },
+        { dimension: 'Male', dimension2: '45-54', sessions: 10000, users: 8000 },
+        { dimension: 'Female', dimension2: '25-34', sessions: 35380, users: 26200 },
+        { dimension: 'Female', dimension2: '35-44', sessions: 17000, users: 13000 },
+        { dimension: 'Female', dimension2: '45-54', sessions: 10000, users: 8000 },
+        { dimension: 'Unknown', dimension2: 'N/A', sessions: 4920, users: 3410 }
       ]
     };
 
@@ -688,6 +718,7 @@ export default function GA4AnalyticsTab() {
       
       const result: any = {
         dimension: item.dimension,
+        dimension2: pivotDimension2 !== 'none' ? item.dimension2 : undefined,
         metric1: getMetricValue(pivotMetric1) * (item.sessions / 100000) * variation,
       };
       
@@ -1971,9 +2002,9 @@ export default function GA4AnalyticsTab() {
                 <CardContent>
                   <div className="space-y-4">
                     {/* Pivot Table Controls */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
-                        <label className="text-sm font-medium mb-2 block">Dimension</label>
+                        <label className="text-sm font-medium mb-2 block">Primary Dimension</label>
                         <Select value={pivotDimension} onValueChange={setPivotDimension}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select dimension" />
@@ -1984,6 +2015,24 @@ export default function GA4AnalyticsTab() {
                                 {dim.label}
                               </SelectItem>
                             ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Secondary Dimension (Optional)</label>
+                        <Select value={pivotDimension2} onValueChange={setPivotDimension2}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select dimension" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {pivotDimensionOptions
+                              .filter(dim => dim.value !== pivotDimension)
+                              .map(dim => (
+                                <SelectItem key={dim.value} value={dim.value}>
+                                  {dim.label}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -2029,6 +2078,11 @@ export default function GA4AnalyticsTab() {
                               <th className="text-left p-3 font-medium">
                                 {pivotDimensionOptions.find(d => d.value === pivotDimension)?.label || 'Dimension'}
                               </th>
+                              {pivotDimension2 !== 'none' && (
+                                <th className="text-left p-3 font-medium">
+                                  {pivotDimensionOptions.find(d => d.value === pivotDimension2)?.label || 'Secondary Dimension'}
+                                </th>
+                              )}
                               <th className="text-right p-3 font-medium">
                                 {chartMetricOptions.find(m => m.value === pivotMetric1)?.label || 'Metric'}
                               </th>
@@ -2048,6 +2102,9 @@ export default function GA4AnalyticsTab() {
                               return (
                                 <tr key={index} className="border-b hover:bg-muted/25">
                                   <td className="p-3 font-medium">{row.dimension}</td>
+                                  {pivotDimension2 !== 'none' && row.dimension2 && (
+                                    <td className="p-3 text-muted-foreground">{row.dimension2}</td>
+                                  )}
                                   <td className="p-3 text-right">
                                     {formatMetricValue(row.metric1, pivotMetric1)}
                                   </td>
@@ -2083,8 +2140,9 @@ export default function GA4AnalyticsTab() {
                             <SelectContent>
                               <SelectItem value="5">5</SelectItem>
                               <SelectItem value="10">10</SelectItem>
-                              <SelectItem value="25">25</SelectItem>
-                              <SelectItem value="50">50</SelectItem>
+                              <SelectItem value="15">15</SelectItem>
+                              <SelectItem value="20">20</SelectItem>
+                              <SelectItem value="30">30</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
