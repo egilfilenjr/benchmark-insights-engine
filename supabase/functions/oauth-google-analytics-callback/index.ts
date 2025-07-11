@@ -108,9 +108,9 @@ Deno.serve(async (req) => {
         expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
         status: 'active',
         connected_at: new Date().toISOString(),
-        account_id: properties.length > 0 ? properties[0].name : 'unknown',
-        account_name: properties.length > 0 ? properties[0].displayName : 'GA4 Property',
-        scope_json: { properties: properties.map((p: any) => ({ id: p.name, displayName: p.displayName })) }
+         account_id: properties.length > 0 ? properties[0].property || 'unknown' : 'unknown',
+         account_name: properties.length > 0 ? properties[0].displayName || 'GA4 Property' : 'GA4 Property',
+         scope_json: { properties: properties.map((p: any) => ({ id: p.property, displayName: p.displayName })) }
       });
 
     if (insertError) {
