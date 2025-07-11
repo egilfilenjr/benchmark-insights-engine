@@ -82,6 +82,11 @@ export default function GA4AnalyticsTab() {
   const [metricCard3, setMetricCard3] = useState('pageviews');
   const [metricCard4, setMetricCard4] = useState('conversions');
 
+  // Pivot table state
+  const [pivotDimension, setPivotDimension] = useState('source');
+  const [pivotMetric1, setPivotMetric1] = useState('sessions');
+  const [pivotMetric2, setPivotMetric2] = useState('none');
+
   // Available metrics for chart and cards
   const chartMetricOptions = [
     { value: 'sessions', label: 'Sessions', color: '#8884d8', icon: MousePointer },
@@ -99,6 +104,20 @@ export default function GA4AnalyticsTab() {
     { value: 'clicks', label: 'Clicks', color: '#20b2aa', icon: MousePointer },
     { value: 'cpc', label: 'Cost Per Click', color: '#da70d6', icon: TrendingUp },
     { value: 'engagement', label: 'Engagement Rate (%)', color: '#ff6347', icon: Users }
+  ];
+
+  // Available dimensions for pivot table
+  const pivotDimensionOptions = [
+    { value: 'source', label: 'Traffic Source' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'campaign', label: 'Campaign' },
+    { value: 'deviceCategory', label: 'Device Category' },
+    { value: 'country', label: 'Country' },
+    { value: 'browser', label: 'Browser' },
+    { value: 'operatingSystem', label: 'Operating System' },
+    { value: 'landingPage', label: 'Landing Page' },
+    { value: 'ageGroup', label: 'Age Group' },
+    { value: 'gender', label: 'Gender' }
   ];
 
   useEffect(() => {
@@ -584,6 +603,97 @@ export default function GA4AnalyticsTab() {
     }
     
     return data;
+  };
+
+  // Generate pivot table data
+  const generatePivotData = () => {
+    if (!metrics) return [];
+    
+    const dimensionData = {
+      source: [
+        { dimension: 'Google', sessions: 45820, users: 32150 },
+        { dimension: 'Direct', sessions: 28440, users: 21890 },
+        { dimension: 'Facebook', sessions: 18650, users: 14200 },
+        { dimension: 'LinkedIn', sessions: 12340, users: 9870 },
+        { dimension: 'Twitter', sessions: 8920, users: 7410 },
+        { dimension: 'Email', sessions: 6780, users: 5920 }
+      ],
+      medium: [
+        { dimension: 'Organic Search', sessions: 48920, users: 35640 },
+        { dimension: 'Paid Search', sessions: 22340, users: 17890 },
+        { dimension: 'Social', sessions: 18650, users: 14200 },
+        { dimension: 'Email', sessions: 12450, users: 10230 },
+        { dimension: 'Direct', sessions: 28440, users: 21890 },
+        { dimension: 'Referral', sessions: 8920, users: 7410 }
+      ],
+      deviceCategory: [
+        { dimension: 'Desktop', sessions: 68420, users: 48900 },
+        { dimension: 'Mobile', sessions: 52380, users: 39750 },
+        { dimension: 'Tablet', sessions: 18920, users: 14800 }
+      ],
+      country: [
+        { dimension: 'United States', sessions: 58420, users: 42380 },
+        { dimension: 'United Kingdom', sessions: 22340, users: 17650 },
+        { dimension: 'Canada', sessions: 18920, users: 14800 },
+        { dimension: 'Australia', sessions: 12450, users: 9870 },
+        { dimension: 'Germany', sessions: 10320, users: 8250 }
+      ],
+      browser: [
+        { dimension: 'Chrome', sessions: 89420, users: 64200 },
+        { dimension: 'Safari', sessions: 32580, users: 25890 },
+        { dimension: 'Firefox', sessions: 12450, users: 9870 },
+        { dimension: 'Edge', sessions: 8920, users: 7410 }
+      ],
+      operatingSystem: [
+        { dimension: 'Windows', sessions: 62380, users: 45200 },
+        { dimension: 'macOS', sessions: 38920, users: 29750 },
+        { dimension: 'iOS', sessions: 28440, users: 21890 },
+        { dimension: 'Android', sessions: 18650, users: 14200 }
+      ],
+      landingPage: [
+        { dimension: '/', sessions: 38920, users: 29750 },
+        { dimension: '/pricing', sessions: 22340, users: 17890 },
+        { dimension: '/features', sessions: 18650, users: 14200 },
+        { dimension: '/about', sessions: 12450, users: 10230 },
+        { dimension: '/contact', sessions: 8920, users: 7410 }
+      ],
+      campaign: [
+        { dimension: 'Summer Sale 2024', sessions: 22340, users: 17890 },
+        { dimension: 'Brand Awareness Q3', sessions: 18650, users: 14200 },
+        { dimension: 'Product Launch', sessions: 15420, users: 12350 },
+        { dimension: 'Holiday Special', sessions: 12450, users: 10230 },
+        { dimension: 'Retargeting Campaign', sessions: 8920, users: 7410 }
+      ],
+      ageGroup: [
+        { dimension: '25-34', sessions: 45820, users: 32150 },
+        { dimension: '35-44', sessions: 32340, users: 25890 },
+        { dimension: '45-54', sessions: 22450, users: 18200 },
+        { dimension: '18-24', sessions: 18650, users: 14800 },
+        { dimension: '55-64', sessions: 12450, users: 9870 }
+      ],
+      gender: [
+        { dimension: 'Male', sessions: 68420, users: 48900 },
+        { dimension: 'Female', sessions: 62380, users: 45200 },
+        { dimension: 'Unknown', sessions: 8920, users: 7410 }
+      ]
+    };
+
+    const baseData = dimensionData[pivotDimension as keyof typeof dimensionData] || dimensionData.source;
+    
+    return baseData.map(item => {
+      const variation = 0.8 + Math.random() * 0.4; // ±20% variation
+      
+      const result: any = {
+        dimension: item.dimension,
+        metric1: getMetricValue(pivotMetric1) * (item.sessions / 100000) * variation,
+      };
+      
+      if (pivotMetric2 !== 'none') {
+        result.metric2 = getMetricValue(pivotMetric2) * (item.sessions / 100000) * variation;
+      }
+      
+      return result;
+    });
   };
 
   if (integrationLoading) {
@@ -1757,6 +1867,128 @@ export default function GA4AnalyticsTab() {
                   </Card>
                 </TabsContent>
               </Tabs>
+
+              {/* Pivot Table Section */}
+              <Card className="mt-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    Custom Pivot Table
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Pivot Table Controls */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Dimension</label>
+                        <Select value={pivotDimension} onValueChange={setPivotDimension}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select dimension" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {pivotDimensionOptions.map(dim => (
+                              <SelectItem key={dim.value} value={dim.value}>
+                                {dim.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Primary Metric</label>
+                        <Select value={pivotMetric1} onValueChange={setPivotMetric1}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select metric" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {chartMetricOptions.map(metric => (
+                              <SelectItem key={metric.value} value={metric.value}>
+                                {metric.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Secondary Metric (Optional)</label>
+                        <Select value={pivotMetric2} onValueChange={setPivotMetric2}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select metric" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {chartMetricOptions.map(metric => (
+                              <SelectItem key={metric.value} value={metric.value}>
+                                {metric.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Pivot Table Display */}
+                    <div className="border rounded-lg overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b bg-muted/50">
+                              <th className="text-left p-3 font-medium">
+                                {pivotDimensionOptions.find(d => d.value === pivotDimension)?.label || 'Dimension'}
+                              </th>
+                              <th className="text-right p-3 font-medium">
+                                {chartMetricOptions.find(m => m.value === pivotMetric1)?.label || 'Metric'}
+                              </th>
+                              {pivotMetric2 !== 'none' && (
+                                <th className="text-right p-3 font-medium">
+                                  {chartMetricOptions.find(m => m.value === pivotMetric2)?.label}
+                                </th>
+                              )}
+                              <th className="text-right p-3 font-medium">
+                                Change
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {generatePivotData().map((row, index) => {
+                              const comparisonData = getComparisonData(pivotMetric1);
+                              return (
+                                <tr key={index} className="border-b hover:bg-muted/25">
+                                  <td className="p-3 font-medium">{row.dimension}</td>
+                                  <td className="p-3 text-right">
+                                    {formatMetricValue(row.metric1, pivotMetric1)}
+                                  </td>
+                                  {pivotMetric2 !== 'none' && (
+                                    <td className="p-3 text-right">
+                                      {formatMetricValue(row.metric2 || 0, pivotMetric2)}
+                                    </td>
+                                  )}
+                                  <td className="p-3 text-right">
+                                    <div className={`flex items-center justify-end gap-1 ${
+                                      comparisonData.isPositive ? 'text-green-600' : 'text-red-600'
+                                    }`}>
+                                      {comparisonData.isPositive ? (
+                                        <TrendingUp className="h-3 w-3" />
+                                      ) : (
+                                        <TrendingDown className="h-3 w-3" />
+                                      )}
+                                      {comparisonData.change.toFixed(1)}%
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {comparisonData.label}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </>
           ) : (
             <Card>
