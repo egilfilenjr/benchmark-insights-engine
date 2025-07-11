@@ -22,7 +22,30 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error('❌ OAuth error:', error);
-      return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=${encodeURIComponent(error)}`, 302);
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>Connection Failed</title></head>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'oauth-error',
+                  message: 'Google Analytics connection failed: ${error}'
+                }, '*');
+                window.close();
+              } else {
+                window.location.href = '${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=${encodeURIComponent(error)}';
+              }
+            </script>
+            <div style="text-align: center; padding: 50px; font-family: Arial;">
+              <h2>❌ Connection Failed</h2>
+              <p>This window will close automatically...</p>
+            </div>
+          </body>
+        </html>
+      `;
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
     }
 
     if (!code || !state) {
@@ -168,8 +191,37 @@ Deno.serve(async (req) => {
       console.warn('⚠️ Initial sync failed, but OAuth connection was successful:', syncError);
     }
 
-    // Redirect back to integrations page with success
-    return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?success=ga4_connected`, 302);
+    // Send success message to popup opener and close popup
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Google Analytics Connected</title>
+        </head>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'oauth-success',
+                provider: 'google_analytics'
+              }, '*');
+              window.close();
+            } else {
+              // Fallback redirect if not in popup
+              window.location.href = '${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?success=ga4_connected';
+            }
+          </script>
+          <div style="text-align: center; padding: 50px; font-family: Arial;">
+            <h2>✅ Google Analytics Connected!</h2>
+            <p>This window will close automatically...</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    return new Response(html, {
+      headers: { 'Content-Type': 'text/html' }
+    });
 
   } catch (error) {
     console.error('❌ GA4 OAuth callback error:', error);
