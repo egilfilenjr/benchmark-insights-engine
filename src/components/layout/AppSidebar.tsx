@@ -50,7 +50,7 @@ const sidebarItems: SidebarItem[] = [
       { title: 'TikTok Ads', path: '/dashboard/tiktok' },
     ]
   },
-  { title: 'Trends', path: '/trends', icon: TrendingUp },
+  
   { title: 'My Data', path: '/my-data', icon: Database },
   { title: 'Reports', path: '/reports', icon: FileText, planRequired: 'pro_plus' },
   { title: 'Alerts', path: '/alerts', icon: Bell, planRequired: 'pro_plus' },
