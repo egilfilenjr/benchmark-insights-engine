@@ -808,7 +808,7 @@ export default function GA4AnalyticsTab() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Target className="h-5 w-5" />
-                        Website Overview
+                        Website Overview {comparisonType === 'industry-benchmark' ? 'vs Industry' : comparisonType === 'previous-period' ? 'vs Previous Period' : 'vs Previous Year'}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -818,14 +818,22 @@ export default function GA4AnalyticsTab() {
                             <div>
                               <div className="text-sm text-muted-foreground">Total Pageviews</div>
                               <div className="text-2xl font-bold">{formatNumber(metrics.pageviews)}</div>
-                              <div className="text-sm text-green-600">+15.2% vs last period</div>
+                              <div className="text-sm text-green-600">
+                                {comparisonType === 'industry-benchmark' ? '+22% vs industry avg' :
+                                 comparisonType === 'previous-period' ? '+15.2% vs previous period' :
+                                 '+38% vs last year'}
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center justify-between p-4 border rounded-lg">
                             <div>
                               <div className="text-sm text-muted-foreground">Unique Pageviews</div>
                               <div className="text-2xl font-bold">{formatNumber(Math.round(metrics.pageviews * 0.78))}</div>
-                              <div className="text-sm text-green-600">+12.8% vs last period</div>
+                              <div className="text-sm text-green-600">
+                                {comparisonType === 'industry-benchmark' ? '+18% vs industry avg' :
+                                 comparisonType === 'previous-period' ? '+12.8% vs previous period' :
+                                 '+31% vs last year'}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -834,14 +842,22 @@ export default function GA4AnalyticsTab() {
                             <div>
                               <div className="text-sm text-muted-foreground">Pages / Session</div>
                               <div className="text-2xl font-bold">{(metrics.pageviews / metrics.sessions).toFixed(1)}</div>
-                              <div className="text-sm text-green-600">+0.3 vs last period</div>
+                              <div className="text-sm text-green-600">
+                                {comparisonType === 'industry-benchmark' ? '+0.8 vs industry avg (2.0)' :
+                                 comparisonType === 'previous-period' ? '+0.3 vs previous period' :
+                                 '+1.2 vs last year'}
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center justify-between p-4 border rounded-lg">
                             <div>
                               <div className="text-sm text-muted-foreground">Exit Rate</div>
                               <div className="text-2xl font-bold">52.4%</div>
-                              <div className="text-sm text-green-600">-2.1% vs last period</div>
+                              <div className="text-sm text-green-600">
+                                {comparisonType === 'industry-benchmark' ? '-5.8% vs industry avg (58.2%)' :
+                                 comparisonType === 'previous-period' ? '-2.1% vs previous period' :
+                                 '-8.6% vs last year'}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -853,29 +869,45 @@ export default function GA4AnalyticsTab() {
                 <TabsContent value="acquisition" className="space-y-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Traffic Acquisition</CardTitle>
+                      <CardTitle>Traffic Acquisition {comparisonType === 'industry-benchmark' ? 'vs Industry' : comparisonType === 'previous-period' ? 'vs Previous Period' : 'vs Previous Year'}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="p-4 border rounded-lg">
                           <div className="text-sm text-muted-foreground">Organic Search</div>
                           <div className="text-2xl font-bold">45.2%</div>
-                          <div className="text-xs text-green-600">+2.1% vs last period</div>
+                          <div className="text-xs text-green-600">
+                            {comparisonType === 'industry-benchmark' ? '+8.2% vs industry avg (37%)' :
+                             comparisonType === 'previous-period' ? '+2.1% vs previous period' :
+                             '+12.5% vs last year'}
+                          </div>
                         </div>
                         <div className="p-4 border rounded-lg">
                           <div className="text-sm text-muted-foreground">Direct</div>
                           <div className="text-2xl font-bold">28.7%</div>
-                          <div className="text-xs text-red-600">-1.4% vs last period</div>
+                          <div className="text-xs text-red-600">
+                            {comparisonType === 'industry-benchmark' ? '-2.8% vs industry avg (31.5%)' :
+                             comparisonType === 'previous-period' ? '-1.4% vs previous period' :
+                             '+3.2% vs last year'}
+                          </div>
                         </div>
                         <div className="p-4 border rounded-lg">
                           <div className="text-sm text-muted-foreground">Social Media</div>
                           <div className="text-2xl font-bold">15.3%</div>
-                          <div className="text-xs text-green-600">+4.2% vs last period</div>
+                          <div className="text-xs text-green-600">
+                            {comparisonType === 'industry-benchmark' ? '+3.8% vs industry avg (11.5%)' :
+                             comparisonType === 'previous-period' ? '+4.2% vs previous period' :
+                             '+8.7% vs last year'}
+                          </div>
                         </div>
                         <div className="p-4 border rounded-lg">
                           <div className="text-sm text-muted-foreground">Paid Search</div>
                           <div className="text-2xl font-bold">10.8%</div>
-                          <div className="text-xs text-green-600">+1.8% vs last period</div>
+                          <div className="text-xs text-green-600">
+                            {comparisonType === 'industry-benchmark' ? '-9.2% vs industry avg (20%)' :
+                             comparisonType === 'previous-period' ? '+1.8% vs previous period' :
+                             '+5.1% vs last year'}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -888,10 +920,10 @@ export default function GA4AnalyticsTab() {
                     <CardContent>
                       <div className="space-y-4">
                         {[
-                          { channel: 'Google Organic', users: Math.round(metrics.users * 0.452), sessions: Math.round(metrics.sessions * 0.452), conversion: 2.8 },
-                          { channel: 'Direct', users: Math.round(metrics.users * 0.287), sessions: Math.round(metrics.sessions * 0.287), conversion: 3.1 },
-                          { channel: 'Facebook', users: Math.round(metrics.users * 0.102), sessions: Math.round(metrics.sessions * 0.102), conversion: 1.9 },
-                          { channel: 'Google Ads', users: Math.round(metrics.users * 0.108), sessions: Math.round(metrics.sessions * 0.108), conversion: 4.2 }
+                          { channel: 'Google Organic', users: Math.round(metrics.users * 0.452), sessions: Math.round(metrics.sessions * 0.452), conversion: 2.8, benchmark: comparisonType === 'industry-benchmark' ? 2.3 : comparisonType === 'previous-period' ? 2.6 : 2.1 },
+                          { channel: 'Direct', users: Math.round(metrics.users * 0.287), sessions: Math.round(metrics.sessions * 0.287), conversion: 3.1, benchmark: comparisonType === 'industry-benchmark' ? 2.9 : comparisonType === 'previous-period' ? 3.0 : 2.7 },
+                          { channel: 'Facebook', users: Math.round(metrics.users * 0.102), sessions: Math.round(metrics.sessions * 0.102), conversion: 1.9, benchmark: comparisonType === 'industry-benchmark' ? 1.7 : comparisonType === 'previous-period' ? 1.8 : 1.5 },
+                          { channel: 'Google Ads', users: Math.round(metrics.users * 0.108), sessions: Math.round(metrics.sessions * 0.108), conversion: 4.2, benchmark: comparisonType === 'industry-benchmark' ? 3.8 : comparisonType === 'previous-period' ? 4.0 : 3.5 }
                         ].map((channel, index) => (
                           <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                             <div className="flex-1">
@@ -903,6 +935,9 @@ export default function GA4AnalyticsTab() {
                             <div className="text-right">
                               <div className="font-medium">{channel.conversion}%</div>
                               <div className="text-sm text-muted-foreground">conversion rate</div>
+                              <div className="text-xs text-green-600">
+                                +{((channel.conversion - channel.benchmark) / channel.benchmark * 100).toFixed(1)}% {comparisonType === 'industry-benchmark' ? 'vs industry' : comparisonType === 'previous-period' ? 'vs previous' : 'vs last year'}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -952,7 +987,7 @@ export default function GA4AnalyticsTab() {
                 <TabsContent value="audience" className="space-y-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Audience Demographics</CardTitle>
+                      <CardTitle>Audience Demographics {comparisonType === 'industry-benchmark' ? 'vs Industry' : comparisonType === 'previous-period' ? 'vs Previous Period' : 'vs Previous Year'}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -960,17 +995,21 @@ export default function GA4AnalyticsTab() {
                           <h4 className="font-medium mb-4">Age Groups</h4>
                           <div className="space-y-3">
                             {[
-                              { age: '18-24', percentage: 15.2 },
-                              { age: '25-34', percentage: 32.8 },
-                              { age: '35-44', percentage: 28.1 },
-                              { age: '45-54', percentage: 16.4 },
-                              { age: '55+', percentage: 7.5 }
+                              { age: '18-24', percentage: 15.2, benchmark: comparisonType === 'industry-benchmark' ? 18.5 : comparisonType === 'previous-period' ? 14.8 : 13.6 },
+                              { age: '25-34', percentage: 32.8, benchmark: comparisonType === 'industry-benchmark' ? 29.2 : comparisonType === 'previous-period' ? 31.9 : 30.1 },
+                              { age: '35-44', percentage: 28.1, benchmark: comparisonType === 'industry-benchmark' ? 26.8 : comparisonType === 'previous-period' ? 28.5 : 27.2 },
+                              { age: '45-54', percentage: 16.4, benchmark: comparisonType === 'industry-benchmark' ? 17.2 : comparisonType === 'previous-period' ? 16.8 : 18.1 },
+                              { age: '55+', percentage: 7.5, benchmark: comparisonType === 'industry-benchmark' ? 8.3 : comparisonType === 'previous-period' ? 8.0 : 11.0 }
                             ].map((group, index) => (
                               <div key={index} className="flex items-center justify-between">
                                 <span className="text-sm">{group.age}</span>
                                 <div className="flex items-center gap-2 flex-1 ml-4">
                                   <Progress value={group.percentage} className="flex-1" />
                                   <span className="text-sm font-medium w-12">{group.percentage}%</span>
+                                  <span className="text-xs text-muted-foreground w-16">
+                                    {((group.percentage - group.benchmark) >= 0 ? '+' : '')}
+                                    {(group.percentage - group.benchmark).toFixed(1)}%
+                                  </span>
                                 </div>
                               </div>
                             ))}
@@ -981,15 +1020,19 @@ export default function GA4AnalyticsTab() {
                           <h4 className="font-medium mb-4">Device Categories</h4>
                           <div className="space-y-3">
                             {[
-                              { device: 'Desktop', percentage: 42.3 },
-                              { device: 'Mobile', percentage: 51.7 },
-                              { device: 'Tablet', percentage: 6.0 }
+                              { device: 'Desktop', percentage: 42.3, benchmark: comparisonType === 'industry-benchmark' ? 46.8 : comparisonType === 'previous-period' ? 43.1 : 48.2 },
+                              { device: 'Mobile', percentage: 51.7, benchmark: comparisonType === 'industry-benchmark' ? 47.2 : comparisonType === 'previous-period' ? 50.9 : 45.8 },
+                              { device: 'Tablet', percentage: 6.0, benchmark: comparisonType === 'industry-benchmark' ? 6.0 : comparisonType === 'previous-period' ? 6.0 : 6.0 }
                             ].map((device, index) => (
                               <div key={index} className="flex items-center justify-between">
                                 <span className="text-sm">{device.device}</span>
                                 <div className="flex items-center gap-2 flex-1 ml-4">
                                   <Progress value={device.percentage} className="flex-1" />
                                   <span className="text-sm font-medium w-12">{device.percentage}%</span>
+                                  <span className="text-xs text-muted-foreground w-16">
+                                    {((device.percentage - device.benchmark) >= 0 ? '+' : '')}
+                                    {(device.percentage - device.benchmark).toFixed(1)}%
+                                  </span>
                                 </div>
                               </div>
                             ))}
