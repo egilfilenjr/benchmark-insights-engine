@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, Lightbulb, PieChart, BarChart3, LineChart, Filter, Settings } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, Lightbulb, PieChart, BarChart3, LineChart, Filter, Settings, Download, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart as RechartsLineChart, BarChart as RechartsBarChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useGA4Integration } from '@/hooks/useGA4Integration';
 import { supabase } from '@/lib/supabase';
@@ -86,6 +86,8 @@ export default function GA4AnalyticsTab() {
   const [pivotDimension, setPivotDimension] = useState('source');
   const [pivotMetric1, setPivotMetric1] = useState('sessions');
   const [pivotMetric2, setPivotMetric2] = useState('none');
+  const [pivotCurrentPage, setPivotCurrentPage] = useState(1);
+  const [pivotRowsPerPage, setPivotRowsPerPage] = useState(10);
 
   // Available metrics for chart and cards
   const chartMetricOptions = [
@@ -697,6 +699,69 @@ export default function GA4AnalyticsTab() {
     });
   };
 
+  // Export functions
+  const exportDashboardAsPDF = () => {
+    // This would integrate with a PDF generation library
+    console.log('Exporting dashboard as PDF...');
+    // For now, we'll show a simple alert
+    alert('Dashboard PDF export feature coming soon!');
+  };
+
+  const exportPivotTableAsCSV = () => {
+    const data = generatePivotData();
+    const headers = [
+      pivotDimensionOptions.find(d => d.value === pivotDimension)?.label || 'Dimension',
+      chartMetricOptions.find(m => m.value === pivotMetric1)?.label || 'Metric'
+    ];
+    
+    if (pivotMetric2 !== 'none') {
+      headers.push(chartMetricOptions.find(m => m.value === pivotMetric2)?.label || 'Metric 2');
+    }
+    headers.push('Change');
+
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => {
+        const csvRow = [
+          row.dimension,
+          formatMetricValue(row.metric1, pivotMetric1).replace(/,/g, '')
+        ];
+        if (pivotMetric2 !== 'none') {
+          csvRow.push(formatMetricValue(row.metric2 || 0, pivotMetric2).replace(/,/g, ''));
+        }
+        const comparisonData = getComparisonData(pivotMetric1);
+        csvRow.push(`${comparisonData.change.toFixed(1)}%`);
+        return csvRow.join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pivot-table-${pivotDimension}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportPivotTableAsPDF = () => {
+    console.log('Exporting pivot table as PDF...');
+    alert('Pivot table PDF export feature coming soon!');
+  };
+
+  // Pagination helpers
+  const getPaginatedPivotData = () => {
+    const data = generatePivotData();
+    const startIndex = (pivotCurrentPage - 1) * pivotRowsPerPage;
+    const endIndex = startIndex + pivotRowsPerPage;
+    return data.slice(startIndex, endIndex);
+  };
+
+  const getTotalPivotPages = () => {
+    const data = generatePivotData();
+    return Math.ceil(data.length / pivotRowsPerPage);
+  };
+
   if (integrationLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -786,32 +851,44 @@ export default function GA4AnalyticsTab() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={syncData} disabled={syncing} variant="outline">
-            {syncing ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Syncing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Sync Data
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={syncData} disabled={syncing} variant="outline">
+              {syncing ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Sync Data
+                </>
+              )}
+            </Button>
+            <Button 
+              onClick={() => exportDashboardAsPDF()} 
+              variant="default"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Export Dashboard PDF
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Customizable Trend Chart */}
       <Card className="animate-fade-in">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4">
             <CardTitle>Performance Trends</CardTitle>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Chart Type:</label>
+            
+            {/* Responsive Grid for Chart Controls */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Chart Type</label>
                 <Select value={chartType} onValueChange={(value: 'line' | 'bar') => setChartType(value)}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -831,10 +908,10 @@ export default function GA4AnalyticsTab() {
                 </Select>
               </div>
               
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Period:</label>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Period</label>
                 <Select value={chartTimeframe} onValueChange={(value: 'day' | 'week' | 'month') => setChartTimeframe(value)}>
-                  <SelectTrigger className="w-28">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -845,10 +922,10 @@ export default function GA4AnalyticsTab() {
                 </Select>
               </div>
               
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Metric 1:</label>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Primary Metric</label>
                 <Select value={chartMetric1} onValueChange={setChartMetric1}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -861,10 +938,10 @@ export default function GA4AnalyticsTab() {
                 </Select>
               </div>
               
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Metric 2:</label>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Secondary Metric</label>
                 <Select value={chartMetric2} onValueChange={setChartMetric2}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Optional" />
                   </SelectTrigger>
                   <SelectContent>
@@ -880,17 +957,19 @@ export default function GA4AnalyticsTab() {
                 </Select>
               </div>
               
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/20 rounded-lg border">
-                <label className="text-sm text-muted-foreground">Show Comparison:</label>
-                <Switch 
-                  checked={showComparison} 
-                  onCheckedChange={setShowComparison}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {comparisonType === 'previous-period' ? 'vs Prev Period' : 
-                   comparisonType === 'previous-year' ? 'vs Prev Year' : 
-                   'vs Industry'}
-                </span>
+              <div className="lg:col-span-2 xl:col-span-2 space-y-2">
+                <label className="text-sm text-muted-foreground">Show Comparison</label>
+                <div className="flex items-center gap-3 p-3 bg-muted/20 rounded-lg border">
+                  <Switch 
+                    checked={showComparison} 
+                    onCheckedChange={setShowComparison}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {comparisonType === 'previous-period' ? 'vs Previous Period' : 
+                     comparisonType === 'previous-year' ? 'vs Previous Year' : 
+                     'vs Industry Benchmark'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -1872,10 +1951,22 @@ export default function GA4AnalyticsTab() {
               {/* Pivot Table Section */}
               <Card className="mt-8">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="h-5 w-5" />
-                    Custom Pivot Table
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <PieChart className="h-5 w-5" />
+                      Custom Pivot Table
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Button onClick={exportPivotTableAsCSV} variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                      </Button>
+                      <Button onClick={exportPivotTableAsPDF} variant="outline" size="sm">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Export PDF
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -1952,7 +2043,7 @@ export default function GA4AnalyticsTab() {
                             </tr>
                           </thead>
                           <tbody>
-                            {(typeof generatePivotData === 'function' ? generatePivotData() : []).map((row, index) => {
+                            {getPaginatedPivotData().map((row, index) => {
                               const comparisonData = getComparisonData(pivotMetric1);
                               return (
                                 <tr key={index} className="border-b hover:bg-muted/25">
@@ -1975,7 +2066,52 @@ export default function GA4AnalyticsTab() {
                                         <TrendingDown className="h-3 w-3" />
                                       )}
                                       {comparisonData.change.toFixed(1)}%
-                                    </div>
+                    </div>
+
+                    {/* Pivot Table Controls */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-muted-foreground">Rows per page:</label>
+                          <Select value={pivotRowsPerPage.toString()} onValueChange={(value) => {
+                            setPivotRowsPerPage(Number(value));
+                            setPivotCurrentPage(1);
+                          }}>
+                            <SelectTrigger className="w-20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="5">5</SelectItem>
+                              <SelectItem value="10">10</SelectItem>
+                              <SelectItem value="25">25</SelectItem>
+                              <SelectItem value="50">50</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setPivotCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={pivotCurrentPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                          Page {pivotCurrentPage} of {getTotalPivotPages()}
+                        </span>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setPivotCurrentPage(prev => Math.min(getTotalPivotPages(), prev + 1))}
+                          disabled={pivotCurrentPage === getTotalPivotPages()}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                                     <div className="text-xs text-muted-foreground">
                                       {comparisonData.label}
                                     </div>
