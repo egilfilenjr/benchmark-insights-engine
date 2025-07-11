@@ -159,10 +159,35 @@ export default function IntegrationManager() {
     }
   };
 
-  const handleConnect = (platform: string) => {
-    const config = INTEGRATION_CONFIGS[platform];
-    if (config) {
-      window.location.href = config.authUrl;
+  const handleConnect = async (platform: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke(`oauth/${platform}/start`, {
+        body: { user_id: user?.id, company_id: user?.id }
+      });
+
+      if (error) {
+        console.error('OAuth start error:', error);
+        toast({
+          title: "Connection Failed", 
+          description: `Failed to start OAuth for ${INTEGRATION_CONFIGS[platform]?.name}. Please try again or contact support.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.auth_url) {
+        // Redirect to OAuth provider
+        window.location.href = data.auth_url;
+      } else {
+        throw new Error('No auth URL returned');
+      }
+    } catch (error) {
+      console.error('Connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: `Unable to connect to ${INTEGRATION_CONFIGS[platform]?.name}. Please ensure the integration is properly configured.`,
+        variant: "destructive"
+      });
     }
   };
 

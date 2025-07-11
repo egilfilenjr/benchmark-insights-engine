@@ -20,5 +20,17 @@ enable_signup = true
 [functions.sync-campaign-data]
 verify_jwt = false
 
+[functions."oauth/google_analytics/start"]
+verify_jwt = false
+
+[functions."oauth/google_analytics/callback"]
+verify_jwt = false
+
+[functions."oauth/google_ads/start"]  
+verify_jwt = false
+
+[functions."oauth/meta_ads/start"]
+verify_jwt = false
+
 [db]
 port = 54322
