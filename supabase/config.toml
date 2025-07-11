@@ -16,6 +16,7 @@ jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 refresh_token_reuse_interval = 10
 enable_signup = true
+external_google_enabled = true
 
 [functions.sync-campaign-data]
 verify_jwt = false
