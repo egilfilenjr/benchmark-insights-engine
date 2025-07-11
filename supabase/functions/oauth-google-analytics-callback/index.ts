@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
     const tokens = await tokenResponse.json();
     console.log('✅ Tokens received:', { access_token: !!tokens.access_token, refresh_token: !!tokens.refresh_token });
 
-    // Get GA4 properties
+    // Get GA4 properties using the correct API endpoint
     const propertiesResponse = await fetch('https://analyticsadmin.googleapis.com/v1alpha/accountSummaries', {
       headers: {
         'Authorization': `Bearer ${tokens.access_token}`,
@@ -74,6 +74,9 @@ Deno.serve(async (req) => {
     }
 
     const propertiesData = await propertiesResponse.json();
+    console.log('📊 Raw GA4 response:', JSON.stringify(propertiesData, null, 2));
+    
+    // Google Analytics Admin API returns accountSummaries with propertySummaries
     const accountSummaries = propertiesData.accountSummaries || [];
     const properties = accountSummaries.length > 0 ? accountSummaries[0].propertySummaries || [] : [];
     console.log('✅ GA4 properties fetched:', properties.length);
@@ -85,10 +88,16 @@ Deno.serve(async (req) => {
     );
 
     console.log('💾 Preparing to store OAuth account...');
-    console.log('📊 Properties data structure:', { 
-      propertiesLength: properties.length,
+    console.log('📊 Properties structure:', { 
+      accountSummariesCount: accountSummaries.length,
+      propertiesCount: properties.length,
       firstProperty: properties[0] || null
     });
+
+    // Extract property info - GA4 properties have format "properties/123456789"
+    const primaryProperty = properties[0] || null;
+    const propertyId = primaryProperty?.property?.split('/')[1] || 'unknown';
+    const propertyName = primaryProperty?.displayName || 'GA4 Property';
 
     const oauthData = {
       user_id,
@@ -100,12 +109,15 @@ Deno.serve(async (req) => {
       expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
       status: 'active',
       connected_at: new Date().toISOString(),
-      account_id: properties.length > 0 ? (properties[0].property || properties[0].name || 'unknown') : 'unknown',
-      account_name: properties.length > 0 ? (properties[0].displayName || 'GA4 Property') : 'GA4 Property',
-      scope_json: { properties: properties.map((p: any) => ({ 
-        id: p.property || p.name, 
-        displayName: p.displayName 
-      })) }
+      account_id: propertyId,
+      account_name: propertyName,
+      scope_json: { 
+        properties: properties.map((p: any) => ({ 
+          id: p.property, 
+          displayName: p.displayName 
+        })),
+        scopes: ['https://www.googleapis.com/auth/analytics.readonly']
+      }
     };
 
     console.log('📝 OAuth data to insert:', { 
