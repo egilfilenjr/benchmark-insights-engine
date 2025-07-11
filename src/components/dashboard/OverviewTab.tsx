@@ -16,7 +16,12 @@ export default function OverviewTab() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [comparisonType, setComparisonType] = useState('previous-period');
-  const [selectedMetrics, setSelectedMetrics] = useState(['bounce-rate', 'avg-session', 'conversion-rate', 'new-users']);
+  const [selectedMetrics, setSelectedMetrics] = useState({
+    slot1: 'bounce-rate',
+    slot2: 'avg-session', 
+    slot3: 'conversion-rate',
+    slot4: 'new-users'
+  });
 
   // Available metrics for the Website Analytics Summary
   const availableMetrics = [
@@ -247,37 +252,41 @@ export default function OverviewTab() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   Website Analytics Summary
-                  <div className="flex items-center gap-2">
-                    <Select value={selectedMetrics.join(',')} onValueChange={(value) => setSelectedMetrics(value.split(','))}>
-                      <SelectTrigger className="w-48">
-                        <Settings className="h-4 w-4 mr-2" />
-                        <SelectValue placeholder="Customize metrics" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableMetrics.map((metric) => (
-                          <SelectItem key={metric.key} value={metric.key}>
-                            {metric.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="sm" onClick={() => window.location.href = '/dashboard?tab=ga4-analytics'}>
-                      View Details
-                    </Button>
-                  </div>
+                  <Button variant="outline" size="sm" onClick={() => window.location.href = '/dashboard?tab=ga4-analytics'}>
+                    View Details
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
                   Recent data from Google Analytics 4: {ga4Integration.property_name}
                 </p>
-                <div className={`grid gap-4 ${selectedMetrics.length === 4 ? 'grid-cols-2 md:grid-cols-4' : selectedMetrics.length === 3 ? 'grid-cols-1 md:grid-cols-3' : selectedMetrics.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
-                  {availableMetrics
-                    .filter(metric => selectedMetrics.includes(metric.key))
-                    .map((metric) => {
-                      const IconComponent = metric.icon;
-                      return (
-                        <div key={metric.key} className="text-center p-4 border rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {Object.entries(selectedMetrics).map(([slotKey, metricKey]) => {
+                    const metric = availableMetrics.find(m => m.key === metricKey);
+                    if (!metric) return null;
+                    
+                    const IconComponent = metric.icon;
+                    return (
+                      <div key={slotKey} className="border rounded-lg p-4">
+                        <div className="mb-3">
+                          <Select 
+                            value={metricKey} 
+                            onValueChange={(value) => setSelectedMetrics(prev => ({ ...prev, [slotKey]: value }))}
+                          >
+                            <SelectTrigger className="w-full text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableMetrics.map((availableMetric) => (
+                                <SelectItem key={availableMetric.key} value={availableMetric.key}>
+                                  {availableMetric.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="text-center">
                           <div className="text-2xl font-bold mb-1">{metric.value}</div>
                           <div className="text-xs text-muted-foreground mb-2">{metric.label}</div>
                           <div className={`text-xs flex items-center justify-center ${metric.positive ? 'text-green-600' : 'text-red-600'}`}>
@@ -285,8 +294,9 @@ export default function OverviewTab() {
                             {metric.change} {getComparisonText()}
                           </div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
