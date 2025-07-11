@@ -63,6 +63,8 @@ export default function GA4AnalyticsTab() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [dateRange, setDateRange] = useState('last-30-days');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [comparisonType, setComparisonType] = useState<'previous-period' | 'previous-year' | 'industry-benchmark'>('previous-period');
 
   useEffect(() => {
@@ -284,6 +286,14 @@ export default function GA4AnalyticsTab() {
     };
   };
 
+  const handleDateRangeChange = (value: string) => {
+    setDateRange(value);
+    if (value !== 'custom') {
+      setStartDate('');
+      setEndDate('');
+    }
+  };
+
   if (integrationLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -324,7 +334,7 @@ export default function GA4AnalyticsTab() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <Select value={dateRange} onValueChange={setDateRange}>
+            <Select value={dateRange} onValueChange={handleDateRangeChange}>
               <SelectTrigger className="w-48">
                 <SelectValue />
               </SelectTrigger>
@@ -337,6 +347,25 @@ export default function GA4AnalyticsTab() {
               </SelectContent>
             </Select>
           </div>
+          {dateRange === 'custom' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-3 py-2 border rounded-md text-sm"
+                placeholder="Start date"
+              />
+              <span className="text-muted-foreground">to</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-3 py-2 border rounded-md text-sm"
+                placeholder="End date"
+              />
+            </div>
+          )}
           <Select value={comparisonType} onValueChange={(value: 'previous-period' | 'previous-year' | 'industry-benchmark') => setComparisonType(value)}>
             <SelectTrigger className="w-48">
               <SelectValue />
