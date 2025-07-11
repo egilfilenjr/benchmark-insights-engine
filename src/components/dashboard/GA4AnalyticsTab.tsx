@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar } from 'lucide-react';
 import { useGA4Integration } from '@/hooks/useGA4Integration';
 import { supabase } from '@/lib/supabase';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -20,6 +21,27 @@ interface GA4Metrics {
   revenue?: number;
   goalCompletions: number;
   newUserRate: number;
+  // Comparison data
+  previousPeriod: {
+    sessions: number;
+    users: number;
+    pageviews: number;
+    bounceRate: number;
+    avgSessionDuration: number;
+    conversionRate: number;
+    goalCompletions: number;
+    newUserRate: number;
+  };
+  previousYear: {
+    sessions: number;
+    users: number;
+    pageviews: number;
+    bounceRate: number;
+    avgSessionDuration: number;
+    conversionRate: number;
+    goalCompletions: number;
+    newUserRate: number;
+  };
 }
 
 interface BenchmarkComparison {
@@ -40,6 +62,8 @@ export default function GA4AnalyticsTab() {
   const [benchmarks, setBenchmarks] = useState<BenchmarkComparison[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [dateRange, setDateRange] = useState('last-30-days');
+  const [comparisonType, setComparisonType] = useState<'previous-period' | 'previous-year' | 'industry-benchmark'>('previous-period');
 
   useEffect(() => {
     if (integration && user?.id) {
@@ -65,7 +89,27 @@ export default function GA4AnalyticsTab() {
         ecommerceConversionRate: 1.8,
         revenue: 45789,
         goalCompletions: 299,
-        newUserRate: 71.6
+        newUserRate: 71.6,
+        previousPeriod: {
+          sessions: 11145,
+          users: 7982,
+          pageviews: 22134,
+          bounceRate: 60.1,
+          avgSessionDuration: 147,
+          conversionRate: 2.1,
+          goalCompletions: 251,
+          newUserRate: 69.8
+        },
+        previousYear: {
+          sessions: 10234,
+          users: 7123,
+          pageviews: 19876,
+          bounceRate: 62.8,
+          avgSessionDuration: 134,
+          conversionRate: 1.9,
+          goalCompletions: 189,
+          newUserRate: 73.2
+        }
       };
 
       setMetrics(mockMetrics);
@@ -184,6 +228,57 @@ export default function GA4AnalyticsTab() {
     return num.toString();
   };
 
+  const calculatePercentageChange = (current: number, previous: number): number => {
+    if (previous === 0) return 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const getComparisonData = (metric: keyof GA4Metrics['previousPeriod']) => {
+    if (!metrics) return { value: 0, change: 0, isPositive: true };
+    
+    let previousValue: number;
+    let changeLabel: string;
+    
+    switch (comparisonType) {
+      case 'previous-period':
+        previousValue = metrics.previousPeriod[metric];
+        changeLabel = 'vs last period';
+        break;
+      case 'previous-year':
+        previousValue = metrics.previousYear[metric];
+        changeLabel = 'vs last year';
+        break;
+      case 'industry-benchmark':
+        // For industry benchmark, we'll use benchmark data
+        const benchmark = benchmarks.find(b => b.metric.toLowerCase().includes(metric.toString().toLowerCase()));
+        if (benchmark) {
+          const change = ((metrics[metric as keyof GA4Metrics] as number - benchmark.benchmarkMedian) / benchmark.benchmarkMedian) * 100;
+          return {
+            value: benchmark.benchmarkMedian,
+            change: change,
+            isPositive: change >= 0,
+            label: 'vs industry median'
+          };
+        }
+        previousValue = metrics.previousPeriod[metric];
+        changeLabel = 'vs last period';
+        break;
+      default:
+        previousValue = metrics.previousPeriod[metric];
+        changeLabel = 'vs last period';
+    }
+    
+    const change = calculatePercentageChange(metrics[metric as keyof GA4Metrics] as number, previousValue);
+    const isPositive = metric === 'bounceRate' ? change < 0 : change > 0; // Lower bounce rate is better
+    
+    return {
+      value: previousValue,
+      change: Math.abs(change),
+      isPositive,
+      label: changeLabel
+    };
+  };
+
   if (integrationLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -221,19 +316,46 @@ export default function GA4AnalyticsTab() {
             Connected to: {integration.property_name}
           </p>
         </div>
-        <Button onClick={syncData} disabled={syncing} variant="outline">
-          {syncing ? (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Syncing...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sync Data
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="last-7-days">Last 7 days</SelectItem>
+                <SelectItem value="last-30-days">Last 30 days</SelectItem>
+                <SelectItem value="last-90-days">Last 90 days</SelectItem>
+                <SelectItem value="last-12-months">Last 12 months</SelectItem>
+                <SelectItem value="custom">Custom range</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Select value={comparisonType} onValueChange={(value: 'previous-period' | 'previous-year' | 'industry-benchmark') => setComparisonType(value)}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="previous-period">vs Previous Period</SelectItem>
+              <SelectItem value="previous-year">vs Previous Year</SelectItem>
+              <SelectItem value="industry-benchmark">vs Industry Benchmark</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={syncData} disabled={syncing} variant="outline">
+            {syncing ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Syncing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Sync Data
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -242,7 +364,6 @@ export default function GA4AnalyticsTab() {
           <TabsTrigger value="audience">Audience</TabsTrigger>
           <TabsTrigger value="behavior">Behavior</TabsTrigger>
           <TabsTrigger value="conversions">Conversions</TabsTrigger>
-          <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -270,10 +391,15 @@ export default function GA4AnalyticsTab() {
                     </div>
                     <div className="mt-2">
                       <div className="text-2xl font-bold">{formatNumber(metrics.users)}</div>
-                      <div className="text-sm text-green-600 flex items-center">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        +12.3% vs last period
-                      </div>
+                      {(() => {
+                        const comparison = getComparisonData('users');
+                        return (
+                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
@@ -286,10 +412,15 @@ export default function GA4AnalyticsTab() {
                     </div>
                     <div className="mt-2">
                       <div className="text-2xl font-bold">{formatNumber(metrics.sessions)}</div>
-                      <div className="text-sm text-green-600 flex items-center">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        +8.7% vs last period
-                      </div>
+                      {(() => {
+                        const comparison = getComparisonData('sessions');
+                        return (
+                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
@@ -302,10 +433,15 @@ export default function GA4AnalyticsTab() {
                     </div>
                     <div className="mt-2">
                       <div className="text-2xl font-bold">{formatDuration(metrics.avgSessionDuration)}</div>
-                      <div className="text-sm text-red-600 flex items-center">
-                        <TrendingDown className="h-3 w-3 mr-1" />
-                        -3.2% vs last period
-                      </div>
+                      {(() => {
+                        const comparison = getComparisonData('avgSessionDuration');
+                        return (
+                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
@@ -318,10 +454,15 @@ export default function GA4AnalyticsTab() {
                     </div>
                     <div className="mt-2">
                       <div className="text-2xl font-bold">{metrics.conversionRate}%</div>
-                      <div className="text-sm text-green-600 flex items-center">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        +15.8% vs last period
-                      </div>
+                      {(() => {
+                        const comparison = getComparisonData('conversionRate');
+                        return (
+                          <div className={`text-sm flex items-center ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                            {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}% {comparison.label}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
@@ -378,75 +519,6 @@ export default function GA4AnalyticsTab() {
           ) : null}
         </TabsContent>
 
-        <TabsContent value="benchmarks" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Industry Benchmark Comparison</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                See how your website performance compares to industry benchmarks
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {benchmarks.map((benchmark, index) => (
-                  <div key={index} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">{benchmark.metric}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Your value: {benchmark.userValue}{benchmark.unit}
-                        </p>
-                      </div>
-                      <Badge className={getStatusColor(benchmark.status)}>
-                        {benchmark.percentile}th percentile
-                      </Badge>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>25th</span>
-                        <span>Median</span>
-                        <span>75th</span>
-                      </div>
-                      <div className="relative">
-                        <Progress value={benchmark.percentile} className="h-2" />
-                        <div className="flex justify-between text-xs mt-1">
-                          <span>{benchmark.benchmarkP25}{benchmark.unit}</span>
-                          <span>{benchmark.benchmarkMedian}{benchmark.unit}</span>
-                          <span>{benchmark.benchmarkP75}{benchmark.unit}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="audience">
-          <Card>
-            <CardContent className="text-center py-12">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Audience Analytics</h3>
-              <p className="text-muted-foreground">
-                Detailed audience insights and demographics will be available here.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="behavior">
-          <Card>
-            <CardContent className="text-center py-12">
-              <MousePointer className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Behavior Analytics</h3>
-              <p className="text-muted-foreground">
-                User behavior patterns and flow analysis will be displayed here.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="conversions">
           <Card>

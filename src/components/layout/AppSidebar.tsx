@@ -43,6 +43,7 @@ const sidebarItems: SidebarItem[] = [
     icon: LayoutDashboard,
     subItems: [
       { title: 'Overview', path: '/dashboard' },
+      { title: 'Website Analytics (GA4)', path: '/dashboard?tab=ga4-analytics' },
       { title: 'Google Ads', path: '/dashboard/google' },
       { title: 'Meta Ads', path: '/dashboard/meta' },
       { title: 'LinkedIn Ads', path: '/dashboard/linkedin' },
