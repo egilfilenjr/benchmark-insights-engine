@@ -72,7 +72,7 @@ export default function GA4AnalyticsTab() {
   const [chartType, setChartType] = useState<'line' | 'bar'>('line');
   const [chartTimeframe, setChartTimeframe] = useState<'day' | 'week' | 'month'>('day');
   const [chartMetric1, setChartMetric1] = useState('sessions');
-  const [chartMetric2, setChartMetric2] = useState('');
+  const [chartMetric2, setChartMetric2] = useState('none');
 
   // Available metrics for chart
   const chartMetricOptions = [
@@ -381,7 +381,7 @@ export default function GA4AnalyticsTab() {
         }
       }
       
-      if (chartMetric2) {
+      if (chartMetric2 && chartMetric2 !== 'none') {
         const metric2Data = chartMetricOptions.find(m => m.value === chartMetric2);
         if (metric2Data) {
           let value = 0;
@@ -589,7 +589,7 @@ export default function GA4AnalyticsTab() {
                     <SelectValue placeholder="Optional" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {chartMetricOptions
                       .filter(option => option.value !== chartMetric1)
                       .map((option) => (
@@ -642,9 +642,9 @@ export default function GA4AnalyticsTab() {
                       name={chartMetricOptions.find(m => m.value === chartMetric1)?.label}
                     />
                   )}
-                  {chartMetric2 && (
+                  {chartMetric2 && chartMetric2 !== 'none' && (
                     <Line 
-                      type="monotone" 
+                      type="monotone"
                       dataKey={chartMetric2} 
                       stroke={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
                       strokeWidth={2}
@@ -686,9 +686,9 @@ export default function GA4AnalyticsTab() {
                       name={chartMetricOptions.find(m => m.value === chartMetric1)?.label}
                     />
                   )}
-                  {chartMetric2 && (
+                  {chartMetric2 && chartMetric2 !== 'none' && (
                     <Bar 
-                      dataKey={chartMetric2} 
+                      dataKey={chartMetric2}
                       fill={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
                       name={chartMetricOptions.find(m => m.value === chartMetric2)?.label}
                     />
