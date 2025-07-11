@@ -70,44 +70,49 @@ export default function GA4AnalyticsTab() {
       loadGA4Data();
       loadBenchmarkComparisons();
     }
-  }, [integration, user?.id]);
+  }, [integration, user?.id, dateRange, comparisonType]);
 
   const loadGA4Data = async () => {
     if (!user?.id) return;
 
     setLoading(true);
     try {
-      // In a real implementation, this would fetch actual GA4 data
-      // For now, we'll use mock data
+      // In a real implementation, this would fetch actual GA4 data based on dateRange
+      // For now, we'll use mock data that varies slightly based on date range
+      const baseMultiplier = dateRange === 'last-7-days' ? 0.3 : 
+                           dateRange === 'last-30-days' ? 1 :
+                           dateRange === 'last-90-days' ? 2.8 :
+                           dateRange === 'last-12-months' ? 12 : 1;
+      
       const mockMetrics: GA4Metrics = {
-        sessions: 12458,
-        users: 8934,
-        pageviews: 24891,
+        sessions: Math.round(12458 * baseMultiplier),
+        users: Math.round(8934 * baseMultiplier),
+        pageviews: Math.round(24891 * baseMultiplier),
         bounceRate: 58.2,
         avgSessionDuration: 142,
         conversionRate: 2.4,
         ecommerceConversionRate: 1.8,
-        revenue: 45789,
-        goalCompletions: 299,
+        revenue: Math.round(45789 * baseMultiplier),
+        goalCompletions: Math.round(299 * baseMultiplier),
         newUserRate: 71.6,
         previousPeriod: {
-          sessions: 11145,
-          users: 7982,
-          pageviews: 22134,
+          sessions: Math.round(11145 * baseMultiplier),
+          users: Math.round(7982 * baseMultiplier),
+          pageviews: Math.round(22134 * baseMultiplier),
           bounceRate: 60.1,
           avgSessionDuration: 147,
           conversionRate: 2.1,
-          goalCompletions: 251,
+          goalCompletions: Math.round(251 * baseMultiplier),
           newUserRate: 69.8
         },
         previousYear: {
-          sessions: 10234,
-          users: 7123,
-          pageviews: 19876,
+          sessions: Math.round(10234 * baseMultiplier),
+          users: Math.round(7123 * baseMultiplier),
+          pageviews: Math.round(19876 * baseMultiplier),
           bounceRate: 62.8,
           avgSessionDuration: 134,
           conversionRate: 1.9,
-          goalCompletions: 189,
+          goalCompletions: Math.round(189 * baseMultiplier),
           newUserRate: 73.2
         }
       };
@@ -358,16 +363,7 @@ export default function GA4AnalyticsTab() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="audience">Audience</TabsTrigger>
-          <TabsTrigger value="behavior">Behavior</TabsTrigger>
-          <TabsTrigger value="conversions">Conversions</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          {loading ? (
+      {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
                 <Card key={i}>
@@ -476,19 +472,66 @@ export default function GA4AnalyticsTab() {
                   <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Bounce Rate</span>
-                      <span className="font-semibold">{metrics.bounceRate}%</span>
+                      <div className="text-right">
+                        <span className="font-semibold">{metrics.bounceRate}%</span>
+                        {(() => {
+                          const comparison = getComparisonData('bounceRate');
+                          return (
+                            <div className={`text-xs flex items-center justify-end mt-1 ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                              {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                              {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}%
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Pageviews</span>
-                      <span className="font-semibold">{formatNumber(metrics.pageviews)}</span>
+                      <div className="text-right">
+                        <span className="font-semibold">{formatNumber(metrics.pageviews)}</span>
+                        {(() => {
+                          const currentPageviews = metrics.pageviews;
+                          const previousPageviews = comparisonType === 'previous-year' ? metrics.previousYear.pageviews : metrics.previousPeriod.pageviews;
+                          const change = calculatePercentageChange(currentPageviews, previousPageviews);
+                          const isPositive = change > 0;
+                          return (
+                            <div className={`text-xs flex items-center justify-end mt-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                              {isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                              {isPositive ? '+' : '-'}{Math.abs(change).toFixed(1)}%
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">New User Rate</span>
-                      <span className="font-semibold">{metrics.newUserRate}%</span>
+                      <div className="text-right">
+                        <span className="font-semibold">{metrics.newUserRate}%</span>
+                        {(() => {
+                          const comparison = getComparisonData('newUserRate');
+                          return (
+                            <div className={`text-xs flex items-center justify-end mt-1 ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                              {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                              {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}%
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Goal Completions</span>
-                      <span className="font-semibold">{metrics.goalCompletions}</span>
+                      <div className="text-right">
+                        <span className="font-semibold">{metrics.goalCompletions}</span>
+                        {(() => {
+                          const comparison = getComparisonData('goalCompletions');
+                          return (
+                            <div className={`text-xs flex items-center justify-end mt-1 ${comparison.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                              {comparison.isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                              {comparison.isPositive ? '+' : '-'}{comparison.change.toFixed(1)}%
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -501,15 +544,52 @@ export default function GA4AnalyticsTab() {
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Total Revenue</span>
-                        <span className="font-semibold">${formatNumber(metrics.revenue)}</span>
+                        <div className="text-right">
+                          <span className="font-semibold">${formatNumber(metrics.revenue)}</span>
+                          {(() => {
+                            const currentRevenue = metrics.revenue;
+                            const previousRevenue = comparisonType === 'previous-year' ? 
+                              (metrics.previousYear.sessions * (currentRevenue / metrics.sessions)) : 
+                              (metrics.previousPeriod.sessions * (currentRevenue / metrics.sessions));
+                            const change = calculatePercentageChange(currentRevenue, previousRevenue);
+                            const isPositive = change > 0;
+                            return (
+                              <div className={`text-xs flex items-center justify-end mt-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                {isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                                {isPositive ? '+' : '-'}{Math.abs(change).toFixed(1)}%
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Ecommerce Conversion Rate</span>
-                        <span className="font-semibold">{metrics.ecommerceConversionRate}%</span>
+                        <div className="text-right">
+                          <span className="font-semibold">{metrics.ecommerceConversionRate}%</span>
+                          <div className="text-xs text-muted-foreground mt-1">+0.3% vs prev</div>
+                        </div>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Revenue per User</span>
-                        <span className="font-semibold">${(metrics.revenue / metrics.users).toFixed(2)}</span>
+                        <div className="text-right">
+                          <span className="font-semibold">${(metrics.revenue / metrics.users).toFixed(2)}</span>
+                          {(() => {
+                            const currentRpu = metrics.revenue / metrics.users;
+                            const previousUsers = comparisonType === 'previous-year' ? metrics.previousYear.users : metrics.previousPeriod.users;
+                            const previousRevenue = comparisonType === 'previous-year' ? 
+                              (metrics.previousYear.sessions * (metrics.revenue / metrics.sessions)) : 
+                              (metrics.previousPeriod.sessions * (metrics.revenue / metrics.sessions));
+                            const previousRpu = previousRevenue / previousUsers;
+                            const change = calculatePercentageChange(currentRpu, previousRpu);
+                            const isPositive = change > 0;
+                            return (
+                              <div className={`text-xs flex items-center justify-end mt-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                {isPositive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                                {isPositive ? '+' : '-'}{Math.abs(change).toFixed(1)}%
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -517,21 +597,6 @@ export default function GA4AnalyticsTab() {
               </div>
             </>
           ) : null}
-        </TabsContent>
-
-
-        <TabsContent value="conversions">
-          <Card>
-            <CardContent className="text-center py-12">
-              <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Conversion Analytics</h3>
-              <p className="text-muted-foreground">
-                Goal completions and conversion funnel analysis will be shown here.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }
