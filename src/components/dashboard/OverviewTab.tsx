@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, BarChart3, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, BarChart3, DollarSign, Filter } from 'lucide-react';
 import { useGA4Integration } from '@/hooks/useGA4Integration';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
@@ -15,6 +15,7 @@ export default function OverviewTab() {
   const [dateRange, setDateRange] = useState('last-30-days');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [comparisonType, setComparisonType] = useState('previous-period');
 
   // Mock data for connected integrations
   const [integrations, setIntegrations] = useState([
@@ -54,6 +55,18 @@ export default function OverviewTab() {
     }
   };
 
+  const getComparisonText = () => {
+    switch (comparisonType) {
+      case 'industry-benchmark':
+        return 'vs industry';
+      case 'previous-year':
+        return 'vs prev year';
+      case 'previous-period':
+      default:
+        return 'vs prev period';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -76,6 +89,19 @@ export default function OverviewTab() {
                 <SelectItem value="last-90-days">Last 90 days</SelectItem>
                 <SelectItem value="last-12-months">Last 12 months</SelectItem>
                 <SelectItem value="custom">Custom range</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            <Select value={comparisonType} onValueChange={setComparisonType}>
+              <SelectTrigger className="w-56 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 shadow-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-lg">
+                <SelectItem value="previous-period">vs Previous Period</SelectItem>
+                <SelectItem value="previous-year">vs Previous Year</SelectItem>
+                <SelectItem value="industry-benchmark">vs Industry Benchmark</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -148,7 +174,7 @@ export default function OverviewTab() {
                   <div className="text-2xl font-bold">{overviewMetrics.totalUsers.toLocaleString()}</div>
                   <div className="text-sm text-green-600 flex items-center">
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    +12.3% vs last period
+                    +12.3% {getComparisonText()}
                   </div>
                 </div>
               </CardContent>
@@ -164,7 +190,7 @@ export default function OverviewTab() {
                   <div className="text-2xl font-bold">{overviewMetrics.totalSessions.toLocaleString()}</div>
                   <div className="text-sm text-green-600 flex items-center">
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    +8.7% vs last period
+                    +8.7% {getComparisonText()}
                   </div>
                 </div>
               </CardContent>
@@ -180,7 +206,7 @@ export default function OverviewTab() {
                   <div className="text-2xl font-bold">${overviewMetrics.totalRevenue.toLocaleString()}</div>
                   <div className="text-sm text-green-600 flex items-center">
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    +15.8% vs last period
+                    +15.8% {getComparisonText()}
                   </div>
                 </div>
               </CardContent>
@@ -196,7 +222,7 @@ export default function OverviewTab() {
                   <div className="text-2xl font-bold">{overviewMetrics.totalConversions}</div>
                   <div className="text-sm text-green-600 flex items-center">
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    +22.1% vs last period
+                    +22.1% {getComparisonText()}
                   </div>
                 </div>
               </CardContent>
