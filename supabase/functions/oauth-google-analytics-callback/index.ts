@@ -1,6 +1,39 @@
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+// Helper function to save OAuth account
+async function saveOAuthAccount(supabase: any, user_id: string, team_id: string, tokens: any, propertyId: string, propertyName: string, allProperties: any[]) {
+  const oauthData = {
+    user_id,
+    team_id,
+    provider: 'google_analytics',
+    platform: 'google_analytics',
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+    expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
+    status: 'active',
+    connected_at: new Date().toISOString(),
+    account_id: propertyId,
+    account_name: propertyName,
+    scope_json: { 
+      properties: allProperties.map((p: any) => ({ 
+        id: p.property, 
+        displayName: p.displayName 
+      })),
+      scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+      selected_property: propertyId
+    }
+  };
+
+  const { error } = await supabase
+    .from('oauth_accounts')
+    .upsert(oauthData, {
+      onConflict: 'user_id,provider'
+    });
+
+  return { error };
+}
+
 Deno.serve(async (req) => {
   console.log('🔄 GA4 OAuth callback function called');
   console.log('Request method:', req.method);
@@ -50,7 +83,28 @@ Deno.serve(async (req) => {
 
     if (!code || !state) {
       console.error('❌ Missing code or state parameter');
-      return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=missing_parameters`, 302);
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>Missing Parameters</title></head>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'oauth-error',
+                  message: 'Missing authorization parameters'
+                }, '*');
+                window.close();
+              }
+            </script>
+            <div style="text-align: center; padding: 50px; font-family: Arial;">
+              <h2>❌ Missing Parameters</h2>
+              <p>This window will close automatically...</p>
+            </div>
+          </body>
+        </html>
+      `;
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
     }
 
     // Decode state to get company_id and user_id
@@ -73,7 +127,24 @@ Deno.serve(async (req) => {
 
     if (teamError || !teamMember) {
       console.error('❌ Failed to find user team:', teamError);
-      return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=user_team_not_found`, 302);
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>Team Not Found</title></head>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'oauth-error',
+                  message: 'User team not found'
+                }, '*');
+                window.close();
+              }
+            </script>
+          </body>
+        </html>
+      `;
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
     }
 
     const team_id = teamMember.team_id;
@@ -97,7 +168,24 @@ Deno.serve(async (req) => {
     if (!tokenResponse.ok) {
       const tokenError = await tokenResponse.text();
       console.error('❌ Token exchange failed:', tokenError);
-      return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=token_exchange_failed`, 302);
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>Token Exchange Failed</title></head>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'oauth-error',
+                  message: 'Failed to exchange authorization code'
+                }, '*');
+                window.close();
+              }
+            </script>
+          </body>
+        </html>
+      `;
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
     }
 
     const tokens = await tokenResponse.json();
@@ -113,7 +201,24 @@ Deno.serve(async (req) => {
     if (!propertiesResponse.ok) {
       const propertiesError = await propertiesResponse.text();
       console.error('❌ Failed to fetch GA4 properties:', propertiesError);
-      return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=properties_fetch_failed`, 302);
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>Properties Fetch Failed</title></head>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'oauth-error',
+                  message: 'Failed to fetch GA4 properties'
+                }, '*');
+                window.close();
+              }
+            </script>
+          </body>
+        </html>
+      `;
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
     }
 
     const propertiesData = await propertiesResponse.json();
@@ -124,107 +229,223 @@ Deno.serve(async (req) => {
     const properties = accountSummaries.length > 0 ? accountSummaries[0].propertySummaries || [] : [];
     console.log('✅ GA4 properties fetched:', properties.length);
 
-    console.log('💾 Preparing to store OAuth account...');
-    console.log('📊 Properties structure:', { 
-      accountSummariesCount: accountSummaries.length,
-      propertiesCount: properties.length,
-      firstProperty: properties[0] || null
-    });
+    // If no properties found, show error
+    if (properties.length === 0) {
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>No GA4 Properties Found</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+              .error { color: #dc2626; background: #fef2f2; padding: 20px; border-radius: 8px; }
+            </style>
+          </head>
+          <body>
+            <div class="error">
+              <h2>❌ No Google Analytics 4 Properties Found</h2>
+              <p>We couldn't find any GA4 properties in your Google Analytics account. Please make sure you have:</p>
+              <ul>
+                <li>Created a GA4 property in your Google Analytics account</li>
+                <li>Have the necessary permissions to access the property</li>
+              </ul>
+              <button onclick="window.close()">Close</button>
+            </div>
+          </body>
+        </html>
+      `;
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
+    }
 
-    // Extract property info - GA4 properties have format "properties/123456789"
-    const primaryProperty = properties[0] || null;
-    const propertyId = primaryProperty?.property?.split('/')[1] || 'unknown';
-    const propertyName = primaryProperty?.displayName || 'GA4 Property';
-
-    const oauthData = {
-      user_id,
-      team_id: team_id,
-      provider: 'google_analytics',
-      platform: 'google_analytics',
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
-      status: 'active',
-      connected_at: new Date().toISOString(),
-      account_id: propertyId,
-      account_name: propertyName,
-      scope_json: { 
-        properties: properties.map((p: any) => ({ 
-          id: p.property, 
-          displayName: p.displayName 
-        })),
-        scopes: ['https://www.googleapis.com/auth/analytics.readonly']
+    // If only one property, auto-select it
+    if (properties.length === 1) {
+      const property = properties[0];
+      const propertyId = property.property?.split('/')[1] || 'unknown';
+      
+      const { error } = await saveOAuthAccount(supabase, user_id, team_id, tokens, propertyId, property.displayName, properties);
+      
+      if (error) {
+        console.error('❌ Failed to save OAuth account:', error);
+        const html = `
+          <!DOCTYPE html>
+          <html>
+            <head><title>Storage Failed</title></head>
+            <body>
+              <script>
+                if (window.opener) {
+                  window.opener.postMessage({
+                    type: 'oauth-error',
+                    message: 'Failed to save connection'
+                  }, '*');
+                  window.close();
+                }
+              </script>
+            </body>
+          </html>
+        `;
+        return new Response(html, { headers: { 'Content-Type': 'text/html' } });
       }
-    };
-
-    console.log('📝 OAuth data to insert:', { 
-      ...oauthData, 
-      access_token: '***', 
-      refresh_token: '***' 
-    });
-
-    const { error: insertError } = await supabase
-      .from('oauth_accounts')
-      .upsert(oauthData, {
-        onConflict: 'user_id,provider'
-      });
-
-    if (insertError) {
-      console.error('❌ Failed to store OAuth account:', insertError);
-      console.error('❌ Error details:', JSON.stringify(insertError, null, 2));
-      return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=storage_failed`, 302);
+      
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>Google Analytics Connected</title></head>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'oauth-success',
+                  provider: 'google_analytics'
+                }, '*');
+                window.close();
+              }
+            </script>
+            <div style="text-align: center; padding: 50px; font-family: Arial;">
+              <h2>✅ Google Analytics Connected!</h2>
+              <p>Property: ${property.displayName}</p>
+              <p>This window will close automatically...</p>
+            </div>
+          </body>
+        </html>
+      `;
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
     }
 
-    console.log('✅ OAuth account stored successfully');
+    // Multiple properties - show selection page
+    const propertiesListHtml = properties.map(property => {
+      const propertyId = property.property?.split('/')[1] || 'unknown';
+      return `
+        <div class="property-option" onclick="selectProperty('${propertyId}', '${property.displayName?.replace(/'/g, "\\'")}')">
+          <h3>${property.displayName}</h3>
+          <p>Property ID: ${propertyId}</p>
+        </div>
+      `;
+    }).join('');
 
-    // Trigger initial GA4 sync
-    try {
-      await supabase.functions.invoke('jobs/sync_ga4', {
-        body: { 
-          user_id, 
-          job_type: 'full_sync',
-          date_range: 'last_30_days'
-        }
-      });
-      console.log('✅ Initial GA4 sync triggered');
-    } catch (syncError) {
-      console.warn('⚠️ Initial sync failed, but OAuth connection was successful:', syncError);
-    }
-
-    // Send success message to popup opener and close popup
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Google Analytics Connected</title>
+          <title>Select GA4 Property</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              max-width: 600px; 
+              margin: 50px auto; 
+              padding: 20px; 
+              background: #f9fafb;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .property-option {
+              background: white;
+              border: 2px solid #e5e7eb;
+              border-radius: 8px;
+              padding: 20px;
+              margin: 10px 0;
+              cursor: pointer;
+              transition: all 0.2s;
+            }
+            .property-option:hover {
+              border-color: #3b82f6;
+              box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            }
+            .property-option h3 {
+              margin: 0 0 10px 0;
+              color: #1f2937;
+            }
+            .property-option p {
+              margin: 0;
+              color: #6b7280;
+              font-size: 14px;
+            }
+            .loading {
+              display: none;
+              text-align: center;
+              padding: 20px;
+            }
+          </style>
         </head>
         <body>
+          <div class="header">
+            <h1>📊 Select Your GA4 Property</h1>
+            <p>Choose which Google Analytics property you'd like to connect:</p>
+          </div>
+          
+          <div id="properties">
+            ${propertiesListHtml}
+          </div>
+          
+          <div id="loading" class="loading">
+            <p>Connecting property...</p>
+          </div>
+
           <script>
-            if (window.opener) {
-              window.opener.postMessage({
-                type: 'oauth-success',
-                provider: 'google_analytics'
-              }, '*');
-              window.close();
-            } else {
-              // Fallback redirect if not in popup
-              window.location.href = '${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?success=ga4_connected';
+            async function selectProperty(propertyId, propertyName) {
+              document.getElementById('properties').style.display = 'none';
+              document.getElementById('loading').style.display = 'block';
+              
+              try {
+                const response = await fetch('https://wirxvaxlqdbivfhovrnc.supabase.co/functions/v1/oauth-google-analytics-complete', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    user_id: '${user_id}',
+                    team_id: '${team_id}',
+                    property_id: propertyId,
+                    property_name: propertyName,
+                    access_token: '${tokens.access_token}',
+                    refresh_token: '${tokens.refresh_token}',
+                    expires_in: ${tokens.expires_in || 3600},
+                    all_properties: ${JSON.stringify(properties).replace(/'/g, "\\'")}
+                  })
+                });
+                
+                if (response.ok) {
+                  if (window.opener) {
+                    window.opener.postMessage({
+                      type: 'oauth-success',
+                      provider: 'google_analytics'
+                    }, '*');
+                    window.close();
+                  }
+                } else {
+                  throw new Error('Failed to save property selection');
+                }
+              } catch (error) {
+                alert('Error connecting property: ' + error.message);
+                document.getElementById('properties').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+              }
             }
           </script>
-          <div style="text-align: center; padding: 50px; font-family: Arial;">
-            <h2>✅ Google Analytics Connected!</h2>
-            <p>This window will close automatically...</p>
-          </div>
         </body>
       </html>
     `;
 
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html' }
-    });
+    return new Response(html, { headers: { 'Content-Type': 'text/html' } });
 
   } catch (error) {
     console.error('❌ GA4 OAuth callback error:', error);
-    return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=callback_failed`, 302);
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head><title>OAuth Error</title></head>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'oauth-error',
+                message: 'OAuth callback failed'
+              }, '*');
+              window.close();
+            }
+          </script>
+        </body>
+      </html>
+    `;
+    return new Response(html, { headers: { 'Content-Type': 'text/html' } });
   }
 });
