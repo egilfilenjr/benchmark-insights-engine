@@ -160,32 +160,60 @@ export default function IntegrationManager() {
   };
 
   const handleConnect = async (platform: string) => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to connect integrations",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      const { data, error } = await supabase.functions.invoke(`oauth/${platform}/start`, {
-        body: { user_id: user?.id, company_id: user?.id }
+      console.log(`🔗 Starting ${platform} connection for user:`, user.id);
+      
+      let functionName = '';
+      switch (platform) {
+        case 'google_analytics':
+          functionName = 'oauth-google-analytics-start';
+          break;
+        case 'google_ads':
+          functionName = 'oauth-google-ads-start';
+          break;
+        case 'meta_ads':
+          functionName = 'oauth-meta-ads-start';
+          break;
+        default:
+          throw new Error(`Unsupported platform: ${platform}`);
+      }
+
+      console.log('📡 Calling OAuth start function:', functionName);
+      
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: {
+          user_id: user.id,
+          company_id: user.id // Using user ID as company ID for now
+        }
       });
 
+      console.log('📡 Function response:', { data, error });
+
       if (error) {
-        console.error('OAuth start error:', error);
-        toast({
-          title: "Connection Failed", 
-          description: `Failed to start OAuth for ${INTEGRATION_CONFIGS[platform]?.name}. Please try again or contact support.`,
-          variant: "destructive"
-        });
-        return;
+        console.error('❌ Function invoke error:', error);
+        throw error;
       }
 
       if (data?.auth_url) {
-        // Redirect to OAuth provider
+        console.log('🚀 Redirecting to OAuth URL:', data.auth_url);
         window.location.href = data.auth_url;
       } else {
-        throw new Error('No auth URL returned');
+        throw new Error('No auth URL returned from function');
       }
     } catch (error) {
-      console.error('Connection error:', error);
+      console.error(`❌ ${platform} connection error:`, error);
       toast({
         title: "Connection Failed",
-        description: `Unable to connect to ${INTEGRATION_CONFIGS[platform]?.name}. Please ensure the integration is properly configured.`,
+        description: `Failed to connect ${INTEGRATION_CONFIGS[platform]?.name}. Please try again.`,
         variant: "destructive"
       });
     }

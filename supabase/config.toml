@@ -20,16 +20,13 @@ enable_signup = true
 [functions.sync-campaign-data]
 verify_jwt = false
 
-[functions."oauth/google_analytics/start"]
+[functions.sync-ga-accounts]
 verify_jwt = false
 
-[functions."oauth/google_analytics/callback"]
+[functions.oauth-google-analytics-start]
 verify_jwt = false
 
-[functions."oauth/google_ads/start"]  
-verify_jwt = false
-
-[functions."oauth/meta_ads/start"]
+[functions.oauth-google-analytics-callback]
 verify_jwt = false
 
 [db]
