@@ -36,6 +36,26 @@ Deno.serve(async (req) => {
 
     console.log('Decoded state:', { company_id, user_id });
 
+    // Get the user's actual team_id from team_members table
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const { data: teamMember, error: teamError } = await supabase
+      .from('team_members')
+      .select('team_id')
+      .eq('user_id', user_id)
+      .single();
+
+    if (teamError || !teamMember) {
+      console.error('❌ Failed to find user team:', teamError);
+      return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=user_team_not_found`, 302);
+    }
+
+    const team_id = teamMember.team_id;
+    console.log('✅ Found user team_id:', team_id);
+
     // Exchange code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -81,12 +101,6 @@ Deno.serve(async (req) => {
     const properties = accountSummaries.length > 0 ? accountSummaries[0].propertySummaries || [] : [];
     console.log('✅ GA4 properties fetched:', properties.length);
 
-    // Store OAuth account in Supabase
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
     console.log('💾 Preparing to store OAuth account...');
     console.log('📊 Properties structure:', { 
       accountSummariesCount: accountSummaries.length,
@@ -101,7 +115,7 @@ Deno.serve(async (req) => {
 
     const oauthData = {
       user_id,
-      team_id: company_id,
+      team_id: team_id,
       provider: 'google_analytics',
       platform: 'google_analytics',
       access_token: tokens.access_token,
