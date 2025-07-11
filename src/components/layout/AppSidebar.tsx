@@ -50,17 +50,10 @@ const sidebarItems: SidebarItem[] = [
       { title: 'TikTok Ads', path: '/dashboard/tiktok' },
     ]
   },
-  { title: 'Benchmark Explorer', path: '/benchmark-explorer', icon: Search },
-  { title: 'Benchmarks', path: '/benchmarks/app', icon: BarChart },
-  { title: 'Recommendations', path: '/recommendations', icon: Lightbulb, planRequired: 'pro_plus' },
-  { title: 'Opportunities', path: '/opportunities', icon: Zap },
   { title: 'Trends', path: '/trends', icon: TrendingUp },
-  { title: 'Media Mix', path: '/media-mix', icon: PieChart },
   { title: 'My Data', path: '/my-data', icon: Database },
   { title: 'Reports', path: '/reports', icon: FileText, planRequired: 'pro_plus' },
-  { title: 'Saved Views', path: '/saved-views', icon: Bookmark },
   { title: 'Alerts', path: '/alerts', icon: Bell, planRequired: 'pro_plus' },
-  { title: 'Experiments', path: '/experiments', icon: FlaskConical },
   { title: 'Sync History', path: '/sync-history', icon: RefreshCw },
   { title: 'Team Access', path: '/team-access', icon: Users },
   { title: 'Settings', path: '/settings', icon: Settings },
@@ -90,7 +83,19 @@ const AppSidebar = () => {
   };
   
   const isActive = (path: string) => {
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard' || 
+             (location.pathname === '/dashboard' && location.search.includes('tab='));
+    }
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
+  const isSubItemActive = (subItemPath: string) => {
+    if (subItemPath.includes('?tab=')) {
+      const [basePath, queryString] = subItemPath.split('?');
+      return location.pathname === basePath && location.search.includes(queryString);
+    }
+    return location.pathname === subItemPath;
   };
 
   return (
@@ -151,7 +156,7 @@ const AppSidebar = () => {
                           to={subItem.path}
                           className={cn(
                             "block py-1 px-3 rounded-md text-sm transition-colors",
-                            location.pathname === subItem.path
+                            isSubItemActive(subItem.path)
                               ? "bg-primary/10 text-primary font-medium"
                               : "text-gray-600 hover:bg-gray-100"
                           )}
