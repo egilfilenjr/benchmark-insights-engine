@@ -1,0 +1,2 @@
+-- Check if we have any Google OAuth secrets configured by looking at the function logs
+-- We need to set up Google OAuth credentials for the GA4 integration to work
