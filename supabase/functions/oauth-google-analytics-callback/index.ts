@@ -84,37 +84,45 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // First, delete any existing Google Analytics connection for this user
-    const { error: deleteError } = await supabase
-      .from('oauth_accounts')
-      .delete()
-      .eq('user_id', user_id)
-      .eq('provider', 'google_analytics');
-    
-    if (deleteError) {
-      console.warn('⚠️ Warning deleting old connection:', deleteError);
-    }
-    
-    // Insert new connection
+    console.log('💾 Preparing to store OAuth account...');
+    console.log('📊 Properties data structure:', { 
+      propertiesLength: properties.length,
+      firstProperty: properties[0] || null
+    });
+
+    const oauthData = {
+      user_id,
+      team_id: company_id,
+      provider: 'google_analytics',
+      platform: 'google_analytics',
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
+      status: 'active',
+      connected_at: new Date().toISOString(),
+      account_id: properties.length > 0 ? (properties[0].property || properties[0].name || 'unknown') : 'unknown',
+      account_name: properties.length > 0 ? (properties[0].displayName || 'GA4 Property') : 'GA4 Property',
+      scope_json: { properties: properties.map((p: any) => ({ 
+        id: p.property || p.name, 
+        displayName: p.displayName 
+      })) }
+    };
+
+    console.log('📝 OAuth data to insert:', { 
+      ...oauthData, 
+      access_token: '***', 
+      refresh_token: '***' 
+    });
+
     const { error: insertError } = await supabase
       .from('oauth_accounts')
-      .insert({
-        user_id,
-        team_id: company_id,
-        provider: 'google_analytics',
-        platform: 'google_analytics',
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
-        status: 'active',
-        connected_at: new Date().toISOString(),
-         account_id: properties.length > 0 ? properties[0].property || 'unknown' : 'unknown',
-         account_name: properties.length > 0 ? properties[0].displayName || 'GA4 Property' : 'GA4 Property',
-         scope_json: { properties: properties.map((p: any) => ({ id: p.property, displayName: p.displayName })) }
+      .upsert(oauthData, {
+        onConflict: 'user_id,provider'
       });
 
     if (insertError) {
       console.error('❌ Failed to store OAuth account:', insertError);
+      console.error('❌ Error details:', JSON.stringify(insertError, null, 2));
       return Response.redirect(`${Deno.env.get('SITE_URL') || 'https://135dde5f-b7de-4cca-bb37-4a7c8ea5a8e2.lovableproject.com'}/integrations?error=storage_failed`, 302);
     }
 
