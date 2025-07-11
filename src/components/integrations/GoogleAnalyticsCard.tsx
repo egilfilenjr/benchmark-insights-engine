@@ -74,8 +74,67 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
       }
 
       if (data?.auth_url) {
-        console.log('✅ Redirecting to Google OAuth...');
-        window.location.href = data.auth_url;
+        console.log('✅ Opening OAuth popup...');
+        
+        // Open OAuth in a popup window
+        const popup = window.open(
+          data.auth_url,
+          'google-oauth',
+          'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+
+        if (!popup) {
+          throw new Error('Popup blocked. Please allow popups for this site.');
+        }
+
+        // Listen for the popup to close (successful auth or user cancellation)
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            setConnecting(false);
+            
+            // Refresh the integrations to see if connection was successful
+            setTimeout(() => {
+              onRefresh();
+            }, 1000);
+          }
+        }, 1000);
+
+        // Handle successful OAuth callback via postMessage
+        const handleMessage = (event: MessageEvent) => {
+          if (event.origin !== window.location.origin) return;
+          
+          if (event.data.type === 'oauth-success') {
+            clearInterval(checkClosed);
+            popup.close();
+            setConnecting(false);
+            
+            toast({
+              title: "Connected!",
+              description: "Google Analytics 4 has been connected successfully",
+            });
+            
+            onRefresh();
+          } else if (event.data.type === 'oauth-error') {
+            clearInterval(checkClosed);
+            popup.close();
+            setConnecting(false);
+            
+            toast({
+              title: "Connection Failed",
+              description: event.data.message || "Failed to connect Google Analytics 4",
+              variant: "destructive"
+            });
+          }
+        };
+
+        window.addEventListener('message', handleMessage);
+        
+        // Cleanup listener when component unmounts or popup closes
+        return () => {
+          window.removeEventListener('message', handleMessage);
+          clearInterval(checkClosed);
+        };
       } else {
         console.error('❌ No auth URL in response:', data);
         throw new Error('No auth URL returned from function');
@@ -89,6 +148,8 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
         errorMessage = "Network error: Unable to reach authentication service. Please try again.";
       } else if (error.message?.includes('Function not found')) {
         errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+      } else if (error.message?.includes('Popup blocked')) {
+        errorMessage = "Popup blocked. Please allow popups for this site and try again.";
       }
       
       toast({
@@ -96,7 +157,6 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
         description: errorMessage,
         variant: "destructive"
       });
-    } finally {
       setConnecting(false);
     }
   };
