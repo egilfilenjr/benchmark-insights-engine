@@ -59,7 +59,7 @@ export default function GoogleAnalyticsCard({ integration, onRefresh }: GoogleAn
       // Call the GA4 OAuth start edge function
       console.log('📡 Calling GA4 OAuth start function...');
       
-      const { data, error } = await supabase.functions.invoke('oauth/google_analytics/start', {
+      const { data, error } = await supabase.functions.invoke('oauth-google-analytics-start', {
         body: { 
           company_id: user.id, // Using user.id as company_id for now
           user_id: user.id 

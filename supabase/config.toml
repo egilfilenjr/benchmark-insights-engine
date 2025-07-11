@@ -24,10 +24,10 @@ verify_jwt = false
 [functions.sync-ga-accounts]
 verify_jwt = false
 
-[functions."oauth/google_analytics/start"]
+[functions.oauth-google-analytics-start]
 verify_jwt = false
 
-[functions."oauth/google_analytics/callback"]
+[functions.oauth-google-analytics-callback]
 verify_jwt = false
 
 [functions."oauth/google_ads/start"]
