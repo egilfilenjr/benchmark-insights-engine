@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, BarChart3, DollarSign, Filter } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, BarChart3, DollarSign, Filter, Settings } from 'lucide-react';
 import { useGA4Integration } from '@/hooks/useGA4Integration';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
@@ -16,6 +16,19 @@ export default function OverviewTab() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [comparisonType, setComparisonType] = useState('previous-period');
+  const [selectedMetrics, setSelectedMetrics] = useState(['bounce-rate', 'avg-session', 'conversion-rate', 'new-users']);
+
+  // Available metrics for the Website Analytics Summary
+  const availableMetrics = [
+    { key: 'bounce-rate', label: 'Bounce Rate', value: '58.2%', change: '-5.3%', icon: TrendingDown, positive: false },
+    { key: 'avg-session', label: 'Avg Session', value: '2m 22s', change: '+12.1%', icon: TrendingUp, positive: true },
+    { key: 'conversion-rate', label: 'Conversion Rate', value: '2.4%', change: '+18.9%', icon: TrendingUp, positive: true },
+    { key: 'new-users', label: 'New Users', value: '71.6%', change: '+7.2%', icon: TrendingUp, positive: true },
+    { key: 'page-views', label: 'Page Views', value: '45.2K', change: '+15.4%', icon: TrendingUp, positive: true },
+    { key: 'events', label: 'Events', value: '123.5K', change: '+22.8%', icon: TrendingUp, positive: true },
+    { key: 'ecommerce-rate', label: 'Ecommerce Rate', value: '3.8%', change: '+11.3%', icon: TrendingUp, positive: true },
+    { key: 'session-duration', label: 'Session Duration', value: '3m 45s', change: '+8.7%', icon: TrendingUp, positive: true }
+  ];
 
   // Mock data for connected integrations
   const [integrations, setIntegrations] = useState([
@@ -234,32 +247,46 @@ export default function OverviewTab() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   Website Analytics Summary
-                  <Button variant="outline" size="sm" onClick={() => window.location.href = '/dashboard?tab=ga4-analytics'}>
-                    View Details
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Select value={selectedMetrics.join(',')} onValueChange={(value) => setSelectedMetrics(value.split(','))}>
+                      <SelectTrigger className="w-48">
+                        <Settings className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Customize metrics" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableMetrics.map((metric) => (
+                          <SelectItem key={metric.key} value={metric.key}>
+                            {metric.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" onClick={() => window.location.href = '/dashboard?tab=ga4-analytics'}>
+                      View Details
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
                   Recent data from Google Analytics 4: {ga4Integration.property_name}
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">58.2%</div>
-                    <div className="text-xs text-muted-foreground">Bounce Rate</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">2m 22s</div>
-                    <div className="text-xs text-muted-foreground">Avg Session</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">2.4%</div>
-                    <div className="text-xs text-muted-foreground">Conversion Rate</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">71.6%</div>
-                    <div className="text-xs text-muted-foreground">New Users</div>
-                  </div>
+                <div className={`grid gap-4 ${selectedMetrics.length === 4 ? 'grid-cols-2 md:grid-cols-4' : selectedMetrics.length === 3 ? 'grid-cols-1 md:grid-cols-3' : selectedMetrics.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                  {availableMetrics
+                    .filter(metric => selectedMetrics.includes(metric.key))
+                    .map((metric) => {
+                      const IconComponent = metric.icon;
+                      return (
+                        <div key={metric.key} className="text-center p-4 border rounded-lg">
+                          <div className="text-2xl font-bold mb-1">{metric.value}</div>
+                          <div className="text-xs text-muted-foreground mb-2">{metric.label}</div>
+                          <div className={`text-xs flex items-center justify-center ${metric.positive ? 'text-green-600' : 'text-red-600'}`}>
+                            <IconComponent className="h-3 w-3 mr-1" />
+                            {metric.change} {getComparisonText()}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </CardContent>
             </Card>
