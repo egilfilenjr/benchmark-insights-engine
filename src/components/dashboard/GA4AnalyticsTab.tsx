@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, Users, MousePointer, Clock, Target, Zap, RefreshCw, Calendar, Lightbulb, PieChart, BarChart3, LineChart, Filter, Settings } from 'lucide-react';
 import { LineChart as RechartsLineChart, BarChart as RechartsBarChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -73,6 +74,7 @@ export default function GA4AnalyticsTab() {
   const [chartTimeframe, setChartTimeframe] = useState<'day' | 'week' | 'month'>('day');
   const [chartMetric1, setChartMetric1] = useState('sessions');
   const [chartMetric2, setChartMetric2] = useState('none');
+  const [showComparison, setShowComparison] = useState(false);
 
   // Customizable metric cards state
   const [metricCard1, setMetricCard1] = useState('users');
@@ -459,6 +461,44 @@ export default function GA4AnalyticsTab() {
               value = Math.round((baseValue / dataPoints) * trend);
           }
           dataPoint[chartMetric1] = value;
+          
+          // Add comparison data if toggle is enabled
+          if (showComparison) {
+            const comparisonData = getComparisonData(chartMetric1);
+            const comparisonVariation = (Math.random() - 0.5) * 0.15; // Slightly less variation for comparison
+            let comparisonValue = 0;
+            
+            switch (chartMetric1) {
+              case 'sessions':
+              case 'users':
+              case 'pageviews':
+              case 'goalCompletions':
+              case 'conversions':
+              case 'impressions':
+              case 'clicks':
+                comparisonValue = Math.round((comparisonData.value / dataPoints) * trend * (1 + comparisonVariation));
+                break;
+              case 'bounceRate':
+              case 'conversionRate':
+              case 'newUserRate':
+              case 'ctr':
+              case 'engagement':
+                comparisonValue = Number((comparisonData.value * (1 + comparisonVariation)).toFixed(2));
+                break;
+              case 'avgSessionDuration':
+                comparisonValue = Math.round(comparisonData.value * (1 + comparisonVariation));
+                break;
+              case 'revenue':
+                comparisonValue = Math.round((comparisonData.value / dataPoints) * trend * (1 + comparisonVariation));
+                break;
+              case 'cpc':
+                comparisonValue = Number((comparisonData.value * (1 + comparisonVariation)).toFixed(2));
+                break;
+              default:
+                comparisonValue = Math.round((comparisonData.value / dataPoints) * trend);
+            }
+            dataPoint[`${chartMetric1}_comparison`] = comparisonValue;
+          }
         }
       }
       
@@ -499,6 +539,44 @@ export default function GA4AnalyticsTab() {
               value = Math.round((baseValue / dataPoints) * trend);
           }
           dataPoint[chartMetric2] = value;
+          
+          // Add comparison data if toggle is enabled
+          if (showComparison) {
+            const comparisonData = getComparisonData(chartMetric2);
+            const comparisonVariation = (Math.random() - 0.5) * 0.15; // Slightly less variation for comparison
+            let comparisonValue = 0;
+            
+            switch (chartMetric2) {
+              case 'sessions':
+              case 'users':
+              case 'pageviews':
+              case 'goalCompletions':
+              case 'conversions':
+              case 'impressions':
+              case 'clicks':
+                comparisonValue = Math.round((comparisonData.value / dataPoints) * trend * (1 + comparisonVariation));
+                break;
+              case 'bounceRate':
+              case 'conversionRate':
+              case 'newUserRate':
+              case 'ctr':
+              case 'engagement':
+                comparisonValue = Number((comparisonData.value * (1 + comparisonVariation)).toFixed(2));
+                break;
+              case 'avgSessionDuration':
+                comparisonValue = Math.round(comparisonData.value * (1 + comparisonVariation));
+                break;
+              case 'revenue':
+                comparisonValue = Math.round((comparisonData.value / dataPoints) * trend * (1 + comparisonVariation));
+                break;
+              case 'cpc':
+                comparisonValue = Number((comparisonData.value * (1 + comparisonVariation)).toFixed(2));
+                break;
+              default:
+                comparisonValue = Math.round((comparisonData.value / dataPoints) * trend);
+            }
+            dataPoint[`${chartMetric2}_comparison`] = comparisonValue;
+          }
         }
       }
       
@@ -690,6 +768,19 @@ export default function GA4AnalyticsTab() {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/20 rounded-lg border">
+                <label className="text-sm text-muted-foreground">Show Comparison:</label>
+                <Switch 
+                  checked={showComparison} 
+                  onCheckedChange={setShowComparison}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {comparisonType === 'previous-period' ? 'vs Prev Period' : 
+                   comparisonType === 'previous-year' ? 'vs Prev Year' : 
+                   'vs Industry'}
+                </span>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -754,6 +845,17 @@ export default function GA4AnalyticsTab() {
                       yAxisId="left"
                     />
                   )}
+                  {showComparison && chartMetric1 && (
+                    <Line 
+                      type="monotone" 
+                      dataKey={`${chartMetric1}_comparison`}
+                      stroke={chartMetricOptions.find(m => m.value === chartMetric1)?.color}
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      name={`${chartMetricOptions.find(m => m.value === chartMetric1)?.label} (${comparisonType === 'previous-period' ? 'Prev Period' : comparisonType === 'previous-year' ? 'Prev Year' : 'Industry'})`}
+                      yAxisId="left"
+                    />
+                  )}
                   {chartMetric2 && chartMetric2 !== 'none' && (
                     <Line 
                       type="monotone" 
@@ -761,6 +863,17 @@ export default function GA4AnalyticsTab() {
                       stroke={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
                       strokeWidth={2}
                       name={chartMetricOptions.find(m => m.value === chartMetric2)?.label}
+                      yAxisId="right"
+                    />
+                  )}
+                  {showComparison && chartMetric2 && chartMetric2 !== 'none' && (
+                    <Line 
+                      type="monotone" 
+                      dataKey={`${chartMetric2}_comparison`}
+                      stroke={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      name={`${chartMetricOptions.find(m => m.value === chartMetric2)?.label} (${comparisonType === 'previous-period' ? 'Prev Period' : comparisonType === 'previous-year' ? 'Prev Year' : 'Industry'})`}
                       yAxisId="right"
                     />
                   )}
@@ -821,11 +934,29 @@ export default function GA4AnalyticsTab() {
                       yAxisId="left"
                     />
                   )}
+                  {showComparison && chartMetric1 && (
+                    <Bar 
+                      dataKey={`${chartMetric1}_comparison`}
+                      fill={chartMetricOptions.find(m => m.value === chartMetric1)?.color}
+                      fillOpacity={0.5}
+                      name={`${chartMetricOptions.find(m => m.value === chartMetric1)?.label} (${comparisonType === 'previous-period' ? 'Prev Period' : comparisonType === 'previous-year' ? 'Prev Year' : 'Industry'})`}
+                      yAxisId="left"
+                    />
+                  )}
                   {chartMetric2 && chartMetric2 !== 'none' && (
                     <Bar 
                       dataKey={chartMetric2} 
                       fill={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
                       name={chartMetricOptions.find(m => m.value === chartMetric2)?.label}
+                      yAxisId="right"
+                    />
+                  )}
+                  {showComparison && chartMetric2 && chartMetric2 !== 'none' && (
+                    <Bar 
+                      dataKey={`${chartMetric2}_comparison`}
+                      fill={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
+                      fillOpacity={0.5}
+                      name={`${chartMetricOptions.find(m => m.value === chartMetric2)?.label} (${comparisonType === 'previous-period' ? 'Prev Period' : comparisonType === 'previous-year' ? 'Prev Year' : 'Industry'})`}
                       yAxisId="right"
                     />
                   )}
