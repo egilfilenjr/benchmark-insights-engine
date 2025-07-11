@@ -175,13 +175,13 @@ export default function IntegrationManager() {
       let functionName = '';
       switch (platform) {
         case 'google_analytics':
-          functionName = 'oauth-google-analytics-start';
+          functionName = 'oauth/google_analytics/start';
           break;
         case 'google_ads':
-          functionName = 'oauth-google-ads-start';
+          functionName = 'oauth/google_ads/start';
           break;
         case 'meta_ads':
-          functionName = 'oauth-meta-ads-start';
+          functionName = 'oauth/meta_ads/start';
           break;
         default:
           throw new Error(`Unsupported platform: ${platform}`);
