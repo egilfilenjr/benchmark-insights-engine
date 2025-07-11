@@ -616,11 +616,32 @@ export default function GA4AnalyticsTab() {
                     axisLine={false}
                   />
                   <YAxis 
+                    yAxisId="left"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => value.toLocaleString()}
+                    label={{ 
+                      value: chartMetricOptions.find(m => m.value === chartMetric1)?.label || '', 
+                      angle: -90, 
+                      position: 'insideLeft' 
+                    }}
                   />
+                  {chartMetric2 && chartMetric2 !== 'none' && (
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => value.toLocaleString()}
+                      label={{ 
+                        value: chartMetricOptions.find(m => m.value === chartMetric2)?.label || '', 
+                        angle: 90, 
+                        position: 'insideRight' 
+                      }}
+                    />
+                  )}
                   <Tooltip 
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
@@ -640,15 +661,17 @@ export default function GA4AnalyticsTab() {
                       stroke={chartMetricOptions.find(m => m.value === chartMetric1)?.color}
                       strokeWidth={2}
                       name={chartMetricOptions.find(m => m.value === chartMetric1)?.label}
+                      yAxisId="left"
                     />
                   )}
                   {chartMetric2 && chartMetric2 !== 'none' && (
                     <Line 
-                      type="monotone"
+                      type="monotone" 
                       dataKey={chartMetric2} 
                       stroke={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
                       strokeWidth={2}
                       name={chartMetricOptions.find(m => m.value === chartMetric2)?.label}
+                      yAxisId="right"
                     />
                   )}
                 </RechartsLineChart>
@@ -662,11 +685,32 @@ export default function GA4AnalyticsTab() {
                     axisLine={false}
                   />
                   <YAxis 
+                    yAxisId="left"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => value.toLocaleString()}
+                    label={{ 
+                      value: chartMetricOptions.find(m => m.value === chartMetric1)?.label || '', 
+                      angle: -90, 
+                      position: 'insideLeft' 
+                    }}
                   />
+                  {chartMetric2 && chartMetric2 !== 'none' && (
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => value.toLocaleString()}
+                      label={{ 
+                        value: chartMetricOptions.find(m => m.value === chartMetric2)?.label || '', 
+                        angle: 90, 
+                        position: 'insideRight' 
+                      }}
+                    />
+                  )}
                   <Tooltip 
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
@@ -684,13 +728,15 @@ export default function GA4AnalyticsTab() {
                       dataKey={chartMetric1} 
                       fill={chartMetricOptions.find(m => m.value === chartMetric1)?.color}
                       name={chartMetricOptions.find(m => m.value === chartMetric1)?.label}
+                      yAxisId="left"
                     />
                   )}
                   {chartMetric2 && chartMetric2 !== 'none' && (
                     <Bar 
-                      dataKey={chartMetric2}
+                      dataKey={chartMetric2} 
                       fill={chartMetricOptions.find(m => m.value === chartMetric2)?.color}
                       name={chartMetricOptions.find(m => m.value === chartMetric2)?.label}
+                      yAxisId="right"
                     />
                   )}
                 </RechartsBarChart>
