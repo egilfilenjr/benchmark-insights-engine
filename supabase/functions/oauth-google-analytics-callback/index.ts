@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     console.log('✅ Tokens received:', { access_token: !!tokens.access_token, refresh_token: !!tokens.refresh_token });
 
     // Get GA4 properties
-    const propertiesResponse = await fetch('https://analyticsadmin.googleapis.com/v1alpha/properties', {
+    const propertiesResponse = await fetch('https://analyticsadmin.googleapis.com/v1alpha/accountSummaries', {
       headers: {
         'Authorization': `Bearer ${tokens.access_token}`,
       },
@@ -74,7 +74,8 @@ Deno.serve(async (req) => {
     }
 
     const propertiesData = await propertiesResponse.json();
-    const properties = propertiesData.properties || [];
+    const accountSummaries = propertiesData.accountSummaries || [];
+    const properties = accountSummaries.length > 0 ? accountSummaries[0].propertySummaries || [] : [];
     console.log('✅ GA4 properties fetched:', properties.length);
 
     // Store OAuth account in Supabase
