@@ -170,34 +170,23 @@ export default function IntegrationManager() {
     setSyncing(prev => ({ ...prev, [platform]: true }));
 
     try {
-      const response = await fetch("/api/sync-integration", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user?.id, provider: platform }),
+      const { data, error } = await supabase.functions.invoke('sync-campaign-data', {
+        body: { user_id: user?.id, provider: platform }
       });
 
-      if (response.ok) {
-        toast({
-          title: "Sync Started",
-          description: `${INTEGRATION_CONFIGS[platform]?.name} data sync initiated`,
-        });
+      if (error) throw error;
 
-        // Update the last_synced_at timestamp
-        await supabase
-          .from('oauth_accounts')
-          .update({ last_synced_at: new Date().toISOString() })
-          .eq('user_id', user?.id)
-          .eq('provider', platform);
+      toast({
+        title: "Sync Completed",
+        description: `${INTEGRATION_CONFIGS[platform]?.name} campaign data synced successfully`,
+      });
 
-        loadIntegrations();
-      } else {
-        throw new Error('Sync failed');
-      }
+      loadIntegrations();
     } catch (error) {
       console.error('Sync error:', error);
       toast({
         title: "Sync Failed",
-        description: "Failed to sync integration data",
+        description: "Failed to sync campaign data and benchmarks",
         variant: "destructive"
       });
     } finally {

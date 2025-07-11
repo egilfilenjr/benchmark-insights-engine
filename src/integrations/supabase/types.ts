@@ -368,6 +368,50 @@ export type Database = {
           },
         ]
       }
+      campaign_benchmarks: {
+        Row: {
+          benchmark_id: string | null
+          benchmark_percentile: number | null
+          campaign_id: string | null
+          created_at: string | null
+          id: string
+          performance_score: number | null
+          team_id: string
+          updated_at: string | null
+          user_value: number | null
+        }
+        Insert: {
+          benchmark_id?: string | null
+          benchmark_percentile?: number | null
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          performance_score?: number | null
+          team_id: string
+          updated_at?: string | null
+          user_value?: number | null
+        }
+        Update: {
+          benchmark_id?: string | null
+          benchmark_percentile?: number | null
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          performance_score?: number | null
+          team_id?: string
+          updated_at?: string | null
+          user_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_benchmarks_benchmark_id_fkey"
+            columns: ["benchmark_id"]
+            isOneToOne: false
+            referencedRelation: "benchmarks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_snapshots: {
         Row: {
           campaign_id: string
@@ -456,14 +500,18 @@ export type Database = {
           campaign_name: string | null
           channel: string | null
           clicks: number | null
+          conversion_rate: number | null
           conversion_type: string | null
           conversion_value: number | null
           conversions: number | null
+          cost_per_click: number | null
+          cost_per_mille: number | null
           cpa: number | null
           created_at: string | null
           ctr: number | null
           custom_labels: Json | null
           end_date: string | null
+          frequency: number | null
           geo_targeting: Json | null
           id: string
           impressions: number | null
@@ -472,6 +520,7 @@ export type Database = {
           objective: string | null
           optimization_event: string | null
           platform: string | null
+          reach: number | null
           roas: number | null
           spend: number | null
           start_date: string | null
@@ -483,14 +532,18 @@ export type Database = {
           campaign_name?: string | null
           channel?: string | null
           clicks?: number | null
+          conversion_rate?: number | null
           conversion_type?: string | null
           conversion_value?: number | null
           conversions?: number | null
+          cost_per_click?: number | null
+          cost_per_mille?: number | null
           cpa?: number | null
           created_at?: string | null
           ctr?: number | null
           custom_labels?: Json | null
           end_date?: string | null
+          frequency?: number | null
           geo_targeting?: Json | null
           id?: string
           impressions?: number | null
@@ -499,6 +552,7 @@ export type Database = {
           objective?: string | null
           optimization_event?: string | null
           platform?: string | null
+          reach?: number | null
           roas?: number | null
           spend?: number | null
           start_date?: string | null
@@ -510,14 +564,18 @@ export type Database = {
           campaign_name?: string | null
           channel?: string | null
           clicks?: number | null
+          conversion_rate?: number | null
           conversion_type?: string | null
           conversion_value?: number | null
           conversions?: number | null
+          cost_per_click?: number | null
+          cost_per_mille?: number | null
           cpa?: number | null
           created_at?: string | null
           ctr?: number | null
           custom_labels?: Json | null
           end_date?: string | null
+          frequency?: number | null
           geo_targeting?: Json | null
           id?: string
           impressions?: number | null
@@ -526,6 +584,7 @@ export type Database = {
           objective?: string | null
           optimization_event?: string | null
           platform?: string | null
+          reach?: number | null
           roas?: number | null
           spend?: number | null
           start_date?: string | null
@@ -1101,6 +1160,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      oauth_providers: {
+        Row: {
+          auth_url: string
+          client_id: string | null
+          client_secret: string | null
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          name: string
+          platform: string
+          scope: string
+          token_url: string
+        }
+        Insert: {
+          auth_url: string
+          client_id?: string | null
+          client_secret?: string | null
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          name: string
+          platform: string
+          scope: string
+          token_url: string
+        }
+        Update: {
+          auth_url?: string
+          client_id?: string | null
+          client_secret?: string | null
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          name?: string
+          platform?: string
+          scope?: string
+          token_url?: string
+        }
+        Relationships: []
       }
       platforms: {
         Row: {
