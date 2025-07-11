@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     }
 
     // Build the redirect URI - this needs to match what's configured in Google Cloud Console
-    const redirectUri = `https://wirxvaxlqdbivfhovrnc.supabase.co/functions/v1/oauth/google_analytics/callback`;
+    const redirectUri = `https://wirxvaxlqdbivfhovrnc.supabase.co/functions/v1/oauth-google-analytics-callback`;
     console.log('Redirect URI:', redirectUri);
 
     // Google Analytics scope for read-only access
