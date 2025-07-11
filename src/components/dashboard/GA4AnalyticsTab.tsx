@@ -348,7 +348,326 @@ export default function GA4AnalyticsTab() {
 
   return (
     <div className="space-y-6">
-      {/* Pivot Table Section */}
+      {/* Header Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-green-600 border-green-200">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+            Connected
+          </Badge>
+          <span className="text-sm text-muted-foreground">
+            Google Analytics Connected
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Select date range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="last-7-days">Last 7 days</SelectItem>
+              <SelectItem value="last-30-days">Last 30 days</SelectItem>
+              <SelectItem value="last-90-days">Last 90 days</SelectItem>
+              <SelectItem value="custom">Custom range</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={comparisonType} onValueChange={(value) => setComparisonType(value as typeof comparisonType)}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Compare to" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="previous-period">Previous period</SelectItem>
+              <SelectItem value="previous-year">Previous year</SelectItem>
+              <SelectItem value="industry-benchmark">Industry benchmark</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={syncData} 
+            disabled={syncing}
+            variant="outline"
+          >
+            {syncing ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Sync Data
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="charts">Charts & Visualization</TabsTrigger>
+          <TabsTrigger value="insights">AI Insights</TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6 mt-6">
+          {/* Customizable Metric Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[metricCard1, metricCard2, metricCard3, metricCard4].map((metricKey, index) => {
+              const metric = chartMetricOptions.find(m => m.value === metricKey);
+              if (!metric) return null;
+              
+              const value = getMetricValue(metricKey);
+              const comparisonData = getComparisonData(metricKey);
+              const IconComponent = metric.icon;
+              
+              return (
+                <Card key={index}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between space-y-0 pb-2">
+                      <div className="text-sm font-medium">{metric.label}</div>
+                      <IconComponent className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="text-2xl font-bold">{formatMetricValue(value, metricKey)}</div>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      {comparisonData.isPositive ? (
+                        <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                      ) : (
+                        <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
+                      )}
+                      <span className={comparisonData.isPositive ? "text-green-600" : "text-red-600"}>
+                        {comparisonData.change.toFixed(1)}%
+                      </span>
+                      <span className="ml-1">{comparisonData.label}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Metric Card Customization */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Customize Overview Cards
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {[
+                  { value: metricCard1, setter: setMetricCard1, label: 'Card 1' },
+                  { value: metricCard2, setter: setMetricCard2, label: 'Card 2' },
+                  { value: metricCard3, setter: setMetricCard3, label: 'Card 3' },
+                  { value: metricCard4, setter: setMetricCard4, label: 'Card 4' }
+                ].map((card, index) => (
+                  <div key={index}>
+                    <label className="text-sm font-medium mb-2 block">{card.label}</label>
+                    <Select value={card.value} onValueChange={card.setter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select metric" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {chartMetricOptions.map(metric => (
+                          <SelectItem key={metric.value} value={metric.value}>
+                            {metric.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Charts Tab */}
+        <TabsContent value="charts" className="space-y-6 mt-6">
+          {/* Chart Controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Chart Configuration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Chart Type</label>
+                  <Select value={chartType} onValueChange={(value) => setChartType(value as typeof chartType)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="line">
+                        <div className="flex items-center gap-2">
+                          <LineChart className="h-4 w-4" />
+                          Line Chart
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bar">
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4" />
+                          Bar Chart
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Timeframe</label>
+                  <Select value={chartTimeframe} onValueChange={(value) => setChartTimeframe(value as typeof chartTimeframe)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select timeframe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="day">Daily</SelectItem>
+                      <SelectItem value="week">Weekly</SelectItem>
+                      <SelectItem value="month">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Primary Metric</label>
+                  <Select value={chartMetric1} onValueChange={setChartMetric1}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select metric" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chartMetricOptions.map(metric => (
+                        <SelectItem key={metric.value} value={metric.value}>
+                          {metric.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Secondary Metric</label>
+                  <Select value={chartMetric2} onValueChange={setChartMetric2}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select metric" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {chartMetricOptions.map(metric => (
+                        <SelectItem key={metric.value} value={metric.value}>
+                          {metric.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="show-comparison" 
+                      checked={showComparison}
+                      onCheckedChange={setShowComparison}
+                    />
+                    <label htmlFor="show-comparison" className="text-sm font-medium">
+                      Show comparison
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Chart Display */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {chartType === 'line' ? <LineChart className="h-5 w-5" /> : <BarChart3 className="h-5 w-5" />}
+                Analytics Visualization
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  {chartType === 'line' ? (
+                    <RechartsLineChart data={[]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value1" 
+                        stroke={chartMetricOptions.find(m => m.value === chartMetric1)?.color || '#8884d8'}
+                        name={chartMetricOptions.find(m => m.value === chartMetric1)?.label || 'Metric 1'}
+                      />
+                      {chartMetric2 !== 'none' && (
+                        <Line 
+                          type="monotone" 
+                          dataKey="value2" 
+                          stroke={chartMetricOptions.find(m => m.value === chartMetric2)?.color || '#82ca9d'}
+                          name={chartMetricOptions.find(m => m.value === chartMetric2)?.label || 'Metric 2'}
+                        />
+                      )}
+                    </RechartsLineChart>
+                  ) : (
+                    <RechartsBarChart data={[]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar 
+                        dataKey="value1" 
+                        fill={chartMetricOptions.find(m => m.value === chartMetric1)?.color || '#8884d8'}
+                        name={chartMetricOptions.find(m => m.value === chartMetric1)?.label || 'Metric 1'}
+                      />
+                      {chartMetric2 !== 'none' && (
+                        <Bar 
+                          dataKey="value2" 
+                          fill={chartMetricOptions.find(m => m.value === chartMetric2)?.color || '#82ca9d'}
+                          name={chartMetricOptions.find(m => m.value === chartMetric2)?.label || 'Metric 2'}
+                        />
+                      )}
+                    </RechartsBarChart>
+                  )}
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Insights Tab */}
+        <TabsContent value="insights" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5" />
+                AI-Powered Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg bg-blue-50">
+                  <h4 className="font-medium text-blue-900">Traffic Growth Opportunity</h4>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Your organic search traffic has increased by 23% this month. Consider creating more content around your top-performing keywords to maintain this momentum.
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg bg-green-50">
+                  <h4 className="font-medium text-green-900">Conversion Rate Improvement</h4>
+                  <p className="text-sm text-green-700 mt-1">
+                    Your conversion rate is 18% above industry average. The checkout flow optimization implemented last month is showing positive results.
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg bg-yellow-50">
+                  <h4 className="font-medium text-yellow-900">Bounce Rate Alert</h4>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    Mobile bounce rate has increased by 8% this week. Consider optimizing page load speeds and mobile user experience.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Pivot Table Section - Now at the bottom */}
       <Card className="mt-8">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -457,35 +776,27 @@ export default function GA4AnalyticsTab() {
                       </th>
                       {pivotMetric2 !== 'none' && (
                         <th className="text-right p-3 font-medium">
-                          {chartMetricOptions.find(m => m.value === pivotMetric2)?.label}
+                          {chartMetricOptions.find(m => m.value === pivotMetric2)?.label || 'Secondary Metric'}
                         </th>
                       )}
-                      <th className="text-right p-3 font-medium">
-                        Change
-                      </th>
+                      <th className="text-right p-3 font-medium">Change</th>
                     </tr>
                   </thead>
                   <tbody>
                     {getPaginatedPivotData().map((row, index) => {
                       const comparisonData = getComparisonData(pivotMetric1);
                       return (
-                        <tr key={index} className="border-b hover:bg-muted/25">
+                        <tr key={index} className="border-b">
                           <td className="p-3 font-medium">{row.dimension}</td>
-                          {pivotDimension2 !== 'none' && row.dimension2 && (
+                          {pivotDimension2 !== 'none' && (
                             <td className="p-3 text-muted-foreground">{row.dimension2}</td>
                           )}
-                          <td className="p-3 text-right">
-                            {formatMetricValue(row.metric1, pivotMetric1)}
-                          </td>
+                          <td className="p-3 text-right">{formatMetricValue(row.metric1, pivotMetric1)}</td>
                           {pivotMetric2 !== 'none' && (
-                            <td className="p-3 text-right">
-                              {formatMetricValue(row.metric2 || 0, pivotMetric2)}
-                            </td>
+                            <td className="p-3 text-right">{formatMetricValue(row.metric2, pivotMetric2)}</td>
                           )}
                           <td className="p-3 text-right">
-                            <div className={`flex items-center justify-end gap-1 ${
-                              comparisonData.isPositive ? 'text-green-600' : 'text-red-600'
-                            }`}>
+                            <div className={`flex items-center justify-end gap-1 ${comparisonData.isPositive ? 'text-green-600' : 'text-red-600'}`}>
                               {comparisonData.isPositive ? (
                                 <TrendingUp className="h-3 w-3" />
                               ) : (
