@@ -2125,11 +2125,11 @@ export default function GA4AnalyticsTab() {
                                       {comparisonData.change.toFixed(1)}%
                     </div>
 
-                    {/* Pivot Table Controls */}
-                    <div className="flex items-center justify-between mb-4">
+                    {/* Pagination Controls - Separate from table configuration */}
+                    <div className="flex items-center justify-between border-t pt-4">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <label className="text-sm text-muted-foreground">Rows per page:</label>
+                          <label className="text-sm text-muted-foreground">Show:</label>
                           <Select value={pivotRowsPerPage.toString()} onValueChange={(value) => {
                             setPivotRowsPerPage(Number(value));
                             setPivotCurrentPage(1);
@@ -2145,6 +2145,7 @@ export default function GA4AnalyticsTab() {
                               <SelectItem value="30">30</SelectItem>
                             </SelectContent>
                           </Select>
+                          <span className="text-sm text-muted-foreground">rows per page</span>
                         </div>
                       </div>
                       
