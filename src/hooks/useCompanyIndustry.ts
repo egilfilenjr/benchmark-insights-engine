@@ -39,9 +39,9 @@ export function useCompanyIndustry() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('company_industry')
+        .from('company_industries')
         .select('*')
-        .eq('company_id', user.id)
+        .eq('user_id', user.id)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
@@ -62,7 +62,7 @@ export function useCompanyIndustry() {
     setSaving(true);
     try {
       const industryData = {
-        company_id: user.id,
+        user_id: user.id,
         domain: selection.domain || null,
         category: selection.category || null,
         subcategory: selection.subcategory || null,
@@ -70,9 +70,9 @@ export function useCompanyIndustry() {
       };
 
       const { error } = await supabase
-        .from('company_industry')
+        .from('company_industries')
         .upsert(industryData, {
-          onConflict: 'company_id'
+          onConflict: 'user_id'
         });
 
       if (error) {

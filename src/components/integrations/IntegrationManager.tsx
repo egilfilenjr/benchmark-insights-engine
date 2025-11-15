@@ -135,15 +135,15 @@ export default function IntegrationManager() {
       // Transform the data to match our Integration interface
       const transformedData: Integration[] = (data || []).map(item => ({
         id: item.id,
-        platform: item.platform,
-        provider: item.provider || item.platform,
+        platform: item.provider, // Use provider as platform
+        provider: item.provider,
         status: (['active', 'error', 'pending'].includes(item.status) ? item.status : 'pending') as 'active' | 'error' | 'pending',
         access_token: item.access_token,
         last_synced_at: item.last_synced_at,
         expires_at: item.expires_at,
         account_id: item.account_id,
         account_name: item.account_name,
-        connected_at: item.connected_at
+        connected_at: item.created_at // Use created_at as connected_at
       }));
       
       setIntegrations(transformedData);
