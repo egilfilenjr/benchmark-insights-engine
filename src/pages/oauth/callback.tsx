@@ -50,7 +50,7 @@ export default function OAuthCallback() {
           .from("oauth_accounts")
           .select("id")
           .eq("user_id", userId)
-          .eq("platform", provider)
+          .eq("provider", provider)
           .maybeSingle();
 
         if (!existing) {

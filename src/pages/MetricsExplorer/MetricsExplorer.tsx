@@ -47,14 +47,14 @@ export default function MetricsExplorer() {
 
     setLoading(true);
     try {
-      // Load campaign metrics since analytics_snapshots table doesn't exist yet
+      // Load campaign metrics
       const { data: campaignData } = await supabase
         .from('campaigns')
-        .select('id, campaign_name, cpa, roas, ctr, created_at')
-        .eq('team_id', user.id);
+        .select('id, name, cpa, roas, ctr, created_at')
+        .eq('user_id', user.id);
 
       // Transform campaign data to metrics format
-      const transformedMetrics: MetricData[] = (campaignData || []).flatMap(campaign => [
+      const transformedMetrics: MetricData[] = (campaignData || []).flatMap((campaign: any) => [
         {
           id: `${campaign.id}-cpa`,
           metric_name: 'CPA',
