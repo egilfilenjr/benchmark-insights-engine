@@ -39,7 +39,7 @@ export const UserProfileProvider = ({ children }: { children: React.ReactNode })
       setProfile({
         userId: user.id,
         teamId: teamMember?.team_id,
-        role: teamMember?.role || 'viewer',
+        role: (teamMember?.role as 'admin' | 'editor' | 'viewer') || 'viewer',
         plan: (teamMember?.teams as any)?.plan || 'free',
         user,
         signOut: async () => {

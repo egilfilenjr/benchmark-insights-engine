@@ -87,12 +87,12 @@ export function useCampaignData() {
 
       if (benchmarkError) console.error('Error loading benchmarks:', benchmarkError);
 
-      // Combine campaigns with their benchmarks
-      const campaignsWithBenchmarks: CampaignWithBenchmarks[] = (campaignData || []).map(campaign => ({
+      // Combine campaigns with their benchmarks - use 'as any' for now until types regenerate
+      const campaignsWithBenchmarks = (campaignData || []).map((campaign: any) => ({
         ...campaign,
         benchmarks: (benchmarkData || [])
-          .filter(b => b.campaign_id === campaign.id)
-          .map(b => ({
+          .filter((b: any) => b.campaign_id === campaign.id)
+          .map((b: any) => ({
             id: b.id,
             campaign_id: b.campaign_id,
             benchmark: b.benchmarks,
@@ -100,7 +100,7 @@ export function useCampaignData() {
             benchmark_percentile: b.benchmark_percentile,
             performance_score: b.performance_score
           }))
-      }));
+      })) as CampaignWithBenchmarks[];
 
       setCampaigns(campaignsWithBenchmarks);
     } catch (error) {
