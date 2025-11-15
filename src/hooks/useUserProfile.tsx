@@ -28,13 +28,19 @@ export const UserProfileProvider = ({ children }: { children: React.ReactNode })
 
       if (!user) return;
 
-      // For now, just set up a mock profile since we don't have the actual tables
-      // In a real implementation, we would fetch the user's team membership
+      // Fetch user's team membership
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('team_id, role, teams(plan)')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single();
+
       setProfile({
         userId: user.id,
-        teamId: "mock-team-id",
-        role: "admin",
-        plan: "agency", // Mock plan
+        teamId: teamMember?.team_id,
+        role: teamMember?.role || 'viewer',
+        plan: (teamMember?.teams as any)?.plan || 'free',
         user,
         signOut: async () => {
           await supabase.auth.signOut();
@@ -44,6 +50,17 @@ export const UserProfileProvider = ({ children }: { children: React.ReactNode })
     };
 
     fetchData();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setProfile(null);
+      } else {
+        fetchData();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return <UserProfileContext.Provider value={profile}>{children}</UserProfileContext.Provider>;
