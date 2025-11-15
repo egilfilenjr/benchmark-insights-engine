@@ -42,20 +42,19 @@ export function useGA4Integration() {
       // Check if user has GA4 OAuth connection
       const { data: oauthData } = await supabase
         .from('oauth_accounts')
-        .select('*')
+        .select('id, property_id, property_name, status, last_synced_at')
         .eq('user_id', user.id)
-        .eq('platform', 'google_analytics')
+        .eq('provider', 'google_analytics')
         .maybeSingle();
 
       if (oauthData) {
-        // For now, create a mock integration since the ga4_integrations table doesn't exist
-        // In a real implementation, you would query the actual ga4_integrations table
+        // Create integration object from OAuth data
         const mockIntegration: GA4Integration = {
           id: oauthData.id,
           user_id: user.id,
-          property_id: oauthData.account_id || '',
-          property_name: oauthData.account_name || 'Default Property',
-          status: 'active',
+          property_id: oauthData.property_id || '',
+          property_name: oauthData.property_name || 'Default Property',
+          status: (oauthData.status as 'active' | 'error' | 'pending') || 'active',
           last_synced_at: oauthData.last_synced_at
         };
         
@@ -94,17 +93,16 @@ export function useGA4Integration() {
     if (!user?.id) return false;
 
     try {
-      // For now, we'll update the oauth_accounts table
-      // In a real implementation, this would update the ga4_integrations table
+      // Update oauth_accounts with selected property
       const { error } = await supabase
         .from('oauth_accounts')
         .update({
-          account_id: propertyId,
-          account_name: propertyName,
+          property_id: propertyId,
+          property_name: propertyName,
           status: 'active'
         })
         .eq('user_id', user.id)
-        .eq('platform', 'google_analytics');
+        .eq('provider', 'google_analytics');
 
       if (error) throw error;
       
@@ -140,7 +138,9 @@ export function useGA4Integration() {
           status: 'active'
         })
         .eq('user_id', user.id)
-        .eq('platform', 'google_analytics');
+        .eq('provider', 'google_analytics')
+        .select('id')
+        .single();
       
       await loadIntegration();
       return true;
@@ -157,11 +157,13 @@ export function useGA4Integration() {
 
     try {
       // Remove OAuth connection
-      await supabase
+      const { error } = await supabase
         .from('oauth_accounts')
         .delete()
         .eq('user_id', user.id)
-        .eq('platform', 'google_analytics');
+        .eq('provider', 'google_analytics');
+
+      if (error) throw error;
 
       setIntegration(null);
       setProperties([]);
