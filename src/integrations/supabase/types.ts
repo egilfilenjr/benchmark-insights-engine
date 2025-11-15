@@ -62,6 +62,51 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_benchmarks: {
+        Row: {
+          benchmark_id: string | null
+          benchmark_percentile: number | null
+          campaign_id: string | null
+          created_at: string | null
+          id: string
+          performance_score: number | null
+          user_value: number | null
+        }
+        Insert: {
+          benchmark_id?: string | null
+          benchmark_percentile?: number | null
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          performance_score?: number | null
+          user_value?: number | null
+        }
+        Update: {
+          benchmark_id?: string | null
+          benchmark_percentile?: number | null
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          performance_score?: number | null
+          user_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_benchmarks_benchmark_id_fkey"
+            columns: ["benchmark_id"]
+            isOneToOne: false
+            referencedRelation: "benchmarks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_benchmarks_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           clicks: number | null
@@ -296,12 +341,42 @@ export type Database = {
           },
         ]
       }
+      industry_hierarchy: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          detail: string | null
+          domain: string
+          id: number
+          subcategory: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          detail?: string | null
+          domain: string
+          id?: number
+          subcategory?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          detail?: string | null
+          domain?: string
+          id?: number
+          subcategory?: string | null
+        }
+        Relationships: []
+      }
       oauth_accounts: {
         Row: {
           access_token: string | null
+          account_id: string | null
+          account_name: string | null
           created_at: string | null
           expires_at: string | null
           id: string
+          last_synced_at: string | null
           metadata: Json | null
           property_id: string | null
           property_name: string | null
@@ -314,9 +389,12 @@ export type Database = {
         }
         Insert: {
           access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
+          last_synced_at?: string | null
           metadata?: Json | null
           property_id?: string | null
           property_name?: string | null
@@ -329,9 +407,12 @@ export type Database = {
         }
         Update: {
           access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
+          last_synced_at?: string | null
           metadata?: Json | null
           property_id?: string | null
           property_name?: string | null
